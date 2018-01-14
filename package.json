@@ -1,0 +1,15 @@
+{
+	"name": "application-title",
+	"version": "1.0.0",
+	"description": "A generic description.",
+	"main": "server/server.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "node server/server.js"
+	},
+	"author": "Andrew Kuo & William Loo",
+	"dependencies": {
+		"express": "^4.13.0",
+		"socket.io": "^1.3.5"	
+	}
+}
