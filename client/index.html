@@ -1,11 +1,20 @@
 <html>
 	<head>
 		<link rel="stylesheet" href="style.css" />
+
+		<!-- Library files -->
+		<script src="../node_modules/socket.io-client/dist/socket.io.js"></script>
+		<script src="../node_modules/gl-matrix/dist/gl-matrix.js"></script>
+		<script src="./mogli.js"></script>
 	</head>
 	<body>
 		<canvas id="content"></canvas>
-		
-		<script src="../node_modules/socket.io-client/dist/socket.io.js"></script>
+
+		<!-- Shader files -->
+		<script src="./res/def.vsh"></script>
+		<script src="./res/def.fsh"></script>
+
+		<!-- Script files -->
 		<script src="./main.js"></script>
 		<script src="./app.js"></script>
 	</body>
