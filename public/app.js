@@ -22,7 +22,14 @@ window.onload = start;
 function start()
 {
 	let scripts = [];
-	scripts.push("public/client-test.js");
+	scripts.push("public/client-game.js");
+	scripts.push("public/mogli.js");
+	scripts.push("public/util.js");
+
+	//TODO: Implement a way to properly load shader files
+	scripts.push("public/res/def.vsh");
+	scripts.push("public/res/def.fsh");
+
 	load(scripts, function() {
 		app = new Application();
 		app.onStart();
@@ -103,6 +110,7 @@ function render(now = 0)
 	app.onUpdate();
 	requestAnimationFrame(render);
 }
+
 //Display frames per second
 setInterval(function(){
 	console.log("FPS: " + frameTime.count);

@@ -10,6 +10,9 @@ app.use('/public', express.static(__dirname + '/public'));
 app.get('/', function(request, response) {
   response.sendFile(path.join(__dirname, 'index.html'));
 });
+app.get('/gl-matrix/gl-matrix.js', function(request, response) {
+  response.sendFile(path.join(__dirname, 'node_modules/gl-matrix/dist/gl-matrix.js'));
+});
 
 //Listening
 var server = app.listen(process.env.PORT || 8082, function() {
