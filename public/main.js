@@ -1,3 +1,4 @@
+
 /**
  * Application - The main entry point for the program
  */
@@ -45,20 +46,11 @@ class Application
 	}
 
 	/**
-	 * doNetwork - Called on network tick
-	 */
-	doNetwork(socket)
-	{
-		console.log("Connecting...");
-		console.log(socket);
-	}
-
-	/**
 	 * doUpdate - Called every frame to update the application
 	 */
 	doUpdate()
 	{
-		console.log("Running...");
+
 	}
 
 	/**
