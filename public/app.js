@@ -24,6 +24,7 @@ function start()
 	let scripts = [];
 	scripts.push("public/client-game.js");
 	scripts.push("public/mogli.js");
+	scripts.push("public/ecs.js");
 	scripts.push("public/util.js");
 
 	//TODO: Implement a way to properly load shader files
