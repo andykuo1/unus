@@ -18,6 +18,8 @@ To use additional script files on the client side, be sure to add the script's p
 # Future Plans
 * Load files with a pretty loading screen
 * Find a better way to use multiple scripts
+* Find a better way to load shader files
+* Find a way to load any resource files (textures, etc.)
 * Register and verify users on connection (handshake)
 * Implement a proper entity-component system
 * Finish the game :)
