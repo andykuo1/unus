@@ -23,4 +23,4 @@ var server = app.listen(process.env.PORT || 8082, function() {
 var io = require('socket.io')(server);
 
 //Server
-require('./server-test.js')(io);
+require('./server/server-game.js')(io);

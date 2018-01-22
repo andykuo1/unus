@@ -14,7 +14,10 @@ class Application {
 	 */
   onStart()
   {
-  	socket.emit('newplayer');
+    let i = Math.random();
+    //Test ping
+    socket.emit('echo', {value: i});
+    console.log("Echoing \'" + i + "\'...");
 
 		//Load resources
 		const vsrc = vertexShaderDef;//loadFile("./res/def.vsh");
