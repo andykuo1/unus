@@ -35,9 +35,8 @@ function load(files, callback, index = 0)
 	if (index == 0)
 	{
 		console.log("Loading scripts...");
-		let loader = document.querySelector('#scripts');
-		//loader.style.display = 'block';
-		//canvas.style.display = 'none';
+		let element = document.querySelector('#scripts');
+		this.beginLoadingScripts(element);
 	}
 
 	if (index < files.length)
@@ -45,19 +44,17 @@ function load(files, callback, index = 0)
 		let file = files[index];
 		console.log("...getting \'" + file + "\'...");
 
-		/*
 		//HTML implementation...
-		let fileref = document.createElement('script');
-		fileref.setAttribute('type', 'text/javascript');
-		fileref.setAttribute('src', file);
-		fileref.onload = function() {
+		let element = document.createElement('script');
+		element.setAttribute('type', 'text/javascript');
+		element.setAttribute('src', file);
+		element.onload = function() {
 			console.log("...evaluating...");
 			load(files, callback, index + 1);
 		};
-		document.querySelector('#scripts').appendChild(fileref);
-		*/
+		document.querySelector('#scripts').appendChild(element);
 
-
+		/*
 		//AJAX implementation...
 		let request = new XMLHttpRequest();
 		request.open('GET', file);
@@ -76,16 +73,23 @@ function load(files, callback, index = 0)
 			}
 		};
 		request.send();
-
+		*/
 	}
 	else
 	{
-		let loader = document.querySelector('#scripts');
-		//canvas.style.display = 'block';
-		//loader.style.display = 'none';
+		let element = document.querySelector('#scripts');
+		this.endLoadingScripts(element);
 		console.log("...Loaded " + index + " script(s)!");
 		callback();
 	}
+}
+
+function beginLoadingScripts(element)
+{
+}
+
+function endLoadingScripts(element)
+{
 }
 
 const frameTime = {delta: 0, then: 0, count: 0};

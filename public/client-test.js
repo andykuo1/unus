@@ -1,4 +1,5 @@
-Application = class{
+class Application
+{
   onStart()
   {
   	socket.emit('newplayer');
