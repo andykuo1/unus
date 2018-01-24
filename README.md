@@ -3,9 +3,17 @@
 An online browser-based multiplayer game.
 
 ---
+# Setup
+First, as always, clone the git repo.
 
-# Testing
-To run the server, open the Terminal at the project folder and run:
+Then, open _Terminal_ in the directory 'unus'. To get the dependencies, run the command:
+
+> npm install
+
+This will create 'node_modules', which should now have all required dependencies.
+
+# Running
+To run the server, open the _Terminal_ at the project folder and run:
 
 > node index.js
 
