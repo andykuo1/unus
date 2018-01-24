@@ -25,4 +25,4 @@ require('./server/console.js');
 
 //Server
 const io = require('socket.io')(server);
-require('./server/server-game.js');
+require('./server/server-game.js')(io);
