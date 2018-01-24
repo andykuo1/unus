@@ -1,10 +1,10 @@
 class Entity
 {
-  static _count;
+  //static _count;
 
   constructor()
   {
-    this.id = _count++;
+    //this.id = _count++;
     this.components = {};
   }
 

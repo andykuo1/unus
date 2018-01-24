@@ -32,10 +32,10 @@ class Application {
 		//Mesh
 		this.mesh = Mesh.createMesh({
 			position: new Float32Array([
-				-1.0, 1.0,
-				1.0, 1.0,
-				1.0, -1.0,
-				-1.0, -1.0
+				-0.5, 0.5,
+				0.5, 0.5,
+				0.5, -0.5,
+				-0.5, -0.5
 			]),
 			indices: new Uint16Array([
 				0, 1, 2, 3
