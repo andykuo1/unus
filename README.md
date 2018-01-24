@@ -19,7 +19,9 @@ To use additional script files on the client side, be sure to add the script's p
 * Load files with a pretty loading screen
 * Find a better way to use multiple scripts
 * Find a better way to load shader files
+* Make textures, and basic graphics
 * Find a way to load any resource files (textures, etc.)
 * Register and verify users on connection (handshake)
+* Store user attributes on a webserver somewhere (economy, stats)
 * Implement a proper entity-component system
 * Finish the game :)
