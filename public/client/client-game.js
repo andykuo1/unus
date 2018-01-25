@@ -94,8 +94,8 @@ class Application {
 
 document.addEventListener('mousemove', function(event){
   let screen = canvas.getBoundingClientRect();
-  var posX = evt.clientX - screen.left;
-  var posY = evt.clientY - screen.top;
+  var posX = event.clientX - screen.left;
+  var posY = event.clientY - screen.top;
 
   console.log("mouse: " + posX + ", " + posY);
 });
