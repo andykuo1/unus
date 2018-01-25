@@ -91,3 +91,11 @@ class Application {
 		this.prgm.unbind();
   }
 }
+
+document.addEventListener('mousemove', function(event){
+  let screen = canvas.getBoundingClientRect();
+  var posX = evt.clientX - screen.left;
+  var posY = evt.clientY - screen.top;
+
+  console.log("mouse: " + posX + ", " + posY);
+});
