@@ -7,17 +7,16 @@ const rl = readline.createInterface({
 rl.on('line', (input) => {
   if ("help" === input)
   {
-    console.log("Welcome to your help.");
+    console.log("Welcome to your friendly neighborhood server help.");
     console.log("Press \'CTRL-C\' to close the server.");
   }
   else if ("stop" === input)
   {
     console.log("Stopping server...");
+    //TODO: ADD state-preservation features...
     console.log("Server stopped...");
-    System.exit(0);
-
+    process.exit(0);
   }
-
   else
   {
     console.log("Unknown command \'" + input + "\'");
