@@ -13,5 +13,6 @@ class Transform
   getTransformation(dst)
   {
     mat4.fromRotationTranslationScale(dst, this.rotation, this.position, this.scale);
+    return dst;
   }
 }

@@ -5,16 +5,9 @@ if (!gl) throw new Error("Unable to initialize WebGL. Your browser or machine ma
 gl.clearColor(0.0, 0.0, 0.0, 1.0);
 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-const camera = new PerspectiveCamera();
-camera.transform.position.z = 0.0;
+const camera = new OrthographicCamera();
+camera.transform.position[2] = 1;
 const viewport = new Viewport();
-
-function updateView()
-{
-  viewport.width = gl.canvas.clientWidth;
-  viewport.height = gl.canvas.clientHeight;
-  viewport.applyView();
-}
 
 /**
  * Application - The main entry point for the program
@@ -73,31 +66,28 @@ class Application {
   onUpdate()
   {
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    updateView();
+    viewport.applyView();
 
     //Calculate rotation
-    let mousePos = getPointFromScreen(vec3.create(), camera, viewport, mouse.x, mouse.y);
-    /*
-    var centerX = screenWidth / 2;
-    var centerY = screenHeight / 2;
-    var dx = mouse.x - centerX;
-    var dy = mouse.y - centerY;
+    let mousePos = getPointFromScreen(vec3.create(), camera, viewport, mouse[0], mouse[1]);
+    var dx = mousePos[0] - square[0];
+    var dy = -mousePos[1] + square[1];
     let rotation = -Math.atan2(dy, dx);
+
     const speed = 0.1;
-    square.x += Math.cos(rotation) * speed;
-    square.y += Math.sin(rotation) * speed;
-    */
-    square.x = mousePos.x;
-    square.y = mousePos.y;
+    square[0] += Math.cos(rotation) * speed;
+    square[1] += Math.sin(rotation) * speed;
 
     //Setting up the Projection Matrix
     const projection = camera.getProjection();
 
     //Setting up the ModelView Matrix
 		const modelview = mat4.create();
-		mat4.translate(modelview, modelview, [square.x, square.y, -6.0]);
-    //mat4.rotateZ(modelview, modelview, rotation);
-    mat4.mul(modelview, camera.getView(), modelview);
+    //Model
+		mat4.translate(modelview, modelview, [square[0], square[1], 0.0]);
+    mat4.rotateZ(modelview, modelview, rotation);
+    //View
+    mat4.mul(modelview, modelview, camera.getView());
 
 		this.prgm.bind();
 		{
@@ -123,13 +113,13 @@ class Application {
   }
 }
 
-square = {x: 0, y: 0};
-mouse = {x: 0, y: 0};
+square = [0, 0];
+mouse = [0, 0];
 
 document.addEventListener('mousemove', function(event){
   let screen = canvas.getBoundingClientRect();
   var posX = event.clientX - screen.left;
   var posY = event.clientY - screen.top;
-  mouse.x = posX;
-  mouse.y = posY;
+  mouse[0] = posX;
+  mouse[1] = posY;
 });

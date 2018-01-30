@@ -11,9 +11,10 @@ class Camera
 
   getView()
   {
-    mat4.fromRotationTranslationScale(this.view, this.transform.rotation,
-      vec3.negate(vec3.create(), this.transform.position), this.transform.scale);
-    return this.view;
+    return mat4.fromRotationTranslationScale(this.view,
+      this.transform.rotation,
+      [-this.transform.position[0], -this.transform.position[1], -this.transform.position[2]],
+      this.transform.scale);
   }
 
   getOrientation()
@@ -46,7 +47,6 @@ class OrthographicCamera extends Camera
   getProjection()
   {
     //TODO: maybe cache this?
-    /*
     let width = this.right - this.left;
     let height = this.bottom - this.top;
     let a = width / height;
@@ -65,8 +65,6 @@ class OrthographicCamera extends Camera
         -(a / v) * height / 2.0, (a / v) * height / 2.0,
         this.near, this.far);
     }
-    */
-    mat4.ortho(this.projection, this.left, this.right, this.top, this.bottom, this.near, this.far);
     return this.projection;
   }
 }
@@ -95,17 +93,17 @@ class PerspectiveCamera extends Camera
 
 class Viewport
 {
-  constructor(x = 0, y = 0, width = 1, height = 1)
+  constructor()
   {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
+    this.width = 1;
+    this.height = 1;
   }
 
   applyView()
   {
-    gl.viewport(this.x, this.y, this.width, this.height);
+    this.width = gl.canvas.clientWidth;
+    this.height = gl.canvas.clientHeight;
+    gl.viewport(0, 0, this.width, this.height);
   }
 }
 
@@ -115,13 +113,14 @@ function getPointFromScreen(dst, camera, viewport, screenX, screenY)
   let x = screenX;
   let y = viewport.height - screenY;
 
-  let near = unproject(vec3.create(), invViewProj, viewport, x, y, 0.0);
+  //TODO: The depth should be 0 if perspective...
+  let near = unproject(vec3.create(), invViewProj, viewport, x, y, -1.0);
   let far = unproject(vec3.create(), invViewProj, viewport, x, y, 1.0);
 
-  let f = (0 - near.z) / (far.z - near.z);
-  dst.x = (near.x + f * (far.x - near.x));
-  dst.y = (near.y + f * (far.y - near.y));
-  dst.z = 0;
+  let f = (0 - near[2]) / (far[2] - near[2]);
+  dst[0] = (near[0] + f * (far[0] - near[0]));
+  dst[1] = (near[1] + f * (far[1] - near[1]));
+  dst[2] = 0;
   return dst;
 }
 
@@ -132,18 +131,18 @@ function getInvertedViewProjection(dst, camera)
   return dst;
 }
 
-function unproject(dst, invertedViewProjection, viewport, screenX, screenY, z)
+function unproject(dst, invertedViewProjection, viewport, screenX, screenY, screenZ)
 {
   let normalizedDeviceCoords = vec4.create();
-  normalizedDeviceCoords.x = (screenX - viewport.x) / viewport.width * 2.0 - 1.0;
-  normalizedDeviceCoords.y = (screenY - viewport.y) / viewport.height * 2.0 - 1.0;
-  normalizedDeviceCoords.z = 2.0 * z - 1.0;
-  normalizedDeviceCoords.w = 1.0;
+  normalizedDeviceCoords[0] = screenX / viewport.width * 2.0 - 1.0;
+  normalizedDeviceCoords[1] = screenY / viewport.height * 2.0 - 1.0;
+  normalizedDeviceCoords[2] = screenZ * 2.0 - 1.0;
+  normalizedDeviceCoords[3] = 1.0;
 
   let objectCoords = vec4.transformMat4(normalizedDeviceCoords, normalizedDeviceCoords, invertedViewProjection);
-  if (objectCoords.w != 0) objectCoords.w = 1.0 / objectCoords.w;
-  dst.x = objectCoords.x * objectCoords.w;
-  dst.y = objectCoords.y * objectCoords.w;
-  dst.z = objectCoords.z * objectCoords.w;
+  if (objectCoords[3] != 0) objectCoords[3] = 1.0 / objectCoords[3];
+  dst[0] = objectCoords[0] * objectCoords[3];
+  dst[1] = objectCoords[1] * objectCoords[3];
+  dst[2] = objectCoords[2] * objectCoords[3];
   return dst;
 }
