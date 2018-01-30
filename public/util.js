@@ -1,16 +1,3 @@
-/* * * * * * * * * * * * * * * * * TRANSFORM  * * * * * * * * * * * * * * * * */
-
-class Transform
-{
-  //TODO: mat4
-  //TODO: vec3
-  //TODO: quaternions
-  getTransformation()
-  {
-    //TODO: gets the compiled matrix to apply to final transform matrix
-  }
-}
-
 /* * * * * * * * * * * * * * * * RENDER SYSTEMS * * * * * * * * * * * * * * * */
 
 /**
