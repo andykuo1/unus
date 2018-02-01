@@ -144,3 +144,84 @@ class Application {
 		this.prgm.unbind();
   }
 }
+
+class TransformSystem extends System
+{
+  constructor()
+  {
+    super("transform");
+  }
+
+  onEntityCreate(entity)
+  {
+    super.onEntityCreate(entity);
+
+    entity.transform = new Transform();
+  }
+
+  onEntityDestroy(entity)
+  {
+    super.onEntityDestroy(entity);
+
+    delete entity.transform;
+  }
+}
+
+class RenderableSystem extends System
+{
+  constructor()
+  {
+    super("renderable");
+  }
+
+  onEntityCreate(entity)
+  {
+    super.onEntityCreate(entity);
+    this.requireComponent(entity, "transform");
+  }
+}
+
+class MotionSystem extends System
+{
+  constructor()
+  {
+    super("motion");
+  }
+
+  onEntityCreate(entity)
+  {
+    super.onEntityCreate(entity);
+    this.requireComponent(entity, "transform");
+
+    entity.motion = vec2.create();
+    entity.friction = 0.1;
+  }
+
+  onEntityDestroy(entity)
+  {
+    super.onEntityDestroy(entity);
+
+    delete entity.motion;
+    delete entity.friction;
+  }
+
+  onUpdate()
+  {
+    super.onUpdate();
+
+    for(let i in this.components)
+    {
+      let component = this.components[i];
+      component.transform.position[0] += component.motion[0];
+      component.transform.position[1] += component.motion[1];
+
+      const fric = 1.0 - component.friction;
+      component.motion[0] *= fric;
+      component.motion[1] *= fric;
+
+      if (component.motion[0] < MotionSystem.MOTION_MIN && component.motion[0] > -MotionSystem.MOTION_MIN) component.motion[0] = 0;
+      if (component.motion[1] < MotionSystem.MOTION_MIN && component.motion[1] > -MotionSystem.MOTION_MIN) component.motion[1] = 0;
+    }
+  }
+}
+MotionSystem.MOTION_MIN = 0.01;
