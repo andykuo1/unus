@@ -4,26 +4,25 @@ class Camera
   {
     this.transform = new Transform();
 
-    this.view = mat4.create();
-    this.orientation = mat4.create();
-    this.projection = mat4.create();
+    this._view = mat4.create();
+    this._orientation = mat4.create();
+    this._projection = mat4.create();
   }
 
-  getView()
+  get view()
   {
-    return mat4.fromRotationTranslationScale(this.view,
+    return mat4.fromRotationTranslationScale(this._view,
       this.transform.rotation,
       [-this.transform.position[0], -this.transform.position[1], -this.transform.position[2]],
       this.transform.scale);
   }
 
-  getOrientation()
+  get orientation()
   {
-    mat4.fromQuat(this.orientation, this.transform.rotation);
-    return this.orientation;
+    return mat4.fromQuat(this._orientation, this.transform.rotation);
   }
 
-  getProjection()
+  get projection()
   {
     throw new Error("undefined camera type - must be perspective or orthographic");
   }
@@ -44,7 +43,7 @@ class OrthographicCamera extends Camera
     this.far = far;
   }
 
-  getProjection()
+  get projection()
   {
     //TODO: maybe cache this?
     let width = this.right - this.left;
@@ -53,19 +52,18 @@ class OrthographicCamera extends Camera
     let v = gl.canvas.clientWidth / gl.canvas.clientHeight;
     if (v >= a)
     {
-      mat4.ortho(this.projection,
+      return mat4.ortho(this._projection,
         -(v / a) * width / 2.0, (v / a) * width / 2.0,
         -height / 2.0, height / 2.0,
         this.near, this.far);
     }
     else
     {
-      mat4.ortho(this.projection,
+      return mat4.ortho(this._projection,
         -width / 2.0, width / 2.0,
         -(a / v) * height / 2.0, (a / v) * height / 2.0,
         this.near, this.far);
     }
-    return this.projection;
   }
 }
 
@@ -82,12 +80,11 @@ class PerspectiveCamera extends Camera
     this.clippingFar = clippingFar;
   }
 
-  getProjection()
+  get projection()
   {
     //TODO: maybe cache this?
     let v = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    mat4.perspective(this.projection, this.fieldOfView, v, this.clippingNear, this.clippingFar);
-    return this.projection;
+    return mat4.perspective(this._projection, this.fieldOfView, v, this.clippingNear, this.clippingFar);
   }
 }
 
@@ -126,7 +123,7 @@ function getPointFromScreen(dst, camera, viewport, screenX, screenY)
 
 function getInvertedViewProjection(dst, camera)
 {
-  mat4.mul(dst, camera.getProjection(), camera.getView());
+  mat4.mul(dst, camera.projection, camera.view);
   mat4.invert(dst, dst);
   return dst;
 }

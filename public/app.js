@@ -27,6 +27,7 @@ function start()
 	scripts.push("public/camera.js");
 	scripts.push("public/ecs.js");
 	scripts.push("public/util.js");
+	scripts.push("public/input.js");
 
 	//TODO: Implement a way to properly load shader files
 	scripts.push("public/res/def.vsh");
