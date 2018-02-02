@@ -167,6 +167,29 @@ class TransformSystem extends System
   }
 }
 
+class SolidSystem extends System
+{
+  constructor()
+  {
+    super("solid");
+  }
+
+  onEntityCreate(entity)
+  {
+    super.onEntityCreate(entity);
+    this.requireComponent(entity, "transform");
+
+    entity.radius = 0.5;
+  }
+
+  onEntityDestroy(entity)
+  {
+    super.onEntityDestroy(entity);
+
+    delete entity.radius;
+  }
+}
+
 class RenderableSystem extends System
 {
   constructor()
@@ -209,19 +232,68 @@ class MotionSystem extends System
   {
     super.onUpdate();
 
-    for(let i in this.components)
+    for(let i in this.entities)
     {
-      let component = this.components[i];
-      component.transform.position[0] += component.motion[0];
-      component.transform.position[1] += component.motion[1];
+      let entity = this.entities[i];
+      entity.transform.position[0] += entity.motion[0];
+      entity.transform.position[1] += entity.motion[1];
 
-      const fric = 1.0 - component.friction;
-      component.motion[0] *= fric;
-      component.motion[1] *= fric;
+      const fric = 1.0 - entity.friction;
+      entity.motion[0] *= fric;
+      entity.motion[1] *= fric;
 
-      if (component.motion[0] < MotionSystem.MOTION_MIN && component.motion[0] > -MotionSystem.MOTION_MIN) component.motion[0] = 0;
-      if (component.motion[1] < MotionSystem.MOTION_MIN && component.motion[1] > -MotionSystem.MOTION_MIN) component.motion[1] = 0;
+      if (entity.motion[0] < MotionSystem.MOTION_MIN && entity.motion[0] > -MotionSystem.MOTION_MIN) entity.motion[0] = 0;
+      if (entity.motion[1] < MotionSystem.MOTION_MIN && entity.motion[1] > -MotionSystem.MOTION_MIN) entity.motion[1] = 0;
     }
   }
 }
 MotionSystem.MOTION_MIN = 0.01;
+
+class FollowSystem extends System
+{
+  constructor()
+  {
+    super("follow");
+  }
+
+  onEntityCreate(entity)
+  {
+    super.onEntityCreate(entity);
+    this.requireComponent(entity, "transform");
+    this.requireComponent(entity, "motion");
+    this.requireComponent(entity, "solid");
+
+    entity.target = null;
+    entity.distance = 1.0;
+  }
+
+  onEntityDestroy(entity)
+  {
+    super.onEntityDestroy(entity);
+
+    delete entity.target;
+    delete entity.distance;
+  }
+
+  onUpdate()
+  {
+    super.onUpdate();
+
+    for(let i in this.entities)
+    {
+      var entity = this.entities[i];
+      var target = entity.target;
+      if (target != null)
+      {
+        var dx = entity.transform.position[0] - target.transform.position[0];
+        var dy = entity.transform.position[1] - target.transform.position[1];
+        var dx2 = dx * dx;
+        var dy2 = dy * dy;
+        var d = dx * dx + dy * dy;
+        //TODO: COMPLETE THIS!
+        entity.motion[0] += dx / d;
+        entity.motion[1] += dy / d;
+      }
+    }
+  }
+}

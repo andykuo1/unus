@@ -69,7 +69,7 @@ class EntityManager
 
   getEntities(component)
   {
-    return this.systems[component].components;
+    return this.systems[component].entities;
   }
 
   addComponent(entity, component)
@@ -88,7 +88,7 @@ class EntityManager
     let system = this.systems[component];
     if (system)
     {
-      if (system.components.includes(entity))
+      if (system.entities.includes(entity))
       {
         system.onEntityDestroy(entity);
         return this;
@@ -104,7 +104,7 @@ class EntityManager
     for(let i = this.systems.size; i >= 0; --i)
     {
       let system = this.systems[i];
-      if (system.components.includes(entity))
+      if (system.entities.includes(entity))
       {
         system.onEntityDestroy(entity);
       }
@@ -116,7 +116,7 @@ class EntityManager
     let system = this.systems[component];
     if (system)
     {
-      return system.components.includes(entity);
+      return system.entities.includes(entity);
     }
     throw new Error("could not find system for \'" + component + "\'");
   }
@@ -147,17 +147,17 @@ class System
     this.id = id;
     this.entityManager = null;
 
-    this.components = [];
+    this.entities = [];
   }
 
   onEntityCreate(entity)
   {
-    this.components.push(entity);
+    this.entities.push(entity);
   }
 
   onEntityDestroy(entity)
   {
-    this.components.remove(entity);
+    this.entities.splice(this.entities.indexOf(entity), 1);
   }
 
   onUpdate()
