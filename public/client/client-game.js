@@ -9,7 +9,7 @@ const camera = new OrthographicCamera();
 camera.transform.position[2] = 1.0;
 const viewport = new Viewport();
 
-const square = [0, 0];
+square = null;
 /**
  * Application - The main entry point for the program
  */
@@ -66,11 +66,16 @@ class Application {
       this.entityManager.registerSystem(new RenderableSystem());
       this.entityManager.registerSystem(new MotionSystem());
 
+      /**** ENTIT CODE BELOW! ****/
+
       var e = this.entityManager.createEntity(["transform", "renderable", "motion"]);
       e.transform.position[0] = 1;
 
       e = this.entityManager.createEntity(["transform", "renderable", "motion"]);
       e.transform.position[0] = -1;
+
+      square = this.entityManager.createEntity(["transform", "renderable", "motion"]);
+      square.transform.position[1] = 1;
   }
 
 	/**
@@ -85,13 +90,13 @@ class Application {
 
     //Calculate rotation
     let clientPos = getPointFromScreen(vec3.create(), camera, viewport, clientInput.x, clientInput.y);
-    var dx = clientPos[0] - square[0];
-    var dy = -clientPos[1] + square[1];
+    var dx = clientPos[0] - square.transform.position[0];
+    var dy = -clientPos[1] + square.transform.position[1];
     let rotation = -Math.atan2(dy, dx);
 
     const speed = 0.1;
-    square[0] += Math.cos(rotation) * speed;
-    square[1] += Math.sin(rotation) * speed;
+    square.transform.position[0] += Math.cos(rotation) * speed;
+    square.transform.position[1] += Math.sin(rotation) * speed;
 
     /**** RENDERING CODE BELOW! ****/
 
@@ -128,6 +133,7 @@ class Application {
       //mat4.identity(modelview);
 			//gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
 
+      /*
 			this.mesh2.bind();
 			{
         //Setting up the Model Matrix
@@ -140,6 +146,7 @@ class Application {
 				Mesh.draw(this.mesh2);
 			}
 			this.mesh2.unbind();
+      */
 		}
 		this.prgm.unbind();
   }
