@@ -1,23 +1,23 @@
-function fetchFileFromURL(url, callback)
+function fetchFileFromURL(url, callback, sync = false)
 {
   var request = new XMLHttpRequest();
-  request.open('GET', url, true);
-  request.onreadystatechange = function() {
-    console.log("READY!");
-    if (request.readyState == XMLHttpRequest.DONE)
-    {
-      if (request.status == 200)
+  request.open('GET', url, !sync);
+  if (!sync)
+  {
+    request.onreadystatechange = function() {
+      if (request.readyState == XMLHttpRequest.DONE)
       {
-        console.log("SUCESS!");
-        let result = request.response;
-        callback(result);
+        if (request.status == 200)
+        {
+          let result = request.response;
+          callback(result);
+        }
+  			else
+  			{
+  				throw new Error("Failed request: " + request.status);
+  			}
       }
-			else
-			{
-				throw new Error("Failed request: " + request.status);
-			}
     }
   }
-  console.log("SOMETHING HERE");
   request.send(null);
 }
