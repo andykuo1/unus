@@ -4,7 +4,7 @@ const path = require('path');
 const app = express();
 
 app.set('port', 8082);
-app.use('/public', express.static(__dirname + '/public'));
+app.use('/', express.static(__dirname + '/public'));
 
 //Routing
 app.get('/', function(request, response) {
