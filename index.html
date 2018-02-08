@@ -26,6 +26,14 @@
 		<!-- Script files -->
 		<div id="scripts">Loading...</div>
 
+		<script src="/public/fetch.js"></script>
+		<script>
+			console.log("FETCHING STUFFS FOR FUNAND BECAUSE WE NEED TO.");
+			fetchFileFromURL('/public/app.js', function(response) {
+				console.log(response);
+			});
+		</script>
+
 		<!-- Entry point -->
 		<script src="/public/app.js"></script>
 	</body>
