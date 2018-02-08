@@ -22,19 +22,19 @@ window.onload = start;
 function start()
 {
 	let scripts = [];
-	scripts.push("public/mogli.js");
-	scripts.push("public/transform.js");
-	scripts.push("public/camera.js");
-	scripts.push("public/ecs.js");
-	scripts.push("public/util.js");
-	scripts.push("public/input.js");
+	scripts.push("/mogli.js");
+	scripts.push("/transform.js");
+	scripts.push("/camera.js");
+	scripts.push("/ecs.js");
+	scripts.push("/util.js");
+	scripts.push("/input.js");
 
 	//TODO: Implement a way to properly load shader files
-	scripts.push("public/res/def.vsh");
-	scripts.push("public/res/def.fsh");
+	scripts.push("/res/def.vsh");
+	scripts.push("/res/def.fsh");
 
 	//Load the game...
-	scripts.push("public/client/client-game.js");
+	scripts.push("/client/client-game.js");
 
 	load(scripts, function() {
 		app = new Application();

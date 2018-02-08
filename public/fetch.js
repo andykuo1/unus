@@ -1,8 +1,8 @@
-function fetchFileFromURL(url, callback, sync = false)
+function fetchFileFromURL(url, callback = null)
 {
   var request = new XMLHttpRequest();
-  request.open('GET', url, !sync);
-  if (!sync)
+  request.open('GET', url, callback != null);
+  if (callback != null)
   {
     request.onreadystatechange = function() {
       if (request.readyState == XMLHttpRequest.DONE)
@@ -18,6 +18,19 @@ function fetchFileFromURL(url, callback, sync = false)
   			}
       }
     }
+    request.send(null);
   }
-  request.send(null);
+  else
+  {
+    request.send(null);
+    if (request.status == 200)
+    {
+      let result = request.response;
+      return result;
+    }
+    else
+    {
+      throw new Error("Failed request: " + request.status);
+    }
+  }
 }

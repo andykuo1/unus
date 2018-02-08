@@ -1,20 +1,7 @@
 <!doctype html>
 <html>
 	<head>
-		<!-- link rel="stylesheet" href="style.css" -->
-		<style>
-		html, body {
-			width: 100%; height: 100%;
-			margin: 0; padding: 0;
-			background-color: #222;
-			overflow: hidden;
-		}
-
-		canvas {
-			width: 100%; height: 100%;
-			margin: 0; padding: 0;
-		}
-		</style>
+		<link rel="stylesheet" href="/css/style.css">
 
 		<!-- Library files -->
     <script src="/socket.io/socket.io.js"></script>
@@ -26,115 +13,13 @@
 		<!-- Script files -->
 		<div id="scripts">Loading...</div>
 
-		<script src="/public/fetch.js"></script>
+		<script src="/fetch.js"></script>
+		<script src="/asset.js"></script>
 		<script>
-			class ResourceLocation
-			{
-				constructor(filename)
-				{
-					this._filename = filename;
-				}
-
-				get url
-				{
-					return this._filename;
-				}
-			}
-
-			class AssetManager
-			{
-				constructor()
-				{
-					this.registry = {}; //data structure
-					this.registry['shader'] = {}; //2d array
-					this.registry['shader'][id] = OBJECT_WHATEEVER_IT_ISSSSS;//value stored
-				}
-
-				destroy() //rip registry
-				{
-					this.registry.clear();
-				}
-
-				register(type, id, resourceLocation = null)
-				{
-					if (!this.registry[type])
-					{
-						this.registry[type] = {}
-					}
-					this.registry[type][id] = resourceLocation;
-				}
-
-				unregister(type, id)
-				{
-					this.registry[type].delete(id);
-				}
-
-				flush()
-				{
-					for(let type in this.registry)
-					{
-						var assets = this.registry[type];
-						for(let id in assets)
-						{
-							if (assets[id] instanceof ResourceLocation)
-							{
-								fetchFileFromURL(assets[id].url, function(response) {
-									assets[id] = response;
-								});
-							}
-						}
-					}
-				}
-
-				getAsset(type, id)
-				{
-					if (this.registry[type][id])
-					{
-					return this.registry[type][id];
-					}
-					else
-					{
-						fetchFileFromURL(assets[id].url, function(response) {
-							assets[id] = response;
-						}, true);
-					}
-				}
-			}
-			*/
-		</script>
-		<script>
-			assets = new AssetManager();
-
-			assets.register('texturefile', 'grass');
-			assets.register('texturefile', 'grass1');
-			assets.register('texturefile', 'grass2');
-			assets.register('texturefile', 'grass3');
-			assets.unregister('texturefile', 'grass');
-
-			assets.flush();
-
-			assets.register('texturefile', 'stone');
-
-			//Synchronous
-			assets.getAsset('texturefile', 'stone');
-
-			assets.destroy();
-
-			assets.registry['texturefile']['grass'] = response;
-
-			assets.registerAsset('texturefile', 'grass', response);
-			assets.getAsset('texturefile', 'grass');
-
-			fetchFileFromURL('/public/res/def.fsh', function(response) {
-				assets.registerData('fragment-shader', 'def', response);
-			});
-
-			fetchFileFromURL('/public/app.js', function(response) {
-				console.log(response);
-			});
+			//Write your asset stuffs here
 		</script>
 
 		<!-- Entry point -->
-		<script src="/public/app.js"></script>
+		<script src="/app.js"></script>
 	</body>
 </html>
