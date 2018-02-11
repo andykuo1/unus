@@ -1,4 +1,6 @@
-module.exports = function(io)
+import './console.js';
+
+function run(io)
 {
   console.log("LOADED!");
   var players = {};
@@ -26,4 +28,6 @@ module.exports = function(io)
   setInterval(function() {
     io.sockets.emit('state', players);
   }, 1000 / 60);
-};
+}
+
+export default run;

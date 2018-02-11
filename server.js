@@ -1,5 +1,11 @@
-const express = require('express');
-const path = require('path');
+import express from 'express';
+import path from 'path'
+
+import io from 'socket.io';
+
+import serverGame from './src/server/server-game.js';
+
+const __dirname = path.resolve();
 
 const app = express();
 
@@ -20,9 +26,6 @@ const server = app.listen(process.env.PORT || 8082, function() {
   console.log("Server is listening on port " + port + "...");
 });
 
-//Console
-require('./src/server/console.js');
-
 //Server
-const io = require('socket.io')(server);
-require('./src/server/server-game.js')(io);
+const socket = io(server);
+serverGame(socket);

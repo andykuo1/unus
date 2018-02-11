@@ -1,4 +1,6 @@
-module.exports = function(io)
+import './console.js';
+
+function run(io)
 {
   console.log("Loading Server...");
 
@@ -13,4 +15,6 @@ module.exports = function(io)
       console.log("Connection lost!");
     });
   });
-};
+}
+
+export default run;
