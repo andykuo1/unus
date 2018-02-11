@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 5);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -80,34 +80,6 @@ gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 /***/ }),
 /* 1 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__mogli_gl_js__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__mogli_Shader_js__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__mogli_Program_js__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__mogli_VBO_js__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mogli_Mesh_js__ = __webpack_require__(10);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_1__mogli_Shader_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_2__mogli_Program_js__["a"]; });
-/* unused harmony reexport VBO */
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_4__mogli_Mesh_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return __WEBPACK_IMPORTED_MODULE_0__mogli_gl_js__["a"]; });
-/**
- * @file My OpenGL Interface
- * @author Andrew Kuo <akuo1198@gmail.com>
- */
-
-
-
-
-
-
-
-
-
-/***/ }),
-/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -131,6 +103,34 @@ class Transform
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (Transform);
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__mogli_gl_js__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__mogli_Shader_js__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__mogli_Program_js__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__mogli_VBO_js__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mogli_Mesh_js__ = __webpack_require__(11);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_1__mogli_Shader_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_2__mogli_Program_js__["a"]; });
+/* unused harmony reexport VBO */
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_4__mogli_Mesh_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return __WEBPACK_IMPORTED_MODULE_0__mogli_gl_js__["a"]; });
+/**
+ * @file My OpenGL Interface
+ * @author Andrew Kuo <akuo1198@gmail.com>
+ */
+
+
+
+
+
+
+
 
 
 /***/ }),
@@ -286,14 +286,203 @@ class VBO
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* unused harmony export Entity */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return EntityManager; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return System; });
+class Entity
+{
+  constructor()
+  {
+  }
+
+  onCreate()
+  {
+  }
+
+  onDestroy()
+  {
+  }
+}
+
+class EntityManager
+{
+  constructor()
+  {
+    this.systems = {};
+    this.entities = [];
+  }
+
+  registerSystem(system)
+  {
+    this.systems[system.id] = system;
+    system.entityManager = this;
+    return this;
+  }
+
+  createEntity(components)
+  {
+    return this.addEntity(new Entity(), components);
+  }
+
+  addEntity(entity, components)
+  {
+    if (entity.dead == false)
+    {
+      throw new Error("entity already created!");
+    }
+
+    this.entities.push(entity);
+    if (components)
+    {
+      for(let i in components)
+      {
+        this.addComponent(entity, components[i]);
+      }
+    }
+    entity.dead = false;
+    entity.onCreate();
+    return entity;
+  }
+
+  removeEntity(entity)
+  {
+    if (entity.dead == true)
+    {
+      throw new Error("entity already destroyed!");
+    }
+
+    entity.onDestroy();
+    this.clearComponents(entity);
+    entity.dead = true;
+    this.entities.splice(this.entities.indexOf(entity), 1);
+    return entity;
+  }
+
+  getEntities(component)
+  {
+    return this.systems[component].entities;
+  }
+
+  addComponent(entity, component)
+  {
+    let system = this.systems[component];
+    if (system)
+    {
+      system.onEntityCreate(entity);
+      return this;
+    }
+    throw new Error("could not find system for \'" + component + "\'");
+  }
+
+  removeComponent(entity, component)
+  {
+    let system = this.systems[component];
+    if (system)
+    {
+      if (system.entities.includes(entity))
+      {
+        system.onEntityDestroy(entity);
+        return this;
+      }
+
+      throw new Error("entity does not include component \'" + component + "\'");
+    }
+    throw new Error("could not find system for \'" + component + "\'");
+  }
+
+  clearComponents(entity)
+  {
+    for(let i = this.systems.size; i >= 0; --i)
+    {
+      let system = this.systems[i];
+      if (system.entities.includes(entity))
+      {
+        system.onEntityDestroy(entity);
+      }
+    }
+  }
+
+  hasComponent(entity, component)
+  {
+    let system = this.systems[component];
+    if (system)
+    {
+      return system.entities.includes(entity);
+    }
+    throw new Error("could not find system for \'" + component + "\'");
+  }
+
+  update()
+  {
+    for(let id in this.systems)
+    {
+      this.systems[id].onUpdate();
+    }
+
+    var i = this.entities.length;
+    while(i--)
+    {
+      let entity = this.entities[i];
+      if (entity.dead)
+      {
+        this.removeEntity(entity);
+      }
+    }
+  }
+}
+
+class System
+{
+  constructor(id)
+  {
+    this.id = id;
+    this.entityManager = null;
+
+    this.entities = [];
+  }
+
+  onEntityCreate(entity)
+  {
+    this.entities.push(entity);
+  }
+
+  onEntityDestroy(entity)
+  {
+    this.entities.splice(this.entities.indexOf(entity), 1);
+  }
+
+  onUpdate()
+  {
+
+  }
+
+  requireComponent(entity, component)
+  {
+    if (!this.entityManager.hasComponent(entity, component))
+    {
+      throw new Error("missing component dependency: \'" + component + "\'");
+    }
+  }
+}
+
+
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Mouse_js__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__AssetManager_js__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Transform_js__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Viewport_js__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_camera_js__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_ecs_js__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Mouse_js__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__AssetManager_js__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Transform_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Viewport_js__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__entities_js__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_camera_js__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_ecs_js__ = __webpack_require__(5);
+
 
 
 
@@ -310,7 +499,7 @@ class Application {
   constructor()
   {
     this.assets = new __WEBPACK_IMPORTED_MODULE_1__AssetManager_js__["a" /* default */]();
-    this.camera = new __WEBPACK_IMPORTED_MODULE_4__lib_camera_js__["a" /* OrthographicCamera */]();
+    this.camera = new __WEBPACK_IMPORTED_MODULE_5__lib_camera_js__["a" /* OrthographicCamera */]();
     this.camera.transform.position[2] = 1.0;
     this.viewport = new __WEBPACK_IMPORTED_MODULE_3__Viewport_js__["a" /* default */]();
 
@@ -353,14 +542,14 @@ class Application {
 		const fsrc = this.assets.getAsset('shader', 'fdef');
 
 		//Shader Programs
-		var vertexShader = new __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["c" /* Shader */](vsrc, __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].VERTEX_SHADER);
-		var fragmentShader = new __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["c" /* Shader */](fsrc, __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].FRAGMENT_SHADER);
-		this.prgm = new __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["b" /* Program */]();
+		var vertexShader = new __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["c" /* Shader */](vsrc, __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].VERTEX_SHADER);
+		var fragmentShader = new __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["c" /* Shader */](fsrc, __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].FRAGMENT_SHADER);
+		this.prgm = new __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["b" /* Program */]();
 		this.prgm.link([vertexShader, fragmentShader]);
 
 		//Mesh
     //TODO: get a proper OBJ loader!
-		this.mesh = __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["a" /* Mesh */].createMesh({
+		this.mesh = __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["a" /* Mesh */].createMesh({
 			position: new Float32Array([
 				-0.5, 0.5,
 				0.5, 0.5,
@@ -370,9 +559,9 @@ class Application {
 			indices: new Uint16Array([
 				0, 1, 2, 3
 			])},
-			__WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].GL_STATIC_DRAW);
+			__WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].GL_STATIC_DRAW);
 
-		this.mesh2 = __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["a" /* Mesh */].createMesh({
+		this.mesh2 = __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["a" /* Mesh */].createMesh({
 			position: new Float32Array([
 				-1.0, 1.0,
 				1.0, 1.0,
@@ -382,12 +571,12 @@ class Application {
 			indices: new Uint16Array([
 				0, 1, 2, 3
 			])},
-			__WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].GL_STATIC_DRAW);
+			__WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].GL_STATIC_DRAW);
 
-      this.entityManager = new __WEBPACK_IMPORTED_MODULE_6__lib_ecs_js__["a" /* EntityManager */]();
-      this.entityManager.registerSystem(new TransformSystem());
-      this.entityManager.registerSystem(new RenderableSystem());
-      this.entityManager.registerSystem(new MotionSystem());
+      this.entityManager = new __WEBPACK_IMPORTED_MODULE_7__lib_ecs_js__["a" /* EntityManager */]();
+      this.entityManager.registerSystem(new __WEBPACK_IMPORTED_MODULE_4__entities_js__["c" /* TransformSystem */]());
+      this.entityManager.registerSystem(new __WEBPACK_IMPORTED_MODULE_4__entities_js__["b" /* RenderableSystem */]());
+      this.entityManager.registerSystem(new __WEBPACK_IMPORTED_MODULE_4__entities_js__["a" /* MotionSystem */]());
 
       /**** ENTIT CODE BELOW! ****/
 
@@ -406,7 +595,7 @@ class Application {
 	 */
   onUpdate()
   {
-		__WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].clear(__WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].COLOR_BUFFER_BIT | __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].DEPTH_BUFFER_BIT);
+		__WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].clear(__WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].COLOR_BUFFER_BIT | __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].DEPTH_BUFFER_BIT);
     this.viewport.applyView();
 
     /**** LOGIC CODE BELOW! ****/
@@ -432,7 +621,7 @@ class Application {
 
 		this.prgm.bind();
 		{
-			__WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].uniformMatrix4fv(this.prgm.uniforms.uProjection, false, projection);
+			__WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].uniformMatrix4fv(this.prgm.uniforms.uProjection, false, projection);
 
 			this.mesh.bind();
 			{
@@ -445,10 +634,10 @@ class Application {
           //Setting up the Model Matrix
           entity.transform.getTransformation(modelview);
           mat4.mul(modelview, modelview, view);
-    			__WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
+    			__WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
 
           //Draw it!
-          __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["a" /* Mesh */].draw(this.mesh);
+          __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["a" /* Mesh */].draw(this.mesh);
         }
 			}
 			this.mesh.unbind();
@@ -475,165 +664,12 @@ class Application {
   }
 }
 
-class TransformSystem extends __WEBPACK_IMPORTED_MODULE_6__lib_ecs_js__["b" /* System */]
-{
-  constructor()
-  {
-    super("transform");
-  }
-
-  onEntityCreate(entity)
-  {
-    super.onEntityCreate(entity);
-
-    entity.transform = new __WEBPACK_IMPORTED_MODULE_2__Transform_js__["a" /* default */]();
-  }
-
-  onEntityDestroy(entity)
-  {
-    super.onEntityDestroy(entity);
-
-    delete entity.transform;
-  }
-}
-
-class SolidSystem extends __WEBPACK_IMPORTED_MODULE_6__lib_ecs_js__["b" /* System */]
-{
-  constructor()
-  {
-    super("solid");
-  }
-
-  onEntityCreate(entity)
-  {
-    super.onEntityCreate(entity);
-    this.requireComponent(entity, "transform");
-
-    entity.radius = 0.5;
-  }
-
-  onEntityDestroy(entity)
-  {
-    super.onEntityDestroy(entity);
-
-    delete entity.radius;
-  }
-}
-
-class RenderableSystem extends __WEBPACK_IMPORTED_MODULE_6__lib_ecs_js__["b" /* System */]
-{
-  constructor()
-  {
-    super("renderable");
-  }
-
-  onEntityCreate(entity)
-  {
-    super.onEntityCreate(entity);
-    this.requireComponent(entity, "transform");
-  }
-}
-
-class MotionSystem extends __WEBPACK_IMPORTED_MODULE_6__lib_ecs_js__["b" /* System */]
-{
-  constructor()
-  {
-    super("motion");
-  }
-
-  onEntityCreate(entity)
-  {
-    super.onEntityCreate(entity);
-    this.requireComponent(entity, "transform");
-
-    entity.motion = vec2.create();
-    entity.friction = 0.1;
-  }
-
-  onEntityDestroy(entity)
-  {
-    super.onEntityDestroy(entity);
-
-    delete entity.motion;
-    delete entity.friction;
-  }
-
-  onUpdate()
-  {
-    super.onUpdate();
-
-    for(let i in this.entities)
-    {
-      let entity = this.entities[i];
-      entity.transform.position[0] += entity.motion[0];
-      entity.transform.position[1] += entity.motion[1];
-
-      const fric = 1.0 - entity.friction;
-      entity.motion[0] *= fric;
-      entity.motion[1] *= fric;
-
-      if (entity.motion[0] < MotionSystem.MOTION_MIN && entity.motion[0] > -MotionSystem.MOTION_MIN) entity.motion[0] = 0;
-      if (entity.motion[1] < MotionSystem.MOTION_MIN && entity.motion[1] > -MotionSystem.MOTION_MIN) entity.motion[1] = 0;
-    }
-  }
-}
-MotionSystem.MOTION_MIN = 0.01;
-
-class FollowSystem extends __WEBPACK_IMPORTED_MODULE_6__lib_ecs_js__["b" /* System */]
-{
-  constructor()
-  {
-    super("follow");
-  }
-
-  onEntityCreate(entity)
-  {
-    super.onEntityCreate(entity);
-    this.requireComponent(entity, "transform");
-    this.requireComponent(entity, "motion");
-    this.requireComponent(entity, "solid");
-
-    entity.target = null;
-    entity.distance = 1.0;
-  }
-
-  onEntityDestroy(entity)
-  {
-    super.onEntityDestroy(entity);
-
-    delete entity.target;
-    delete entity.distance;
-  }
-
-  onUpdate()
-  {
-    super.onUpdate();
-
-    for(let i in this.entities)
-    {
-      var entity = this.entities[i];
-      var target = entity.target;
-      if (target != null)
-      {
-        var dx = entity.transform.position[0] - target.transform.position[0];
-        var dy = entity.transform.position[1] - target.transform.position[1];
-        var dx2 = dx * dx;
-        var dy2 = dy * dy;
-        var d = dx * dx + dy * dy;
-        //TODO: COMPLETE THIS!
-        entity.motion[0] += dx / d;
-        entity.motion[1] += dy / d;
-      }
-    }
-  }
-}
-
 app = new Application();
 /* harmony default export */ __webpack_exports__["default"] = (Application);
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -741,7 +777,7 @@ class Mouse
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -875,11 +911,11 @@ class AssetManager
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_mogli_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_mogli_js__ = __webpack_require__(2);
 
 
 class Viewport
@@ -942,7 +978,7 @@ function unproject(dst, invertedViewProjection, viewport, screenX, screenY, scre
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1103,7 +1139,7 @@ class Program
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1294,15 +1330,186 @@ class Mesh
 
 
 /***/ }),
-/* 11 */
+/* 12 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return TransformSystem; });
+/* unused harmony export SolidSystem */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return RenderableSystem; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return MotionSystem; });
+/* unused harmony export FollowSystem */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Transform_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__ = __webpack_require__(5);
+
+
+
+class TransformSystem extends __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__["b" /* System */]
+{
+  constructor()
+  {
+    super("transform");
+  }
+
+  onEntityCreate(entity)
+  {
+    super.onEntityCreate(entity);
+
+    entity.transform = new __WEBPACK_IMPORTED_MODULE_0__Transform_js__["a" /* default */]();
+  }
+
+  onEntityDestroy(entity)
+  {
+    super.onEntityDestroy(entity);
+
+    delete entity.transform;
+  }
+}
+
+class SolidSystem extends __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__["b" /* System */]
+{
+  constructor()
+  {
+    super("solid");
+  }
+
+  onEntityCreate(entity)
+  {
+    super.onEntityCreate(entity);
+    this.requireComponent(entity, "transform");
+
+    entity.radius = 0.5;
+  }
+
+  onEntityDestroy(entity)
+  {
+    super.onEntityDestroy(entity);
+
+    delete entity.radius;
+  }
+}
+
+class RenderableSystem extends __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__["b" /* System */]
+{
+  constructor()
+  {
+    super("renderable");
+  }
+
+  onEntityCreate(entity)
+  {
+    super.onEntityCreate(entity);
+    this.requireComponent(entity, "transform");
+  }
+}
+
+class MotionSystem extends __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__["b" /* System */]
+{
+  constructor()
+  {
+    super("motion");
+  }
+
+  onEntityCreate(entity)
+  {
+    super.onEntityCreate(entity);
+    this.requireComponent(entity, "transform");
+
+    entity.motion = vec2.create();
+    entity.friction = 0.1;
+  }
+
+  onEntityDestroy(entity)
+  {
+    super.onEntityDestroy(entity);
+
+    delete entity.motion;
+    delete entity.friction;
+  }
+
+  onUpdate()
+  {
+    super.onUpdate();
+
+    for(let i in this.entities)
+    {
+      let entity = this.entities[i];
+      entity.transform.position[0] += entity.motion[0];
+      entity.transform.position[1] += entity.motion[1];
+
+      const fric = 1.0 - entity.friction;
+      entity.motion[0] *= fric;
+      entity.motion[1] *= fric;
+
+      if (entity.motion[0] < MotionSystem.MOTION_MIN && entity.motion[0] > -MotionSystem.MOTION_MIN) entity.motion[0] = 0;
+      if (entity.motion[1] < MotionSystem.MOTION_MIN && entity.motion[1] > -MotionSystem.MOTION_MIN) entity.motion[1] = 0;
+    }
+  }
+}
+MotionSystem.MOTION_MIN = 0.01;
+
+class FollowSystem extends __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__["b" /* System */]
+{
+  constructor()
+  {
+    super("follow");
+  }
+
+  onEntityCreate(entity)
+  {
+    super.onEntityCreate(entity);
+    this.requireComponent(entity, "transform");
+    this.requireComponent(entity, "motion");
+    this.requireComponent(entity, "solid");
+
+    entity.target = null;
+    entity.distance = 1.0;
+  }
+
+  onEntityDestroy(entity)
+  {
+    super.onEntityDestroy(entity);
+
+    delete entity.target;
+    delete entity.distance;
+  }
+
+  onUpdate()
+  {
+    super.onUpdate();
+
+    for(let i in this.entities)
+    {
+      var entity = this.entities[i];
+      var target = entity.target;
+      if (target != null)
+      {
+        var dx = entity.transform.position[0] - target.transform.position[0];
+        var dy = entity.transform.position[1] - target.transform.position[1];
+        var dx2 = dx * dx;
+        var dy2 = dy * dy;
+        var d = dx * dx + dy * dy;
+        //TODO: COMPLETE THIS!
+        entity.motion[0] += dx / d;
+        entity.motion[1] += dy / d;
+      }
+    }
+  }
+}
+
+
+
+
+/***/ }),
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* unused harmony export Camera */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return OrthographicCamera; });
 /* unused harmony export PerspectiveCamera */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__mogli_js__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Transform_js__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__mogli_js__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Transform_js__ = __webpack_require__(1);
 
 
 
@@ -1394,193 +1601,6 @@ class PerspectiveCamera extends Camera
     //TODO: maybe cache this?
     let v = __WEBPACK_IMPORTED_MODULE_0__mogli_js__["d" /* gl */].canvas.clientWidth / __WEBPACK_IMPORTED_MODULE_0__mogli_js__["d" /* gl */].canvas.clientHeight;
     return mat4.perspective(this._projection, this.fieldOfView, v, this.clippingNear, this.clippingFar);
-  }
-}
-
-
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* unused harmony export Entity */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return EntityManager; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return System; });
-class Entity
-{
-  constructor()
-  {
-  }
-
-  onCreate()
-  {
-  }
-
-  onDestroy()
-  {
-  }
-}
-
-class EntityManager
-{
-  constructor()
-  {
-    this.systems = {};
-    this.entities = [];
-  }
-
-  registerSystem(system)
-  {
-    this.systems[system.id] = system;
-    system.entityManager = this;
-    return this;
-  }
-
-  createEntity(components)
-  {
-    return this.addEntity(new Entity(), components);
-  }
-
-  addEntity(entity, components)
-  {
-    if (entity.dead == false)
-    {
-      throw new Error("entity already created!");
-    }
-
-    this.entities.push(entity);
-    if (components)
-    {
-      for(let i in components)
-      {
-        this.addComponent(entity, components[i]);
-      }
-    }
-    entity.dead = false;
-    entity.onCreate();
-    return entity;
-  }
-
-  removeEntity(entity)
-  {
-    if (entity.dead == true)
-    {
-      throw new Error("entity already destroyed!");
-    }
-
-    entity.onDestroy();
-    this.clearComponents(entity);
-    entity.dead = true;
-    this.entities.splice(this.entities.indexOf(entity), 1);
-    return entity;
-  }
-
-  getEntities(component)
-  {
-    return this.systems[component].entities;
-  }
-
-  addComponent(entity, component)
-  {
-    let system = this.systems[component];
-    if (system)
-    {
-      system.onEntityCreate(entity);
-      return this;
-    }
-    throw new Error("could not find system for \'" + component + "\'");
-  }
-
-  removeComponent(entity, component)
-  {
-    let system = this.systems[component];
-    if (system)
-    {
-      if (system.entities.includes(entity))
-      {
-        system.onEntityDestroy(entity);
-        return this;
-      }
-
-      throw new Error("entity does not include component \'" + component + "\'");
-    }
-    throw new Error("could not find system for \'" + component + "\'");
-  }
-
-  clearComponents(entity)
-  {
-    for(let i = this.systems.size; i >= 0; --i)
-    {
-      let system = this.systems[i];
-      if (system.entities.includes(entity))
-      {
-        system.onEntityDestroy(entity);
-      }
-    }
-  }
-
-  hasComponent(entity, component)
-  {
-    let system = this.systems[component];
-    if (system)
-    {
-      return system.entities.includes(entity);
-    }
-    throw new Error("could not find system for \'" + component + "\'");
-  }
-
-  update()
-  {
-    for(let id in this.systems)
-    {
-      this.systems[id].onUpdate();
-    }
-
-    var i = this.entities.length;
-    while(i--)
-    {
-      let entity = this.entities[i];
-      if (entity.dead)
-      {
-        this.removeEntity(entity);
-      }
-    }
-  }
-}
-
-class System
-{
-  constructor(id)
-  {
-    this.id = id;
-    this.entityManager = null;
-
-    this.entities = [];
-  }
-
-  onEntityCreate(entity)
-  {
-    this.entities.push(entity);
-  }
-
-  onEntityDestroy(entity)
-  {
-    this.entities.splice(this.entities.indexOf(entity), 1);
-  }
-
-  onUpdate()
-  {
-
-  }
-
-  requireComponent(entity, component)
-  {
-    if (!this.entityManager.hasComponent(entity, component))
-    {
-      throw new Error("missing component dependency: \'" + component + "\'");
-    }
   }
 }
 
