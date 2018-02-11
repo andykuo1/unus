@@ -6,14 +6,15 @@ import { Shader, Program, VBO, Mesh, gl } from '../mogli.js';
 import { Transform } from '../transform.js';
 import { PerspectiveCamera, OrthographicCamera, Viewport } from '../camera.js';
 import { Entity, EntityManager, System } from '../ecs.js';
-import { fetchFileFromURL } from '../fetch.js';
+import { ResourceLocation, AssetManager } from '../asset.js';
 
 /**
  * Application - The main entry point for the program
  */
-class Application {
+class ClientApplication {
   constructor()
   {
+    this.assets = new AssetManager();
     this.camera = new OrthographicCamera();
     this.camera.transform.position[2] = 1.0;
     this.viewport = new Viewport();
@@ -22,6 +23,18 @@ class Application {
 
     this.square = null;
   }
+
+  onLoad(callback)
+  {
+    //Register all resources here
+
+    //Shaders
+    this.assets.register('shader', 'vdef', './res/def.vsh');
+    this.assets.register('shader', 'fdef', './res/def.fsh');
+
+    this.assets.flush(callback);
+  }
+
 	/**
 	 * onStart - Called first before the application runs
 	 */
@@ -41,9 +54,8 @@ class Application {
     console.log("Echoing \'" + i + "\'...");
 
 		//Load resources
-    //TODO: load resources the proper way...
-		const vsrc = '' + fetchFileFromURL('./res/def.vsh');//loadFile("./res/def.vsh");
-		const fsrc = '' + fetchFileFromURL('./res/def.fsh');//loadFile("./res/def.fsh");
+		const vsrc = this.assets.getAsset('shader', 'vdef');
+		const fsrc = this.assets.getAsset('shader', 'fdef');
 
 		//Shader Programs
 		var vertexShader = new Shader(vsrc, gl.VERTEX_SHADER);
@@ -321,6 +333,4 @@ class FollowSystem extends System
   }
 }
 
-export {
-  Application
-}
+export default ClientApplication;

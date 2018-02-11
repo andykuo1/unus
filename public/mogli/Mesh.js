@@ -1,5 +1,5 @@
-import gl from 'gl.js';
-import VBO from 'VBO.js';
+import gl from './gl.js';
+import VBO from './VBO.js';
 
 /**
  * Mesh - Vertex array object representation

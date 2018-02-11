@@ -1,4 +1,6 @@
-class Application
+import { socket } from '../app.js';
+
+class ClientApplication
 {
   onStart()
   {
@@ -69,3 +71,4 @@ socket.on('state', function(players) {
 
 console.log("END!");
 //--------------------------------
+export default ClientApplication;

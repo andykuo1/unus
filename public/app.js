@@ -1,20 +1,16 @@
-import { Application } from './client/client-game.js';
+import Application from './client/client-game.js';
 
 var socket = io();
 var app;
 
 //Canvas Setup
-var	screenWidth = window.innerWidth;
-var	screenHeight = window.innerHeight;
-canvas.width = screenWidth;
-canvas.height = screenHeight;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 //Change canvas on resize
 window.addEventListener('resize', function() {
-	screenWidth = window.innerWidth;
-	screenHeight = window.innerHeight;
-	canvas.width = screenWidth;
-	canvas.height = screenHeight;
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
 }, true);
 
 //Window load callback
@@ -38,81 +34,20 @@ function start()
 	//Load the game...
 	//scripts.push("/client/client-game.js");
 
-	load(scripts, function() {
-		app = new Application();
+	app = new Application();
+	let run = function () {
 		app.onStart();
 		render();
-	});
-}
+	};
 
-function load(files, callback, index = 0)
-{
-	if (index == 0)
+	if (app.onLoad)
 	{
-		console.log("Loading scripts...");
-		let element = document.querySelector('#scripts');
-		beginLoadingScripts(element);
-	}
-
-	if (index < files.length)
-	{
-		let file = files[index];
-		console.log("...getting \'" + file + "\'...");
-
-		//HTML implementation...
-		let element = document.createElement('script');
-		if (file.startsWith('-mod='))
-		{
-			element.setAttribute('type', 'module');
-			element.setAttribute('src', file.substring(5));
-		}
-		else
-		{
-			element.setAttribute('type', 'text/javascript');
-			element.setAttribute('src', file);
-		}
-		element.onload = function() {
-			console.log("...evaluating...");
-			load(files, callback, index + 1);
-		};
-		document.querySelector('#scripts').appendChild(element);
-
-		/*
-		//AJAX implementation...
-		let request = new XMLHttpRequest();
-		request.open('GET', file);
-		request.onreadystatechange = function() {
-			if (request.readyState === XMLHttpRequest.DONE) {
-				if (request.status === 200) {
-					console.log("...evaluating...");
-					var response = request.responseText;
-					eval(response);
-					load(files, callback, index + 1);
-				}
-				else
-				{
-					throw new Error("Failed request: " + request.status);
-				}
-			}
-		};
-		request.send();
-		*/
+		app.onLoad(run);
 	}
 	else
 	{
-		let element = document.querySelector('#scripts');
-		endLoadingScripts(element);
-		console.log("...Loaded " + index + " script(s)!");
-		callback();
+		run();
 	}
-}
-
-function beginLoadingScripts(element)
-{
-}
-
-function endLoadingScripts(element)
-{
 }
 
 const frameTime = {delta: 0, then: 0, count: 0};
@@ -134,6 +69,5 @@ setInterval(function(){
 }, 1000);
 
 export {
-	canvas,
 	socket
 }

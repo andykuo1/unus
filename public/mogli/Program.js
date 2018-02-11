@@ -1,5 +1,5 @@
-import gl from 'gl.js';
-import Shader from 'Shader.js';
+import gl from './gl.js';
+import Shader from './Shader.js';
 
 /**
  * Program - Manages and links related shaders. In order to set uniform values,

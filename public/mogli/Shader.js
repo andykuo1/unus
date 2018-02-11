@@ -1,4 +1,4 @@
-import gl from 'gl.js';
+import gl from './gl.js';
 
 /**
  * Shader - A GLSL shader representation

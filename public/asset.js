@@ -23,13 +23,13 @@ class AssetManager
     this.registry.clear();
   }
 
-  register(type, id, resourceLocation = null)
+  register(type, id, url = null)
   {
     if (!this.registry[type])
     {
       this.registry[type] = {}
     }
-    this.registry[type][id] = resourceLocation;
+    this.registry[type][id] = new ResourceLocation(url);
   }
 
   unregister(type, id)
@@ -37,20 +37,41 @@ class AssetManager
     this.registry[type].delete(id);
   }
 
-  flush()
+  flush(callback)
   {
+    var flag = false;
+    var count = 0;
     for(let type in this.registry)
     {
-      var assets = this.registry[type];
+      let assets = this.registry[type];
       for(let id in assets)
       {
-        if (assets[id] instanceof ResourceLocation)
+        let asset = assets[id];
+        if (asset instanceof ResourceLocation)
         {
-          fetchFileFromURL(assets[id].url, function(response) {
+          ++count;
+          console.log("LOADING (" + count + ") " + type + ":" + id + "...");
+          AssetManager.fetchFileFromURL(asset.url, function(response, args) {
+            let assetManager = args[0];
+            let type = args[1];
+            let id = args[2];
+            let assets = assetManager.registry[type];
             assets[id] = response;
-          });
+            console.log("...RECEIVED (" + count + ") " + type + ":" + id + "...");
+            --count;
+            if (flag && count == 0)
+            {
+              callback();
+            }
+          },
+          [ this, type, id ]);
         }
       }
+    }
+    flag = true;
+    if (count == 0)
+    {
+      callback();
     }
   }
 
@@ -59,10 +80,47 @@ class AssetManager
     let asset = this.registry[type][id];
     if (!asset)
     {
-      asset = fetchFileFromURL(assets[id].url);
+      asset = AssetManager.fetchFileFromURL(assets[id].url);
       this.registry[type][id] = asset;
     }
     return asset;
+  }
+
+  static fetchFileFromURL(url, callback = null, args = null)
+  {
+    var request = new XMLHttpRequest();
+    request.open('GET', url, callback != null);
+    if (callback != null)
+    {
+      request.onreadystatechange = function() {
+        if (request.readyState == XMLHttpRequest.DONE)
+        {
+          if (request.status == 200)
+          {
+            let result = request.response;
+            callback(result, args);
+          }
+    			else
+    			{
+    				throw new Error("Failed request: " + request.status);
+    			}
+        }
+      }
+      request.send(null);
+    }
+    else
+    {
+      request.send(null);
+      if (request.status == 200)
+      {
+        let result = request.response;
+        return result;
+      }
+      else
+      {
+        throw new Error("Failed request: " + request.status);
+      }
+    }
   }
 }
 
