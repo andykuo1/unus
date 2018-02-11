@@ -21,8 +21,8 @@ const server = app.listen(process.env.PORT || 8082, function() {
 });
 
 //Console
-require('./server/console.js');
+require('./src/server/console.js');
 
 //Server
 const io = require('socket.io')(server);
-require('./server/server-game.js')(io);
+require('./src/server/server-game.js')(io);
