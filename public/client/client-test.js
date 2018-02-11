@@ -1,6 +1,6 @@
 import { socket } from '../app.js';
 
-class ClientApplication
+class Application
 {
   onStart()
   {

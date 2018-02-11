@@ -11,7 +11,7 @@ import { ResourceLocation, AssetManager } from '../asset.js';
 /**
  * Application - The main entry point for the program
  */
-class ClientApplication {
+class Application {
   constructor()
   {
     this.assets = new AssetManager();
