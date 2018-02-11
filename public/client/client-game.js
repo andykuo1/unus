@@ -1,4 +1,3 @@
-
 import Mouse from '../lib/Mouse.js';
 
 import { socket } from '../app.js';

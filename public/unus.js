@@ -88,7 +88,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__client_client_game_js__ = __webpack_require__(6);
 
 
-var socket = io();
 var app;
 
 //Canvas Setup
@@ -385,11 +384,10 @@ class Transform
 
 
 
-
 /**
  * Application - The main entry point for the program
  */
-class ClientApplication {
+class Application {
   constructor()
   {
     this.assets = new __WEBPACK_IMPORTED_MODULE_6__asset_js__["a" /* AssetManager */]();
@@ -711,7 +709,7 @@ class FollowSystem extends __WEBPACK_IMPORTED_MODULE_5__ecs_js__["b" /* System *
   }
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (ClientApplication);
+/* harmony default export */ __webpack_exports__["a"] = (Application);
 
 
 /***/ }),

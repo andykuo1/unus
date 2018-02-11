@@ -1,6 +1,5 @@
 import Application from './client/client-game.js';
 
-var socket = io();
 var app;
 
 //Canvas Setup

@@ -9,9 +9,12 @@
 	</head>
 	<body>
 		<canvas id="canvas"></canvas>
-		<script>const canvas = document.getElementById('canvas');</script>
 
-		<div id="scripts"></div>
+		<script>
+			const canvas = document.getElementById('canvas');
+			const socket = io();
+		</script>
+		
 		<!-- Entry point -->
 		<script src="/unus.js"></script>
 	</body>
