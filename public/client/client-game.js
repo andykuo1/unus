@@ -1,24 +1,40 @@
 
-//WebGL Setup
-const gl = canvas.getContext('webgl');
-if (!gl) throw new Error("Unable to initialize WebGL. Your browser or machine may not support it.");
-gl.clearColor(0.0, 0.0, 0.0, 1.0);
-gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+import Mouse from '../lib/Mouse.js';
 
-const camera = new OrthographicCamera();
-camera.transform.position[2] = 1.0;
-const viewport = new Viewport();
+import { socket } from '../app.js';
+import { Shader, Program, VBO, Mesh, gl } from '../mogli.js';
+import { Transform } from '../transform.js';
+import { PerspectiveCamera, OrthographicCamera, Viewport } from '../camera.js';
+import { Entity, EntityManager, System } from '../ecs.js';
+import { fetchFileFromURL } from '../fetch.js';
 
-square = null;
 /**
  * Application - The main entry point for the program
  */
 class Application {
+  constructor()
+  {
+    this.camera = new OrthographicCamera();
+    this.camera.transform.position[2] = 1.0;
+    this.viewport = new Viewport();
+
+    this.clientInput = new Mouse(document);
+
+    this.square = null;
+  }
 	/**
 	 * onStart - Called first before the application runs
 	 */
   onStart()
   {
+    socket.on('connect', function() {
+      console.log("Connected to server!");
+    });
+    //Close client when the server closes...
+    socket.on('disconnect', function() {
+      window.close();
+    })
+
     let i = Math.random();
     //Test ping
     socket.emit('echo', {value: i});
@@ -26,8 +42,8 @@ class Application {
 
 		//Load resources
     //TODO: load resources the proper way...
-		const vsrc = vertexShaderDef;//loadFile("./res/def.vsh");
-		const fsrc = fragmentShaderDef;//loadFile("./res/def.fsh");
+		const vsrc = '' + fetchFileFromURL('./res/def.vsh');//loadFile("./res/def.vsh");
+		const fsrc = '' + fetchFileFromURL('./res/def.fsh');//loadFile("./res/def.fsh");
 
 		//Shader Programs
 		var vertexShader = new Shader(vsrc, gl.VERTEX_SHADER);
@@ -74,8 +90,8 @@ class Application {
       e = this.entityManager.createEntity(["transform", "renderable", "motion"]);
       e.transform.position[0] = -1;
 
-      square = this.entityManager.createEntity(["transform", "renderable", "motion"]);
-      square.transform.position[1] = 1;
+      this.square = this.entityManager.createEntity(["transform", "renderable", "motion"]);
+      this.square.transform.position[1] = 1;
   }
 
 	/**
@@ -84,27 +100,27 @@ class Application {
   onUpdate()
   {
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    viewport.applyView();
+    this.viewport.applyView();
 
     /**** LOGIC CODE BELOW! ****/
 
     //Calculate rotation
-    let clientPos = getPointFromScreen(vec3.create(), camera, viewport, clientInput.x, clientInput.y);
-    var dx = clientPos[0] - square.transform.position[0];
-    var dy = -clientPos[1] + square.transform.position[1];
+    let clientPos = Viewport.getPointFromScreen(vec3.create(), this.camera, this.viewport, this.clientInput.x, this.clientInput.y);
+    var dx = clientPos[0] - this.square.transform.position[0];
+    var dy = -clientPos[1] + this.square.transform.position[1];
     let rotation = -Math.atan2(dy, dx);
 
     const speed = 0.1;
-    square.transform.position[0] += Math.cos(rotation) * speed;
-    square.transform.position[1] += Math.sin(rotation) * speed;
+    this.square.transform.position[0] += Math.cos(rotation) * speed;
+    this.square.transform.position[1] += Math.sin(rotation) * speed;
 
     /**** RENDERING CODE BELOW! ****/
 
     //Setting up the Projection Matrix
-    const projection = camera.projection;
+    const projection = this.camera.projection;
 
     //Setting up the View Matrix
-    const view = camera.view;
+    const view = this.camera.view;
 		const modelview = mat4.create();
 
 		this.prgm.bind();
@@ -303,4 +319,8 @@ class FollowSystem extends System
       }
     }
   }
+}
+
+export {
+  Application
 }

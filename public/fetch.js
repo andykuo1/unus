@@ -34,3 +34,7 @@ function fetchFileFromURL(url, callback = null)
     }
   }
 }
+
+export {
+  fetchFileFromURL
+}

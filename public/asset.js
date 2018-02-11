@@ -5,7 +5,7 @@ class ResourceLocation
     this._filename = filename;
   }
 
-  get url
+  get url()
   {
     return this._filename;
   }
@@ -64,4 +64,9 @@ class AssetManager
     }
     return asset;
   }
+}
+
+export {
+  ResourceLocation,
+  AssetManager
 }

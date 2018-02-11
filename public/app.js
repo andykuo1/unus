@@ -1,12 +1,14 @@
+import { Application } from './client/client-game.js';
+
 var socket = io();
 var app;
 
 //Canvas Setup
 var	screenWidth = window.innerWidth;
 var	screenHeight = window.innerHeight;
-const canvas = document.querySelector('#canvas');
 canvas.width = screenWidth;
 canvas.height = screenHeight;
+
 //Change canvas on resize
 window.addEventListener('resize', function() {
 	screenWidth = window.innerWidth;
@@ -22,19 +24,19 @@ window.onload = start;
 function start()
 {
 	let scripts = [];
-	scripts.push("/mogli.js");
-	scripts.push("/transform.js");
-	scripts.push("/camera.js");
-	scripts.push("/ecs.js");
-	scripts.push("/util.js");
-	scripts.push("/input.js");
+	//scripts.push("/mogli.js");
+	//scripts.push("/transform.js");
+	//scripts.push("/camera.js");
+	//scripts.push("/ecs.js");
+	//scripts.push("/util.js");
+	//scripts.push("/input.js");
 
 	//TODO: Implement a way to properly load shader files
-	scripts.push("/res/def.vsh");
-	scripts.push("/res/def.fsh");
+	//scripts.push("/res/def.vsh");
+	//scripts.push("/res/def.fsh");
 
 	//Load the game...
-	scripts.push("/client/client-game.js");
+	//scripts.push("/client/client-game.js");
 
 	load(scripts, function() {
 		app = new Application();
@@ -49,7 +51,7 @@ function load(files, callback, index = 0)
 	{
 		console.log("Loading scripts...");
 		let element = document.querySelector('#scripts');
-		this.beginLoadingScripts(element);
+		beginLoadingScripts(element);
 	}
 
 	if (index < files.length)
@@ -59,8 +61,16 @@ function load(files, callback, index = 0)
 
 		//HTML implementation...
 		let element = document.createElement('script');
-		element.setAttribute('type', 'text/javascript');
-		element.setAttribute('src', file);
+		if (file.startsWith('-mod='))
+		{
+			element.setAttribute('type', 'module');
+			element.setAttribute('src', file.substring(5));
+		}
+		else
+		{
+			element.setAttribute('type', 'text/javascript');
+			element.setAttribute('src', file);
+		}
 		element.onload = function() {
 			console.log("...evaluating...");
 			load(files, callback, index + 1);
@@ -91,7 +101,7 @@ function load(files, callback, index = 0)
 	else
 	{
 		let element = document.querySelector('#scripts');
-		this.endLoadingScripts(element);
+		endLoadingScripts(element);
 		console.log("...Loaded " + index + " script(s)!");
 		callback();
 	}
@@ -122,3 +132,8 @@ setInterval(function(){
 	console.log("FPS: " + frameTime.count);
 	frameTime.count = 0;
 }, 1000);
+
+export {
+	canvas,
+	socket
+}

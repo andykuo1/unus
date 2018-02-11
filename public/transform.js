@@ -16,3 +16,7 @@ class Transform
     return dst;
   }
 }
+
+export {
+  Transform
+}

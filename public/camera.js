@@ -1,3 +1,6 @@
+import { Transform } from './transform.js';
+import { gl } from './mogli.js';
+
 class Camera
 {
   constructor()
@@ -102,23 +105,23 @@ class Viewport
     this.height = gl.canvas.clientHeight;
     gl.viewport(0, 0, this.width, this.height);
   }
-}
 
-function getPointFromScreen(dst, camera, viewport, screenX, screenY)
-{
-  let invViewProj = getInvertedViewProjection(mat4.create(), camera);
-  let x = screenX;
-  let y = viewport.height - screenY;
+  static getPointFromScreen(dst, camera, viewport, screenX, screenY)
+  {
+    let invViewProj = getInvertedViewProjection(mat4.create(), camera);
+    let x = screenX;
+    let y = viewport.height - screenY;
 
-  //TODO: The depth should be 0 if perspective...
-  let near = unproject(vec3.create(), invViewProj, viewport, x, y, -1.0);
-  let far = unproject(vec3.create(), invViewProj, viewport, x, y, 1.0);
+    //TODO: The depth should be 0 if perspective...
+    let near = unproject(vec3.create(), invViewProj, viewport, x, y, -1.0);
+    let far = unproject(vec3.create(), invViewProj, viewport, x, y, 1.0);
 
-  let f = (0 - near[2]) / (far[2] - near[2]);
-  dst[0] = (near[0] + f * (far[0] - near[0]));
-  dst[1] = (near[1] + f * (far[1] - near[1]));
-  dst[2] = 0;
-  return dst;
+    let f = (0 - near[2]) / (far[2] - near[2]);
+    dst[0] = (near[0] + f * (far[0] - near[0]));
+    dst[1] = (near[1] + f * (far[1] - near[1]));
+    dst[2] = 0;
+    return dst;
+  }
 }
 
 function getInvertedViewProjection(dst, camera)
@@ -142,4 +145,10 @@ function unproject(dst, invertedViewProjection, viewport, screenX, screenY, scre
   dst[1] = objectCoords[1] * objectCoords[3];
   dst[2] = objectCoords[2] * objectCoords[3];
   return dst;
+}
+
+export {
+  PerspectiveCamera,
+  OrthographicCamera,
+  Viewport
 }

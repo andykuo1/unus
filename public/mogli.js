@@ -3,6 +3,12 @@
  * @author Andrew Kuo <akuo1198@gmail.com>
  */
 
+//WebGL Setup
+const gl = canvas.getContext('webgl');
+if (!gl) throw new Error("Unable to initialize WebGL. Your browser or machine may not support it.");
+gl.clearColor(0.0, 0.0, 0.0, 1.0);
+gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
 /**
  * Shader - A GLSL shader representation
  */
@@ -453,4 +459,12 @@ class Mesh
   {
     gl.drawElements(drawMode || gl.LINE_LOOP, mesh.vertexCount, gl.UNSIGNED_SHORT, 0);
   }
+}
+
+export {
+  Shader,
+  Program,
+  VBO,
+  Mesh,
+  gl
 }

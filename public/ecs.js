@@ -173,3 +173,9 @@ class System
     }
   }
 }
+
+export {
+  Entity,
+  EntityManager,
+  System
+}
