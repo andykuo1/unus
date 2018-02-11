@@ -574,7 +574,8 @@ class Application {
 			__WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].GL_STATIC_DRAW);
 
       this.entityManager = new __WEBPACK_IMPORTED_MODULE_7__lib_ecs_js__["a" /* EntityManager */]();
-      this.entityManager.registerSystem(new __WEBPACK_IMPORTED_MODULE_4__entities_js__["c" /* TransformSystem */]());
+      this.entityManager.registerSystem(new __WEBPACK_IMPORTED_MODULE_4__entities_js__["d" /* TransformSystem */]());
+      this.entityManager.registerSystem(new __WEBPACK_IMPORTED_MODULE_4__entities_js__["c" /* TrackerSystem */]());
       this.entityManager.registerSystem(new __WEBPACK_IMPORTED_MODULE_4__entities_js__["b" /* RenderableSystem */]());
       this.entityManager.registerSystem(new __WEBPACK_IMPORTED_MODULE_4__entities_js__["a" /* MotionSystem */]());
 
@@ -1334,13 +1335,15 @@ class Mesh
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return TransformSystem; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return TransformSystem; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return TrackerSystem; });
 /* unused harmony export SolidSystem */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return RenderableSystem; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return MotionSystem; });
 /* unused harmony export FollowSystem */
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Transform_js__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__ = __webpack_require__(5);
+
 
 
 
@@ -1363,6 +1366,42 @@ class TransformSystem extends __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__["b" /* S
     super.onEntityDestroy(entity);
 
     delete entity.transform;
+  }
+}
+
+class TrackerSystem extends __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__["b" /* System */]
+{
+  constructor()
+  {
+    super("tracked");
+  }
+
+  onEntityCreate(entity)
+  {
+    super.onEntityCreate(entity);
+
+    entity.guid = TrackerSystem.generateGUID();
+    entity.trackers = [];
+  }
+
+  onEntityDestroy(entity)
+  {
+    super.onEntityDestroy(entity);
+
+    delete entity.guid;
+    delete entity.trackers;
+  }
+
+  static generateGUID()
+  {
+    function s4()
+    {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    }
+
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
   }
 }
 
