@@ -124,7 +124,4 @@ class AssetManager
   }
 }
 
-export {
-  ResourceLocation,
-  AssetManager
-}
+export default AssetManager;

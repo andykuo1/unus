@@ -17,6 +17,4 @@ class Transform
   }
 }
 
-export {
-  Transform
-}
+export default Transform;

@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -83,91 +83,11 @@ gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "socket", function() { return socket; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__client_client_game_js__ = __webpack_require__(6);
-
-
-var app;
-
-//Canvas Setup
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-//Change canvas on resize
-window.addEventListener('resize', function() {
-	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight;
-}, true);
-
-//Window load callback
-window.onload = start;
-
-//Application setup
-function start()
-{
-	let scripts = [];
-	//scripts.push("/mogli.js");
-	//scripts.push("/transform.js");
-	//scripts.push("/camera.js");
-	//scripts.push("/ecs.js");
-	//scripts.push("/util.js");
-	//scripts.push("/input.js");
-
-	//TODO: Implement a way to properly load shader files
-	//scripts.push("/res/def.vsh");
-	//scripts.push("/res/def.fsh");
-
-	//Load the game...
-	//scripts.push("/client/client-game.js");
-
-	app = new __WEBPACK_IMPORTED_MODULE_0__client_client_game_js__["a" /* default */]();
-	let run = function () {
-		app.onStart();
-		render();
-	};
-
-	if (app.onLoad)
-	{
-		app.onLoad(run);
-	}
-	else
-	{
-		run();
-	}
-}
-
-const frameTime = {delta: 0, then: 0, count: 0};
-function render(now = 0)
-{
-	now *= 0.001;
-	frameTime.delta = now - frameTime.then;
-	frameTime.then = now;
-	++frameTime.count;
-
-	app.onUpdate();
-	requestAnimationFrame(render);
-}
-
-//Display frames per second
-setInterval(function(){
-	console.log("FPS: " + frameTime.count);
-	frameTime.count = 0;
-}, 1000);
-
-
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__mogli_gl_js__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__mogli_Shader_js__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__mogli_Program_js__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__mogli_Program_js__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__mogli_VBO_js__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mogli_Mesh_js__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mogli_Mesh_js__ = __webpack_require__(10);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_1__mogli_Shader_js__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_2__mogli_Program_js__["a"]; });
 /* unused harmony reexport VBO */
@@ -185,6 +105,32 @@ setInterval(function(){
 
 
 
+
+/***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Transform
+{
+  constructor(x = 0, y = 0, z = 0)
+  {
+    this.position = vec3.create();
+    vec3.set(this.position, x, y, z);
+
+    this.rotation = quat.create();
+    this.scale = vec3.create();
+    vec3.set(this.scale, 1, 1, 1);
+  }
+
+  getTransformation(dst)
+  {
+    mat4.fromRotationTranslationScale(dst, this.rotation, this.position, this.scale);
+    return dst;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Transform);
 
 
 /***/ }),
@@ -340,41 +286,14 @@ class VBO
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Transform; });
-class Transform
-{
-  constructor(x = 0, y = 0, z = 0)
-  {
-    this.position = vec3.create();
-    vec3.set(this.position, x, y, z);
-
-    this.rotation = quat.create();
-    this.scale = vec3.create();
-    vec3.set(this.scale, 1, 1, 1);
-  }
-
-  getTransformation(dst)
-  {
-    mat4.fromRotationTranslationScale(dst, this.rotation, this.position, this.scale);
-    return dst;
-  }
-}
-
-
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_Mouse_js__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app_js__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__mogli_js__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__transform_js__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__camera_js__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ecs_js__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__asset_js__ = __webpack_require__(12);
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Mouse_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__AssetManager_js__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Transform_js__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Viewport_js__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_camera_js__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_ecs_js__ = __webpack_require__(12);
 
 
 
@@ -390,12 +309,12 @@ class Transform
 class Application {
   constructor()
   {
-    this.assets = new __WEBPACK_IMPORTED_MODULE_6__asset_js__["a" /* AssetManager */]();
-    this.camera = new __WEBPACK_IMPORTED_MODULE_4__camera_js__["a" /* OrthographicCamera */]();
+    this.assets = new __WEBPACK_IMPORTED_MODULE_1__AssetManager_js__["a" /* default */]();
+    this.camera = new __WEBPACK_IMPORTED_MODULE_4__lib_camera_js__["a" /* OrthographicCamera */]();
     this.camera.transform.position[2] = 1.0;
-    this.viewport = new __WEBPACK_IMPORTED_MODULE_4__camera_js__["b" /* Viewport */]();
+    this.viewport = new __WEBPACK_IMPORTED_MODULE_3__Viewport_js__["a" /* default */]();
 
-    this.clientInput = new __WEBPACK_IMPORTED_MODULE_0__lib_Mouse_js__["a" /* default */](document);
+    this.clientInput = new __WEBPACK_IMPORTED_MODULE_0__Mouse_js__["a" /* default */](document);
 
     this.square = null;
   }
@@ -416,17 +335,17 @@ class Application {
 	 */
   onStart()
   {
-    __WEBPACK_IMPORTED_MODULE_1__app_js__["socket"].on('connect', function() {
+    socket.on('connect', function() {
       console.log("Connected to server!");
     });
     //Close client when the server closes...
-    __WEBPACK_IMPORTED_MODULE_1__app_js__["socket"].on('disconnect', function() {
+    socket.on('disconnect', function() {
       window.close();
     })
 
     let i = Math.random();
     //Test ping
-    __WEBPACK_IMPORTED_MODULE_1__app_js__["socket"].emit('echo', {value: i});
+    socket.emit('echo', {value: i});
     console.log("Echoing \'" + i + "\'...");
 
 		//Load resources
@@ -434,14 +353,14 @@ class Application {
 		const fsrc = this.assets.getAsset('shader', 'fdef');
 
 		//Shader Programs
-		var vertexShader = new __WEBPACK_IMPORTED_MODULE_2__mogli_js__["c" /* Shader */](vsrc, __WEBPACK_IMPORTED_MODULE_2__mogli_js__["d" /* gl */].VERTEX_SHADER);
-		var fragmentShader = new __WEBPACK_IMPORTED_MODULE_2__mogli_js__["c" /* Shader */](fsrc, __WEBPACK_IMPORTED_MODULE_2__mogli_js__["d" /* gl */].FRAGMENT_SHADER);
-		this.prgm = new __WEBPACK_IMPORTED_MODULE_2__mogli_js__["b" /* Program */]();
+		var vertexShader = new __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["c" /* Shader */](vsrc, __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].VERTEX_SHADER);
+		var fragmentShader = new __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["c" /* Shader */](fsrc, __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].FRAGMENT_SHADER);
+		this.prgm = new __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["b" /* Program */]();
 		this.prgm.link([vertexShader, fragmentShader]);
 
 		//Mesh
     //TODO: get a proper OBJ loader!
-		this.mesh = __WEBPACK_IMPORTED_MODULE_2__mogli_js__["a" /* Mesh */].createMesh({
+		this.mesh = __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["a" /* Mesh */].createMesh({
 			position: new Float32Array([
 				-0.5, 0.5,
 				0.5, 0.5,
@@ -451,9 +370,9 @@ class Application {
 			indices: new Uint16Array([
 				0, 1, 2, 3
 			])},
-			__WEBPACK_IMPORTED_MODULE_2__mogli_js__["d" /* gl */].GL_STATIC_DRAW);
+			__WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].GL_STATIC_DRAW);
 
-		this.mesh2 = __WEBPACK_IMPORTED_MODULE_2__mogli_js__["a" /* Mesh */].createMesh({
+		this.mesh2 = __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["a" /* Mesh */].createMesh({
 			position: new Float32Array([
 				-1.0, 1.0,
 				1.0, 1.0,
@@ -463,9 +382,9 @@ class Application {
 			indices: new Uint16Array([
 				0, 1, 2, 3
 			])},
-			__WEBPACK_IMPORTED_MODULE_2__mogli_js__["d" /* gl */].GL_STATIC_DRAW);
+			__WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].GL_STATIC_DRAW);
 
-      this.entityManager = new __WEBPACK_IMPORTED_MODULE_5__ecs_js__["a" /* EntityManager */]();
+      this.entityManager = new __WEBPACK_IMPORTED_MODULE_6__lib_ecs_js__["a" /* EntityManager */]();
       this.entityManager.registerSystem(new TransformSystem());
       this.entityManager.registerSystem(new RenderableSystem());
       this.entityManager.registerSystem(new MotionSystem());
@@ -487,13 +406,13 @@ class Application {
 	 */
   onUpdate()
   {
-		__WEBPACK_IMPORTED_MODULE_2__mogli_js__["d" /* gl */].clear(__WEBPACK_IMPORTED_MODULE_2__mogli_js__["d" /* gl */].COLOR_BUFFER_BIT | __WEBPACK_IMPORTED_MODULE_2__mogli_js__["d" /* gl */].DEPTH_BUFFER_BIT);
+		__WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].clear(__WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].COLOR_BUFFER_BIT | __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].DEPTH_BUFFER_BIT);
     this.viewport.applyView();
 
     /**** LOGIC CODE BELOW! ****/
 
     //Calculate rotation
-    let clientPos = __WEBPACK_IMPORTED_MODULE_4__camera_js__["b" /* Viewport */].getPointFromScreen(vec3.create(), this.camera, this.viewport, this.clientInput.x, this.clientInput.y);
+    let clientPos = __WEBPACK_IMPORTED_MODULE_3__Viewport_js__["a" /* default */].getPointFromScreen(vec3.create(), this.camera, this.viewport, this.clientInput.x, this.clientInput.y);
     var dx = clientPos[0] - this.square.transform.position[0];
     var dy = -clientPos[1] + this.square.transform.position[1];
     let rotation = -Math.atan2(dy, dx);
@@ -513,7 +432,7 @@ class Application {
 
 		this.prgm.bind();
 		{
-			__WEBPACK_IMPORTED_MODULE_2__mogli_js__["d" /* gl */].uniformMatrix4fv(this.prgm.uniforms.uProjection, false, projection);
+			__WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].uniformMatrix4fv(this.prgm.uniforms.uProjection, false, projection);
 
 			this.mesh.bind();
 			{
@@ -526,10 +445,10 @@ class Application {
           //Setting up the Model Matrix
           entity.transform.getTransformation(modelview);
           mat4.mul(modelview, modelview, view);
-    			__WEBPACK_IMPORTED_MODULE_2__mogli_js__["d" /* gl */].uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
+    			__WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["d" /* gl */].uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
 
           //Draw it!
-          __WEBPACK_IMPORTED_MODULE_2__mogli_js__["a" /* Mesh */].draw(this.mesh);
+          __WEBPACK_IMPORTED_MODULE_5__lib_mogli_js__["a" /* Mesh */].draw(this.mesh);
         }
 			}
 			this.mesh.unbind();
@@ -556,7 +475,7 @@ class Application {
   }
 }
 
-class TransformSystem extends __WEBPACK_IMPORTED_MODULE_5__ecs_js__["b" /* System */]
+class TransformSystem extends __WEBPACK_IMPORTED_MODULE_6__lib_ecs_js__["b" /* System */]
 {
   constructor()
   {
@@ -567,7 +486,7 @@ class TransformSystem extends __WEBPACK_IMPORTED_MODULE_5__ecs_js__["b" /* Syste
   {
     super.onEntityCreate(entity);
 
-    entity.transform = new __WEBPACK_IMPORTED_MODULE_3__transform_js__["a" /* Transform */]();
+    entity.transform = new __WEBPACK_IMPORTED_MODULE_2__Transform_js__["a" /* default */]();
   }
 
   onEntityDestroy(entity)
@@ -578,7 +497,7 @@ class TransformSystem extends __WEBPACK_IMPORTED_MODULE_5__ecs_js__["b" /* Syste
   }
 }
 
-class SolidSystem extends __WEBPACK_IMPORTED_MODULE_5__ecs_js__["b" /* System */]
+class SolidSystem extends __WEBPACK_IMPORTED_MODULE_6__lib_ecs_js__["b" /* System */]
 {
   constructor()
   {
@@ -601,7 +520,7 @@ class SolidSystem extends __WEBPACK_IMPORTED_MODULE_5__ecs_js__["b" /* System */
   }
 }
 
-class RenderableSystem extends __WEBPACK_IMPORTED_MODULE_5__ecs_js__["b" /* System */]
+class RenderableSystem extends __WEBPACK_IMPORTED_MODULE_6__lib_ecs_js__["b" /* System */]
 {
   constructor()
   {
@@ -615,7 +534,7 @@ class RenderableSystem extends __WEBPACK_IMPORTED_MODULE_5__ecs_js__["b" /* Syst
   }
 }
 
-class MotionSystem extends __WEBPACK_IMPORTED_MODULE_5__ecs_js__["b" /* System */]
+class MotionSystem extends __WEBPACK_IMPORTED_MODULE_6__lib_ecs_js__["b" /* System */]
 {
   constructor()
   {
@@ -660,7 +579,7 @@ class MotionSystem extends __WEBPACK_IMPORTED_MODULE_5__ecs_js__["b" /* System *
 }
 MotionSystem.MOTION_MIN = 0.01;
 
-class FollowSystem extends __WEBPACK_IMPORTED_MODULE_5__ecs_js__["b" /* System */]
+class FollowSystem extends __WEBPACK_IMPORTED_MODULE_6__lib_ecs_js__["b" /* System */]
 {
   constructor()
   {
@@ -709,11 +628,12 @@ class FollowSystem extends __WEBPACK_IMPORTED_MODULE_5__ecs_js__["b" /* System *
   }
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (Application);
+app = new Application();
+/* harmony default export */ __webpack_exports__["default"] = (Application);
 
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -821,7 +741,208 @@ class Mouse
 
 
 /***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class ResourceLocation
+{
+  constructor(filename)
+  {
+    this._filename = filename;
+  }
+
+  get url()
+  {
+    return this._filename;
+  }
+}
+
+class AssetManager
+{
+  constructor()
+  {
+    this.registry = {};
+  }
+
+  destroy()
+  {
+    this.registry.clear();
+  }
+
+  register(type, id, url = null)
+  {
+    if (!this.registry[type])
+    {
+      this.registry[type] = {}
+    }
+    this.registry[type][id] = new ResourceLocation(url);
+  }
+
+  unregister(type, id)
+  {
+    this.registry[type].delete(id);
+  }
+
+  flush(callback)
+  {
+    var flag = false;
+    var count = 0;
+    for(let type in this.registry)
+    {
+      let assets = this.registry[type];
+      for(let id in assets)
+      {
+        let asset = assets[id];
+        if (asset instanceof ResourceLocation)
+        {
+          ++count;
+          console.log("LOADING (" + count + ") " + type + ":" + id + "...");
+          AssetManager.fetchFileFromURL(asset.url, function(response, args) {
+            let assetManager = args[0];
+            let type = args[1];
+            let id = args[2];
+            let assets = assetManager.registry[type];
+            assets[id] = response;
+            console.log("...RECEIVED (" + count + ") " + type + ":" + id + "...");
+            --count;
+            if (flag && count == 0)
+            {
+              callback();
+            }
+          },
+          [ this, type, id ]);
+        }
+      }
+    }
+    flag = true;
+    if (count == 0)
+    {
+      callback();
+    }
+  }
+
+  getAsset(type, id)
+  {
+    let asset = this.registry[type][id];
+    if (!asset)
+    {
+      asset = AssetManager.fetchFileFromURL(assets[id].url);
+      this.registry[type][id] = asset;
+    }
+    return asset;
+  }
+
+  static fetchFileFromURL(url, callback = null, args = null)
+  {
+    var request = new XMLHttpRequest();
+    request.open('GET', url, callback != null);
+    if (callback != null)
+    {
+      request.onreadystatechange = function() {
+        if (request.readyState == XMLHttpRequest.DONE)
+        {
+          if (request.status == 200)
+          {
+            let result = request.response;
+            callback(result, args);
+          }
+    			else
+    			{
+    				throw new Error("Failed request: " + request.status);
+    			}
+        }
+      }
+      request.send(null);
+    }
+    else
+    {
+      request.send(null);
+      if (request.status == 200)
+      {
+        let result = request.response;
+        return result;
+      }
+      else
+      {
+        throw new Error("Failed request: " + request.status);
+      }
+    }
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (AssetManager);
+
+
+/***/ }),
 /* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_mogli_js__ = __webpack_require__(1);
+
+
+class Viewport
+{
+  constructor()
+  {
+    this.width = 1;
+    this.height = 1;
+  }
+
+  applyView()
+  {
+    this.width = __WEBPACK_IMPORTED_MODULE_0__lib_mogli_js__["d" /* gl */].canvas.clientWidth;
+    this.height = __WEBPACK_IMPORTED_MODULE_0__lib_mogli_js__["d" /* gl */].canvas.clientHeight;
+    __WEBPACK_IMPORTED_MODULE_0__lib_mogli_js__["d" /* gl */].viewport(0, 0, this.width, this.height);
+  }
+
+  static getPointFromScreen(dst, camera, viewport, screenX, screenY)
+  {
+    let invViewProj = getInvertedViewProjection(mat4.create(), camera);
+    let x = screenX;
+    let y = viewport.height - screenY;
+
+    //TODO: The depth should be 0 if perspective...
+    let near = unproject(vec3.create(), invViewProj, viewport, x, y, -1.0);
+    let far = unproject(vec3.create(), invViewProj, viewport, x, y, 1.0);
+
+    let f = (0 - near[2]) / (far[2] - near[2]);
+    dst[0] = (near[0] + f * (far[0] - near[0]));
+    dst[1] = (near[1] + f * (far[1] - near[1]));
+    dst[2] = 0;
+    return dst;
+  }
+}
+
+function getInvertedViewProjection(dst, camera)
+{
+  mat4.mul(dst, camera.projection, camera.view);
+  mat4.invert(dst, dst);
+  return dst;
+}
+
+function unproject(dst, invertedViewProjection, viewport, screenX, screenY, screenZ)
+{
+  let normalizedDeviceCoords = vec4.create();
+  normalizedDeviceCoords[0] = screenX / viewport.width * 2.0 - 1.0;
+  normalizedDeviceCoords[1] = screenY / viewport.height * 2.0 - 1.0;
+  normalizedDeviceCoords[2] = screenZ * 2.0 - 1.0;
+  normalizedDeviceCoords[3] = 1.0;
+
+  let objectCoords = vec4.transformMat4(normalizedDeviceCoords, normalizedDeviceCoords, invertedViewProjection);
+  if (objectCoords[3] != 0) objectCoords[3] = 1.0 / objectCoords[3];
+  dst[0] = objectCoords[0] * objectCoords[3];
+  dst[1] = objectCoords[1] * objectCoords[3];
+  dst[2] = objectCoords[2] * objectCoords[3];
+  return dst;
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Viewport);
+
+
+/***/ }),
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -982,7 +1103,7 @@ class Program
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1173,15 +1294,16 @@ class Mesh
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* unused harmony export PerspectiveCamera */
+/* unused harmony export Camera */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return OrthographicCamera; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return Viewport; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__transform_js__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__mogli_js__ = __webpack_require__(2);
+/* unused harmony export PerspectiveCamera */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__mogli_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Transform_js__ = __webpack_require__(2);
+
 
 
 
@@ -1189,7 +1311,7 @@ class Camera
 {
   constructor()
   {
-    this.transform = new __WEBPACK_IMPORTED_MODULE_0__transform_js__["a" /* Transform */]();
+    this.transform = new __WEBPACK_IMPORTED_MODULE_1__Transform_js__["a" /* default */]();
 
     this._view = mat4.create();
     this._orientation = mat4.create();
@@ -1236,7 +1358,7 @@ class OrthographicCamera extends Camera
     let width = this.right - this.left;
     let height = this.bottom - this.top;
     let a = width / height;
-    let v = __WEBPACK_IMPORTED_MODULE_1__mogli_js__["d" /* gl */].canvas.clientWidth / __WEBPACK_IMPORTED_MODULE_1__mogli_js__["d" /* gl */].canvas.clientHeight;
+    let v = __WEBPACK_IMPORTED_MODULE_0__mogli_js__["d" /* gl */].canvas.clientWidth / __WEBPACK_IMPORTED_MODULE_0__mogli_js__["d" /* gl */].canvas.clientHeight;
     if (v >= a)
     {
       return mat4.ortho(this._projection,
@@ -1270,72 +1392,16 @@ class PerspectiveCamera extends Camera
   get projection()
   {
     //TODO: maybe cache this?
-    let v = __WEBPACK_IMPORTED_MODULE_1__mogli_js__["d" /* gl */].canvas.clientWidth / __WEBPACK_IMPORTED_MODULE_1__mogli_js__["d" /* gl */].canvas.clientHeight;
+    let v = __WEBPACK_IMPORTED_MODULE_0__mogli_js__["d" /* gl */].canvas.clientWidth / __WEBPACK_IMPORTED_MODULE_0__mogli_js__["d" /* gl */].canvas.clientHeight;
     return mat4.perspective(this._projection, this.fieldOfView, v, this.clippingNear, this.clippingFar);
   }
-}
-
-class Viewport
-{
-  constructor()
-  {
-    this.width = 1;
-    this.height = 1;
-  }
-
-  applyView()
-  {
-    this.width = __WEBPACK_IMPORTED_MODULE_1__mogli_js__["d" /* gl */].canvas.clientWidth;
-    this.height = __WEBPACK_IMPORTED_MODULE_1__mogli_js__["d" /* gl */].canvas.clientHeight;
-    __WEBPACK_IMPORTED_MODULE_1__mogli_js__["d" /* gl */].viewport(0, 0, this.width, this.height);
-  }
-
-  static getPointFromScreen(dst, camera, viewport, screenX, screenY)
-  {
-    let invViewProj = getInvertedViewProjection(mat4.create(), camera);
-    let x = screenX;
-    let y = viewport.height - screenY;
-
-    //TODO: The depth should be 0 if perspective...
-    let near = unproject(vec3.create(), invViewProj, viewport, x, y, -1.0);
-    let far = unproject(vec3.create(), invViewProj, viewport, x, y, 1.0);
-
-    let f = (0 - near[2]) / (far[2] - near[2]);
-    dst[0] = (near[0] + f * (far[0] - near[0]));
-    dst[1] = (near[1] + f * (far[1] - near[1]));
-    dst[2] = 0;
-    return dst;
-  }
-}
-
-function getInvertedViewProjection(dst, camera)
-{
-  mat4.mul(dst, camera.projection, camera.view);
-  mat4.invert(dst, dst);
-  return dst;
-}
-
-function unproject(dst, invertedViewProjection, viewport, screenX, screenY, screenZ)
-{
-  let normalizedDeviceCoords = vec4.create();
-  normalizedDeviceCoords[0] = screenX / viewport.width * 2.0 - 1.0;
-  normalizedDeviceCoords[1] = screenY / viewport.height * 2.0 - 1.0;
-  normalizedDeviceCoords[2] = screenZ * 2.0 - 1.0;
-  normalizedDeviceCoords[3] = 1.0;
-
-  let objectCoords = vec4.transformMat4(normalizedDeviceCoords, normalizedDeviceCoords, invertedViewProjection);
-  if (objectCoords[3] != 0) objectCoords[3] = 1.0 / objectCoords[3];
-  dst[0] = objectCoords[0] * objectCoords[3];
-  dst[1] = objectCoords[1] * objectCoords[3];
-  dst[2] = objectCoords[2] * objectCoords[3];
-  return dst;
 }
 
 
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1514,142 +1580,6 @@ class System
     if (!this.entityManager.hasComponent(entity, component))
     {
       throw new Error("missing component dependency: \'" + component + "\'");
-    }
-  }
-}
-
-
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* unused harmony export ResourceLocation */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AssetManager; });
-class ResourceLocation
-{
-  constructor(filename)
-  {
-    this._filename = filename;
-  }
-
-  get url()
-  {
-    return this._filename;
-  }
-}
-
-class AssetManager
-{
-  constructor()
-  {
-    this.registry = {};
-  }
-
-  destroy()
-  {
-    this.registry.clear();
-  }
-
-  register(type, id, url = null)
-  {
-    if (!this.registry[type])
-    {
-      this.registry[type] = {}
-    }
-    this.registry[type][id] = new ResourceLocation(url);
-  }
-
-  unregister(type, id)
-  {
-    this.registry[type].delete(id);
-  }
-
-  flush(callback)
-  {
-    var flag = false;
-    var count = 0;
-    for(let type in this.registry)
-    {
-      let assets = this.registry[type];
-      for(let id in assets)
-      {
-        let asset = assets[id];
-        if (asset instanceof ResourceLocation)
-        {
-          ++count;
-          console.log("LOADING (" + count + ") " + type + ":" + id + "...");
-          AssetManager.fetchFileFromURL(asset.url, function(response, args) {
-            let assetManager = args[0];
-            let type = args[1];
-            let id = args[2];
-            let assets = assetManager.registry[type];
-            assets[id] = response;
-            console.log("...RECEIVED (" + count + ") " + type + ":" + id + "...");
-            --count;
-            if (flag && count == 0)
-            {
-              callback();
-            }
-          },
-          [ this, type, id ]);
-        }
-      }
-    }
-    flag = true;
-    if (count == 0)
-    {
-      callback();
-    }
-  }
-
-  getAsset(type, id)
-  {
-    let asset = this.registry[type][id];
-    if (!asset)
-    {
-      asset = AssetManager.fetchFileFromURL(assets[id].url);
-      this.registry[type][id] = asset;
-    }
-    return asset;
-  }
-
-  static fetchFileFromURL(url, callback = null, args = null)
-  {
-    var request = new XMLHttpRequest();
-    request.open('GET', url, callback != null);
-    if (callback != null)
-    {
-      request.onreadystatechange = function() {
-        if (request.readyState == XMLHttpRequest.DONE)
-        {
-          if (request.status == 200)
-          {
-            let result = request.response;
-            callback(result, args);
-          }
-    			else
-    			{
-    				throw new Error("Failed request: " + request.status);
-    			}
-        }
-      }
-      request.send(null);
-    }
-    else
-    {
-      request.send(null);
-      if (request.status == 200)
-      {
-        let result = request.response;
-        return result;
-      }
-      else
-      {
-        throw new Error("Failed request: " + request.status);
-      }
     }
   }
 }

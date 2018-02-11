@@ -1,5 +1,5 @@
-import Application from './client/client-game.js';
-
+const canvas = document.getElementById('canvas');
+const socket = io();
 var app;
 
 //Canvas Setup
@@ -18,22 +18,6 @@ window.onload = start;
 //Application setup
 function start()
 {
-	let scripts = [];
-	//scripts.push("/mogli.js");
-	//scripts.push("/transform.js");
-	//scripts.push("/camera.js");
-	//scripts.push("/ecs.js");
-	//scripts.push("/util.js");
-	//scripts.push("/input.js");
-
-	//TODO: Implement a way to properly load shader files
-	//scripts.push("/res/def.vsh");
-	//scripts.push("/res/def.fsh");
-
-	//Load the game...
-	//scripts.push("/client/client-game.js");
-
-	app = new Application();
 	let run = function () {
 		app.onStart();
 		render();
@@ -66,7 +50,3 @@ setInterval(function(){
 	console.log("FPS: " + frameTime.count);
 	frameTime.count = 0;
 }, 1000);
-
-export {
-	socket
-}

@@ -1,11 +1,11 @@
-import Mouse from '../lib/Mouse.js';
+import Mouse from '../Mouse.js';
+import AssetManager from '../AssetManager.js';
+import Transform from '../Transform.js';
+import Viewport from '../Viewport.js';
 
-import { socket } from '../app.js';
-import { Shader, Program, VBO, Mesh, gl } from '../mogli.js';
-import { Transform } from '../transform.js';
-import { PerspectiveCamera, OrthographicCamera, Viewport } from '../camera.js';
-import { Entity, EntityManager, System } from '../ecs.js';
-import { ResourceLocation, AssetManager } from '../asset.js';
+import { OrthographicCamera } from '../lib/camera.js';
+import { Shader, Program, VBO, Mesh, gl } from '../lib/mogli.js';
+import { Entity, EntityManager, System } from '../lib/ecs.js';
 
 /**
  * Application - The main entry point for the program
@@ -332,4 +332,5 @@ class FollowSystem extends System
   }
 }
 
+app = new Application();
 export default Application;
