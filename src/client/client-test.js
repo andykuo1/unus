@@ -1,5 +1,3 @@
-import { socket } from '../app.js';
-
 class Application
 {
   onStart()
@@ -12,6 +10,7 @@ class Application
   	socket.emit('movement', movement);
   }
 }
+app = new Application();
 
 console.log("TEST.JS IS RIN!");
 
