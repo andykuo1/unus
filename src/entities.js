@@ -1,5 +1,6 @@
 import Transform from './Transform.js';
-import { EntityManager, System } from './lib/ecs.js';
+
+import { Entity, EntityManager, System } from './lib/ecs.js';
 
 class TransformSystem extends System
 {
@@ -20,6 +21,42 @@ class TransformSystem extends System
     super.onEntityDestroy(entity);
 
     delete entity.transform;
+  }
+}
+
+class TrackerSystem extends System
+{
+  constructor()
+  {
+    super("tracked");
+  }
+
+  onEntityCreate(entity)
+  {
+    super.onEntityCreate(entity);
+
+    entity.guid = TrackerSystem.generateGUID();
+    entity.trackers = [];
+  }
+
+  onEntityDestroy(entity)
+  {
+    super.onEntityDestroy(entity);
+
+    delete entity.guid;
+    delete entity.trackers;
+  }
+
+  static generateGUID()
+  {
+    function s4()
+    {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    }
+
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
   }
 }
 
@@ -156,6 +193,7 @@ class FollowSystem extends System
 
 export {
   TransformSystem,
+  TrackerSystem,
   SolidSystem,
   RenderableSystem,
   MotionSystem,

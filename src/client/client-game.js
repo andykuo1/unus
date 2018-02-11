@@ -3,7 +3,7 @@ import AssetManager from '../AssetManager.js';
 import Transform from '../Transform.js';
 import Viewport from '../Viewport.js';
 
-import { TransformSystem, RenderableSystem, MotionSystem } from '../entities.js';
+import { TransformSystem, TrackerSystem, RenderableSystem, MotionSystem } from '../entities.js';
 import { OrthographicCamera } from '../lib/camera.js';
 import { Shader, Program, VBO, Mesh, gl } from '../lib/mogli.js';
 import { Entity, EntityManager, System } from '../lib/ecs.js';
@@ -91,6 +91,7 @@ class Application {
 
       this.entityManager = new EntityManager();
       this.entityManager.registerSystem(new TransformSystem());
+      this.entityManager.registerSystem(new TrackerSystem());
       this.entityManager.registerSystem(new RenderableSystem());
       this.entityManager.registerSystem(new MotionSystem());
 
