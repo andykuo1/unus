@@ -71,4 +71,4 @@ socket.on('state', function(players) {
 
 console.log("END!");
 //--------------------------------
-export default ClientApplication;
+export default Application;

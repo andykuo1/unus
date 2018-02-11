@@ -333,4 +333,4 @@ class FollowSystem extends System
   }
 }
 
-export default ClientApplication;
+export default Application;
