@@ -8,4 +8,4 @@ cd "$(dirname "$0")"
 ( sleep 1 ; echo "Running Client in...$(pwd)..." ; open http://localhost:8082 ) &
 
 echo "Running Server in...$(pwd)..."
-node --experimental-modules --loader ./jsresolver.mjs ./server.js
+node --experimental-modules --loader ./jsresolver.mjs ./src/server.js
