@@ -1,5 +1,5 @@
-import Game from './Game.js';
-import GameState from './GameState.js';
+import Game from '../integrated/Game.js';
+import GameState from '../integrated/GameState.js';
 
 class ServerGame extends Game
 {
@@ -41,7 +41,7 @@ class ServerGame extends Game
     //---
 
     //Send GameState to clients
-    sendToAll('server-update', )
+    sendToAll('server-update', Date.now(), this.clients);
   }
 
   onClientUpdate(socket, data)
@@ -65,14 +65,14 @@ class ServerGame extends Game
   }
 }
 
-function sendtoClient(id, data, client)
+function sendToClient(id, data, client)
 {
   client.emit(id, data);
 }
 
 function sendToAll(id, data, clients)
 {
-  clients.forEach((key, value) => {
+  clients.forEach((value, key) => {
     sendToClient(id, data, value);
   });
 }

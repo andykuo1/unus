@@ -69,7 +69,7 @@
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ClientGame_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__client_ClientGame_js__ = __webpack_require__(1);
 
 
 //Window Setup
@@ -87,7 +87,7 @@ var socket = io();
 var game;
 function start()
 {
-  game = new __WEBPACK_IMPORTED_MODULE_0__ClientGame_js__["a" /* default */](socket, canvas);
+  game = new __WEBPACK_IMPORTED_MODULE_0__client_ClientGame_js__["a" /* default */](socket, canvas);
 	onApplicationLoad(game);
 }
 
@@ -139,15 +139,15 @@ function onApplicationUpdate(app, frame)
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Game_js__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__GameState_js__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__integrated_GameState_js__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Mouse_js__ = __webpack_require__(4);
 
 
 
 
 
-class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__Game_js__["a" /* default */]
+class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /* default */]
 {
   constructor(socket, canvas)
   {
@@ -158,8 +158,8 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__Game_js__["a" /* default *
 
     this.input = new __WEBPACK_IMPORTED_MODULE_2__Mouse_js__["a" /* default */](document);
 
-    this.gameState = new __WEBPACK_IMPORTED_MODULE_1__GameState_js__["a" /* default */]();
-    this.nextState = new __WEBPACK_IMPORTED_MODULE_1__GameState_js__["a" /* default */]();
+    this.gameState = new __WEBPACK_IMPORTED_MODULE_1__integrated_GameState_js__["a" /* default */]();
+    this.nextState = new __WEBPACK_IMPORTED_MODULE_1__integrated_GameState_js__["a" /* default */]();
   }
 
   load(callback)
@@ -170,6 +170,12 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__Game_js__["a" /* default *
   		console.log("Connected to server...");
       callback();
   	});
+    this.socket.on('server-update', (data) => {
+      this.onServerUpdate(this.socket, data);
+    });
+    this.socket.on('disconnect', () => {
+      window.close();
+    });
   }
 
   update(frame)
@@ -190,6 +196,11 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__Game_js__["a" /* default *
 
     //Send GameState to Server
     sendToServer('client-update', this.input, this.socket);
+  }
+
+  onServerUpdate(socket, data)
+  {
+    console.log("SERVER: " + data);
   }
 }
 

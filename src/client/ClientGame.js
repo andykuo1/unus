@@ -1,5 +1,5 @@
-import Game from './Game.js';
-import GameState from './GameState.js';
+import Game from '../integrated/Game.js';
+import GameState from '../integrated/GameState.js';
 
 import Mouse from './Mouse.js';
 
@@ -26,6 +26,12 @@ class ClientGame extends Game
   		console.log("Connected to server...");
       callback();
   	});
+    this.socket.on('server-update', (data) => {
+      this.onServerUpdate(this.socket, data);
+    });
+    this.socket.on('disconnect', () => {
+      window.close();
+    });
   }
 
   update(frame)
@@ -46,6 +52,11 @@ class ClientGame extends Game
 
     //Send GameState to Server
     sendToServer('client-update', this.input, this.socket);
+  }
+
+  onServerUpdate(socket, data)
+  {
+    console.log("SERVER: " + data);
   }
 }
 

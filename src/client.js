@@ -1,4 +1,4 @@
-import ClientGame from './ClientGame.js';
+import ClientGame from './client/ClientGame.js';
 
 //Window Setup
 var canvas = document.getElementById('canvas');
