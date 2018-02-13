@@ -5,7 +5,12 @@ html, body {
   overflow: hidden;
 }
 
+div {
+  color: white;
+}
+
 canvas {
-  width: 100%; height: 100%;
+  width: 10%; height: 10%;
+  display: none;
   margin: 0; padding: 0;
 }

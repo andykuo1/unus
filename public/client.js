@@ -141,7 +141,11 @@ function onApplicationUpdate(app, frame)
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__integrated_GameState_js__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Mouse_js__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__integrated_Player_js__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Renderer_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Mouse_js__ = __webpack_require__(6);
+
+
 
 
 
@@ -156,10 +160,13 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
     this.socket = socket;
     this.canvas = canvas;
 
-    this.input = new __WEBPACK_IMPORTED_MODULE_2__Mouse_js__["a" /* default */](document);
+    this.input = new __WEBPACK_IMPORTED_MODULE_4__Mouse_js__["a" /* default */](document);
+    this.renderer = new __WEBPACK_IMPORTED_MODULE_3__Renderer_js__["a" /* default */](canvas);
 
-    this.gameState = new __WEBPACK_IMPORTED_MODULE_1__integrated_GameState_js__["a" /* default */]();
-    this.nextState = new __WEBPACK_IMPORTED_MODULE_1__integrated_GameState_js__["a" /* default */]();
+    this.thePlayer = new __WEBPACK_IMPORTED_MODULE_2__integrated_Player_js__["a" /* default */]();
+    this.thePlayer.remote = false;
+
+    this.gameState = {};
   }
 
   load(callback)
@@ -168,10 +175,29 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
     this.socket.emit('client-handshake');
   	this.socket.on('server-handshake', () => {
   		console.log("Connected to server...");
+
+      //Add this EntityPlayer...
+      this.gameState[this.socket.id] = this.thePlayer;
+
       callback();
   	});
     this.socket.on('server-update', (data) => {
       this.onServerUpdate(this.socket, data);
+    });
+    this.socket.on('server-extclient', (data) => {
+      for(var i in data)
+      {
+        //Create EntityPlayer...
+        this.gameState[data[i]] = new __WEBPACK_IMPORTED_MODULE_2__integrated_Player_js__["a" /* default */]();
+      }
+    });
+    this.socket.on('server-addclient', (data) => {
+      //Create EntityPlayer...
+      this.gameState[data] = new __WEBPACK_IMPORTED_MODULE_2__integrated_Player_js__["a" /* default */]();
+    })
+    this.socket.on('server-delclient', (data) => {
+        //Delete EntityPlayer...
+        delete this.gameState[data];
     });
     this.socket.on('disconnect', () => {
       window.close();
@@ -187,20 +213,26 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
     //---
 
     //Poll gameState from Input
+    let input = this.input.poll();
     //---
 
     //Do Predictive GameLoop (based on current gameState)
     //---
+    this.renderer.render(this.gameState);
 
     //RENDER!
 
     //Send GameState to Server
-    sendToServer('client-update', this.input, this.socket);
+    //FIXME: Send only changed data...
+    if (input.dx != 0.0 || input.dy != 0.0)
+    {
+      sendToServer('client-input', input, this.socket);
+    }
   }
 
   onServerUpdate(socket, data)
   {
-    console.log("SERVER: " + data);
+    this.gameState = data;
   }
 }
 
@@ -239,8 +271,9 @@ class Game
  */
 class GameState
 {
-  constructor()
+  constructor(name)
   {
+    this.name = name;
     this.data = {};
     this.dirty = {};
   }
@@ -254,12 +287,6 @@ class GameState
   {
     this.data[id] = value;
     this.dirty[id] = true;
-  }
-
-  removeData(id)
-  {
-    this.data.remove(id);
-    this.dirty.remove(id);
   }
 
   getData(id)
@@ -288,7 +315,7 @@ class GameState
    * Gets all data that has changed since and put them in 'state'.
    * All changes before this call is considered as resolved.
    */
-  poll(state)
+  getChanges(dst)
   {}
 
   /**
@@ -296,20 +323,82 @@ class GameState
    * Changes will be marked as unresolved. Call poll(state) to resolve them.
    */
   update(nextState)
-  {}
+  {
+    if (nextState instanceof GameState)
+    {
+      nextState = nextState.data;
+    }
+
+    for(let key in nextState)
+    {
+      this.setData(key, nextState[key]);
+    }
+  }
 
   /**
    * Empty the state of any data, changed or not.
    */
   clear()
-  {}
+  {
+  }
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (GameState);
+/* unused harmony default export */ var _unused_webpack_default_export = (GameState);
 
 
 /***/ }),
 /* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Player
+{
+  constructor()
+  {
+    this.x = 0.0;
+    this.y = 0.0;
+    this.remote = true;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Player);
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Renderer
+{
+  constructor(canvas)
+  {
+    this.canvas = canvas;
+    this.canvas.width = 1;
+    this.canvas.height = 1;
+    this.loader = document.getElementById('loader');
+  }
+
+  render(gameState)
+  {
+    let str = "";
+    for(var i in gameState)
+    {
+      let entity = gameState[i];
+      if (entity)
+      {
+        str += "<p>" + i + " : " + JSON.stringify(entity) + "</p>";
+      }
+    }
+    this.loader.innerHTML = str;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Renderer);
+
+
+/***/ }),
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -326,6 +415,8 @@ class Mouse
   {
     this.x = 0.0;
     this.y = 0.0;
+    this._prevX = 0.0;
+    this._prevY = 0.0;
     this.scrollX = 0.0;
     this.scrollY = 0.0;
     this.down = false;
@@ -403,6 +494,34 @@ class Mouse
     this._element.removeEventListener('wheel', this.onMouseWheel);
     this._element.removeEventListener('mousemove', this.onMouseMove);
     this._element.removeEventListener('touchstart', this.onTouchStart);
+  }
+
+  poll()
+  {
+    return {
+      x: this.x,
+      y: this.y,
+      dx: this.dx,
+      dy: this.dy,
+      scrollX: this.scrollX,
+      scrollY: this.scrollY,
+      down: this.down,
+      click : this.click
+    };
+  }
+
+  get dx()
+  {
+    var result = this.x - this._prevX;
+    this._prevX = this.x;
+    return result;
+  }
+
+  get dy()
+  {
+    var result = this.y - this._prevY;
+    this._prevY = this.y;
+    return result;
   }
 
   get click()

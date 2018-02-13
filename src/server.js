@@ -6,7 +6,7 @@ import ServerGame from './server/ServerGame.js';
 
 const __dirname = path.resolve();
 const DEVMODE = process.argv.indexOf('--dev') != -1;
-const FPS = 60;
+const FPS = 10;
 const PORT = process.env.PORT || 8082;
 
 //Server Setup

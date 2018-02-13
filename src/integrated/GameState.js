@@ -4,8 +4,9 @@
  */
 class GameState
 {
-  constructor()
+  constructor(name)
   {
+    this.name = name;
     this.data = {};
     this.dirty = {};
   }
@@ -19,12 +20,6 @@ class GameState
   {
     this.data[id] = value;
     this.dirty[id] = true;
-  }
-
-  removeData(id)
-  {
-    this.data.remove(id);
-    this.dirty.remove(id);
   }
 
   getData(id)
@@ -53,7 +48,7 @@ class GameState
    * Gets all data that has changed since and put them in 'state'.
    * All changes before this call is considered as resolved.
    */
-  poll(state)
+  getChanges(dst)
   {}
 
   /**
@@ -61,13 +56,24 @@ class GameState
    * Changes will be marked as unresolved. Call poll(state) to resolve them.
    */
   update(nextState)
-  {}
+  {
+    if (nextState instanceof GameState)
+    {
+      nextState = nextState.data;
+    }
+
+    for(let key in nextState)
+    {
+      this.setData(key, nextState[key]);
+    }
+  }
 
   /**
    * Empty the state of any data, changed or not.
    */
   clear()
-  {}
+  {
+  }
 }
 
 export default GameState;
