@@ -164,7 +164,8 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
     this.renderer = new __WEBPACK_IMPORTED_MODULE_3__Renderer_js__["a" /* default */](canvas);
 
     this.thePlayer = new __WEBPACK_IMPORTED_MODULE_2__integrated_Player_js__["a" /* default */]();
-    this.thePlayer.remote = false;
+    //TODO: figure out a way to only apply changes and to only certain attribs.
+    //this.thePlayer.remote = false;
 
     this.gameState = {};
   }
@@ -206,21 +207,11 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
 
   update(frame)
   {
-    //Poll nextState from Server
-    //---
-
-    //Update from nextState
-    //---
-
-    //Poll gameState from Input
     let input = this.input.poll();
-    //---
 
     //Do Predictive GameLoop (based on current gameState)
-    //---
+    
     this.renderer.render(this.gameState);
-
-    //RENDER!
 
     //Send GameState to Server
     //FIXME: Send only changed data...
@@ -357,7 +348,6 @@ class Player
   {
     this.x = 0.0;
     this.y = 0.0;
-    this.remote = true;
   }
 }
 

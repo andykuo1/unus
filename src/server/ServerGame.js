@@ -1,6 +1,7 @@
 import Game from '../integrated/Game.js';
 import GameState from '../integrated/GameState.js';
 import Player from '../integrated/Player.js';
+import Console from './console/Console.js';
 
 class ServerGame extends Game
 {
@@ -18,6 +19,15 @@ class ServerGame extends Game
 
   load(callback)
   {
+    //Setup console...
+    Console.addCommand("stop", "stop", (args) => {
+      console.log("Stopping server...");
+      //TODO: ADD state-preservation features...
+      console.log("Server stopped...");
+      process.exit(0);
+    });
+
+    //Setup server..
     this.io.on('connection', (socket) => {
       socket.on('client-handshake', () => {
         this.addClient(socket);
