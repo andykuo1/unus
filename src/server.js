@@ -57,12 +57,13 @@ start();
  */
 function onApplicationLoad(app)
 {
-  console.log("Loading server...");
   app.load(() => {
-    update();
-    setInterval(() => {
-      update(Date.now());
-    }, TIMESTEP);
+    app.connect(() => {
+      update();
+      setInterval(() => {
+        update(Date.now());
+      }, TIMESTEP);
+    });
   });
 }
 

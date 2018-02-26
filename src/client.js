@@ -47,9 +47,10 @@ setInterval(function(){
  */
 function onApplicationLoad(app)
 {
-	console.log("Loading client...");
 	app.load(() => {
-		update();
+		app.connect(() => {
+			update();
+		});
 	});
 }
 

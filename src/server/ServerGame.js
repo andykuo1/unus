@@ -24,6 +24,8 @@ class ServerGame extends Game
 
   load(callback)
   {
+    console.log("Loading server...");
+
     //Setup console...
     Console.addCommand("stop", "stop", (args) => {
       console.log("Stopping server...");
@@ -31,6 +33,13 @@ class ServerGame extends Game
       console.log("Server stopped.");
       process.exit(0);
     });
+
+    callback();
+  }
+
+  connect(callback)
+  {
+    console.log("Connecting server...");
 
     //Setup server..
     this.io.on('connection', (socket) => {
