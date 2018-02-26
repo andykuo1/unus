@@ -12,13 +12,13 @@ const command = {
   {
     this.commands.set(name, callback);
     this.infos.set(name, info);
-    return this;
+    return this; //For method chaining
   },
   removeCommand: function(name)
   {
     this.commands.delete(name);
     this.infos.delete(name);
-    return this;
+    return this; //For method chaining
   },
   hasCommand: function(name)
   {
@@ -53,8 +53,11 @@ rl.on('line', (input) => {
   }
   else if (name == "help")
   {
-    console.log("Welcome to your friendly neighborhood server help.");
-    console.log("Press \'CTRL-C\' or \'stop\' to close the server.");
+    for (const c of this.commands.keys())
+    {
+      console.log(c + ": " + command.infos.get(c));
+    }
+    console.log("Press \'CTRL-C\' to close the server.");
   }
   else
   {

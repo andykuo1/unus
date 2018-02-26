@@ -140,10 +140,10 @@ function onApplicationUpdate(app, frame)
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__integrated_GameState_js__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__integrated_Player_js__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Renderer_js__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Mouse_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__integrated_Player_js__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__integrated_packet_PacketHandler_js__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__input_Mouse_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Renderer_js__ = __webpack_require__(6);
 
 
 
@@ -160,13 +160,10 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
     this.socket = socket;
     this.canvas = canvas;
 
-    this.input = new __WEBPACK_IMPORTED_MODULE_4__Mouse_js__["a" /* default */](document);
-    this.renderer = new __WEBPACK_IMPORTED_MODULE_3__Renderer_js__["a" /* default */](canvas);
+    this.input = new __WEBPACK_IMPORTED_MODULE_3__input_Mouse_js__["a" /* default */](document);
+    this.renderer = new __WEBPACK_IMPORTED_MODULE_4__Renderer_js__["a" /* default */](canvas);
 
-    this.thePlayer = new __WEBPACK_IMPORTED_MODULE_2__integrated_Player_js__["a" /* default */]();
-    //TODO: figure out a way to only apply changes and to only certain attribs.
-    //this.thePlayer.remote = false;
-
+    this.thePlayer = new __WEBPACK_IMPORTED_MODULE_1__integrated_Player_js__["a" /* default */]();
     this.gameState = {};
   }
 
@@ -176,12 +173,12 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
     this.socket.emit('client-handshake');
   	this.socket.on('server-handshake', () => {
   		console.log("Connected to server...");
-
       //Add this EntityPlayer...
       this.gameState[this.socket.id] = this.thePlayer;
-
+      //Start game...
       callback();
   	});
+
     this.socket.on('server-update', (data) => {
       this.onServerUpdate(this.socket, data);
     });
@@ -189,16 +186,16 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
       for(var i in data)
       {
         //Create EntityPlayer...
-        this.gameState[data[i]] = new __WEBPACK_IMPORTED_MODULE_2__integrated_Player_js__["a" /* default */]();
+        this.gameState[data[i]] = new __WEBPACK_IMPORTED_MODULE_1__integrated_Player_js__["a" /* default */]();
       }
     });
     this.socket.on('server-addclient', (data) => {
       //Create EntityPlayer...
-      this.gameState[data] = new __WEBPACK_IMPORTED_MODULE_2__integrated_Player_js__["a" /* default */]();
+      this.gameState[data] = new __WEBPACK_IMPORTED_MODULE_1__integrated_Player_js__["a" /* default */]();
     })
     this.socket.on('server-delclient', (data) => {
-        //Delete EntityPlayer...
-        delete this.gameState[data];
+      //Delete EntityPlayer...
+      delete this.gameState[data];
     });
     this.socket.on('disconnect', () => {
       window.close();
@@ -208,16 +205,19 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
   update(frame)
   {
     let input = this.input.poll();
+    input.timestamp = Date.now();
 
-    //Do Predictive GameLoop (based on current gameState)
-    
+    //Predict state...
+    this.gameState[this.socket.id].x += input.dx;
+    this.gameState[this.socket.id].y += input.dy;
+
+    //Render state...
     this.renderer.render(this.gameState);
 
-    //Send GameState to Server
-    //FIXME: Send only changed data...
-    if (input.dx != 0.0 || input.dy != 0.0)
+    if (input.dx != 0 || input.dy != 0)
     {
-      sendToServer('client-input', input, this.socket);
+      //Force 200ms lag...
+      setTimeout(() => __WEBPACK_IMPORTED_MODULE_2__integrated_packet_PacketHandler_js__["a" /* default */].sendToServer('client-input', input, this.socket), 200);
     }
   }
 
@@ -225,11 +225,6 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
   {
     this.gameState = data;
   }
-}
-
-function sendToServer(id, data, socket)
-{
-  socket.emit(id, data);
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (ClientGame);
@@ -256,92 +251,6 @@ class Game
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/**
- * Represents any synchronized world state data across the network.
- * Updated and sent at the end of every game loop.
- */
-class GameState
-{
-  constructor(name)
-  {
-    this.name = name;
-    this.data = {};
-    this.dirty = {};
-  }
-
-  /**
-   * Set the data with id to the value passed-in.
-   * If client-side, will be marked to be sent to the server.
-   * If server-side, will be marked to be sent to all clients.
-   */
-  setData(id, value)
-  {
-    this.data[id] = value;
-    this.dirty[id] = true;
-  }
-
-  getData(id)
-  {
-    return this.data[id];
-  }
-
-  /**
-   * Mark the data to be sent to the opposite side.
-   * Should already be marked if called setData().
-   */
-  markDirty(id)
-  {
-    this.dirty[id] = true;
-  }
-
-  /**
-   * Whether or not the side has already resolved this data if changed.
-   */
-  isDirty(id)
-  {
-    return this.dirty[id];
-  }
-
-  /**
-   * Gets all data that has changed since and put them in 'state'.
-   * All changes before this call is considered as resolved.
-   */
-  getChanges(dst)
-  {}
-
-  /**
-   * Puts all data that is different from the nextState into this state.
-   * Changes will be marked as unresolved. Call poll(state) to resolve them.
-   */
-  update(nextState)
-  {
-    if (nextState instanceof GameState)
-    {
-      nextState = nextState.data;
-    }
-
-    for(let key in nextState)
-    {
-      this.setData(key, nextState[key]);
-    }
-  }
-
-  /**
-   * Empty the state of any data, changed or not.
-   */
-  clear()
-  {
-  }
-}
-
-/* unused harmony default export */ var _unused_webpack_default_export = (GameState);
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
 class Player
 {
   constructor()
@@ -355,40 +264,39 @@ class Player
 
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-class Renderer
+class PacketHandler
 {
-  constructor(canvas)
+  constructor()
   {
-    this.canvas = canvas;
-    this.canvas.width = 1;
-    this.canvas.height = 1;
-    this.loader = document.getElementById('loader');
   }
 
-  render(gameState)
+  static sendToServer(id, data, server)
   {
-    let str = "";
-    for(var i in gameState)
-    {
-      let entity = gameState[i];
-      if (entity)
-      {
-        str += "<p>" + i + " : " + JSON.stringify(entity) + "</p>";
-      }
-    }
-    this.loader.innerHTML = str;
+    server.emit(id, data);
+  }
+
+  static sendToClient(id, data, client)
+  {
+    client.emit(id, data);
+  }
+
+  static sendToAll(id, data, clients)
+  {
+    clients.forEach((value, key) => {
+      PacketHandler.sendToClient(id, data, value);
+    });
   }
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (Renderer);
+/* harmony default export */ __webpack_exports__["a"] = (PacketHandler);
 
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -523,6 +431,40 @@ class Mouse
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (Mouse);
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Renderer
+{
+  constructor(canvas)
+  {
+    this.canvas = canvas;
+    this.loader = document.getElementById('loader');
+  }
+
+  render(gameState)
+  {
+    var ctx = this.canvas.getContext('2d');
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.fillStyle = 'white';
+    for(var i in gameState)
+    {
+      let entity = gameState[i];
+      if (entity)
+      {
+        ctx.fillRect(entity.x - 16, entity.y - 16, 32, 32);
+        //str += "<p>" + i + " : " + JSON.stringify(entity) + "</p>";
+      }
+    }
+    //this.loader.innerHTML = str;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Renderer);
 
 
 /***/ })

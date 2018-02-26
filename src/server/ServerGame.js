@@ -1,6 +1,9 @@
 import Game from '../integrated/Game.js';
-import GameState from '../integrated/GameState.js';
 import Player from '../integrated/Player.js';
+import PacketHandler from '../integrated/packet/PacketHandler.js';
+
+import PriorityQueue from '../util/PriorityQueue.js';
+
 import Console from './console/Console.js';
 
 class ServerGame extends Game
@@ -12,7 +15,9 @@ class ServerGame extends Game
     this.io = io;
 
     this.clients = new Map();
-    this.inputs = [];
+    this.inputs = new PriorityQueue((a, b) => {
+      return (a.timestamp || 0) - (b.timestamp || 0);
+    });
 
     this.gameState = {};
   }
@@ -23,7 +28,7 @@ class ServerGame extends Game
     Console.addCommand("stop", "stop", (args) => {
       console.log("Stopping server...");
       //TODO: ADD state-preservation features...
-      console.log("Server stopped...");
+      console.log("Server stopped.");
       process.exit(0);
     });
 
@@ -32,12 +37,12 @@ class ServerGame extends Game
       socket.on('client-handshake', () => {
         this.addClient(socket);
         socket.emit('server-handshake');
-      });
-      socket.on('client-input', (data) => {
-        this.onClientInput(socket, data);
-      });
-      socket.on('disconnect', () => {
-        this.removeClient(socket);
+        socket.on('client-input', (data) => {
+          this.onClientInput(socket, data);
+        });
+        socket.on('disconnect', () => {
+          this.removeClient(socket);
+        });
       });
     });
 
@@ -49,35 +54,30 @@ class ServerGame extends Game
     //Poll clients to GameState
     while(this.inputs.length > 0)
     {
-      let input = this.inputs.pop();
-      //TODO: Do something with this input...
+      let input = this.inputs.dequeue();
 
-      console.log(input);
+      //TODO: Apply input to game state...
+
+      //Game Logic...
       let entity = this.gameState[input.id];
       entity.x = input.x;
       entity.y = input.y;
     }
 
-    //Calculate from client states, and output to server state
-
-    //Do GameLoop to update GameState
-    //---
-
-    //Send GameState to clients
-    //FIXME: Send only changed data...
-    sendToAll('server-update', this.gameState, this.clients);
+    //Send final game state to all
+    PacketHandler.sendToAll('server-update', this.gameState, this.clients);
   }
 
   onClientInput(socket, data)
   {
     data.id = socket.id;
-    this.inputs.push(data);
+    this.inputs.queue(data);
   }
 
   addClient(socket)
   {
-    sendToAll('server-addclient', socket.id, this.clients);
-    sendToClient('server-extclient', Object.keys(this.clients), socket);
+    PacketHandler.sendToAll('server-addclient', socket.id, this.clients);
+    PacketHandler.sendToClient('server-extclient', this.clients.keys(), socket);
 
     console.log("Added client: " + socket.id);
     this.clients.set(socket.id, socket);
@@ -88,7 +88,7 @@ class ServerGame extends Game
 
   removeClient(socket)
   {
-    sendToAll('server-delclient', socket.id, this.clients);
+    PacketHandler.sendToAll('server-delclient', socket.id, this.clients);
 
     console.log("Removed client: " + socket.id);
     this.clients.delete(socket.id);
@@ -96,18 +96,6 @@ class ServerGame extends Game
     //Delete EntityPlayer here...
     delete this.gameState[socket.id];
   }
-}
-
-function sendToClient(id, data, client)
-{
-  client.emit(id, data);
-}
-
-function sendToAll(id, data, clients)
-{
-  clients.forEach((value, key) => {
-    sendToClient(id, data, value);
-  });
 }
 
 export default ServerGame;

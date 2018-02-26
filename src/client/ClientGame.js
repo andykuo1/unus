@@ -1,9 +1,9 @@
 import Game from '../integrated/Game.js';
-import GameState from '../integrated/GameState.js';
 import Player from '../integrated/Player.js';
+import PacketHandler from '../integrated/packet/PacketHandler.js';
 
+import Mouse from './input/Mouse.js';
 import Renderer from './Renderer.js';
-import Mouse from './Mouse.js';
 
 class ClientGame extends Game
 {
@@ -18,9 +18,6 @@ class ClientGame extends Game
     this.renderer = new Renderer(canvas);
 
     this.thePlayer = new Player();
-    //TODO: figure out a way to only apply changes and to only certain attribs.
-    //this.thePlayer.remote = false;
-
     this.gameState = {};
   }
 
@@ -30,12 +27,12 @@ class ClientGame extends Game
     this.socket.emit('client-handshake');
   	this.socket.on('server-handshake', () => {
   		console.log("Connected to server...");
-
       //Add this EntityPlayer...
       this.gameState[this.socket.id] = this.thePlayer;
-
+      //Start game...
       callback();
   	});
+
     this.socket.on('server-update', (data) => {
       this.onServerUpdate(this.socket, data);
     });
@@ -51,8 +48,8 @@ class ClientGame extends Game
       this.gameState[data] = new Player();
     })
     this.socket.on('server-delclient', (data) => {
-        //Delete EntityPlayer...
-        delete this.gameState[data];
+      //Delete EntityPlayer...
+      delete this.gameState[data];
     });
     this.socket.on('disconnect', () => {
       window.close();
@@ -62,28 +59,28 @@ class ClientGame extends Game
   update(frame)
   {
     let input = this.input.poll();
+    input.timestamp = frame.then;
 
-    //Do Predictive GameLoop (based on current gameState)
-    
+    //Predict state...
+    //Simulating changes in state...
+    this.gameState[this.socket.id].x += input.dx;
+    this.gameState[this.socket.id].y += input.dy;
+
+    //Render state...
     this.renderer.render(this.gameState);
 
-    //Send GameState to Server
-    //FIXME: Send only changed data...
-    if (input.dx != 0.0 || input.dy != 0.0)
+    if (input.dx != 0 || input.dy != 0)
     {
-      sendToServer('client-input', input, this.socket);
+      //Force 200ms lag...
+      setTimeout(() => PacketHandler.sendToServer('client-input', input, this.socket), 200);
     }
   }
 
   onServerUpdate(socket, data)
   {
+    //Update state to authoritative state...
     this.gameState = data;
   }
-}
-
-function sendToServer(id, data, socket)
-{
-  socket.emit(id, data);
 }
 
 export default ClientGame;
