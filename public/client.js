@@ -369,8 +369,8 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
     //Predict state...
     //Simulating changes in state...
     let v = __WEBPACK_IMPORTED_MODULE_3__camera_ViewPort_js__["a" /* default */].getPointFromScreen(vec3.create(), this.renderer.camera, this.renderer.viewport, input.x, input.y);
-    this.gameState[this.socket.id].x = v[0];
-    this.gameState[this.socket.id].y = v[1];
+    //this.gameState[this.socket.id].x = v[0];
+    //this.gameState[this.socket.id].y = v[1];
 
     //Render state...
     this.renderer.render(this.gameState);

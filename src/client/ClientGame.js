@@ -74,8 +74,8 @@ class ClientGame extends Game
     //Predict state...
     //Simulating changes in state...
     let v = ViewPort.getPointFromScreen(vec3.create(), this.renderer.camera, this.renderer.viewport, input.x, input.y);
-    this.gameState[this.socket.id].x = v[0];
-    this.gameState[this.socket.id].y = v[1];
+    //this.gameState[this.socket.id].x = v[0];
+    //this.gameState[this.socket.id].y = v[1];
 
     //Render state...
     this.renderer.render(this.gameState);
