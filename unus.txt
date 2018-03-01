@@ -1,0 +1,36 @@
+PlayerShips
+NPCShips
+Drones
+- Dynamic
+- Controlled
+- Logic
+
+Planets
+- Static, Circle body
+
+Asteroids
+- Dynamic, Circle body
+
+DroppedItems
+- Dynamic, Point body
+
+PlayerShip / NPCShip / Drone
+Module
+- x, y (onChange)
+- rotation (onChange)
+
+- hull (onChange)
+- target (onChange)
+- inventory (onChange)
+
+Static
+- x, y (onCreate)
+- rotation (onChange)
+
+Dynamic
+- x, y (onChange)
+- rotation (onChange)
+- velocity (onChange)
+- mass (onCreate)
+
+- radius (onCreate)

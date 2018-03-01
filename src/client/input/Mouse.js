@@ -102,7 +102,8 @@ class Mouse
       scrollX: this.scrollX,
       scrollY: this.scrollY,
       down: this.down,
-      click : this.click
+      click: this.click,
+      time: Date.now()
     };
   }
 

@@ -35,6 +35,8 @@ class EntityManager
         this.addComponent(entity, components[i]);
       }
     }
+
+    entity.id = EntityManager.generateGUID();
     entity.dead = false;
     entity.onCreate(this);
     return entity;
@@ -52,6 +54,18 @@ class EntityManager
     entity.dead = true;
     this.entities.splice(this.entities.indexOf(entity), 1);
     return entity;
+  }
+
+  getEntityByID(id)
+  {
+    //TODO: Make a hashmap for this!
+    for(const entity of this.entities)
+    {
+      if (entity.id == id)
+      {
+        return entity;
+      }
+    }
   }
 
   getEntities(component)
@@ -84,6 +98,18 @@ class EntityManager
       throw new Error("entity does not include component \'" + component + "\'");
     }
     throw new Error("could not find system for \'" + component + "\'");
+  }
+
+  getComponents(entity, dst)
+  {
+    for(let i = this.systems.size; i >= 0; --i)
+    {
+      let system = this.systems[i];
+      if (system.entities.includes(entity))
+      {
+        dst.push(system);
+      }
+    }
   }
 
   clearComponents(entity)
@@ -124,6 +150,18 @@ class EntityManager
         this.removeEntity(entity);
       }
     }
+  }
+
+  static generateGUID()
+  {
+    function s4()
+    {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    }
+
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
   }
 }
 

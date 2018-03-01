@@ -1,8 +1,8 @@
 class Game
 {
-  constructor()
+  constructor(remote)
   {
-    this.entities = [];
+    this.remote = remote || true;
   }
 }
 

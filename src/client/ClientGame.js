@@ -6,11 +6,13 @@ import ViewPort from './camera/ViewPort.js';
 import Mouse from './input/Mouse.js';
 import Renderer from './Renderer.js';
 
+import GameState from '../integrated/GameState.js';
+
 class ClientGame extends Game
 {
   constructor(socket, canvas)
   {
-    super();
+    super(true);
 
     this.socket = socket;
     this.canvas = canvas;
@@ -18,8 +20,9 @@ class ClientGame extends Game
     this.input = new Mouse(document);
     this.renderer = new Renderer(this.canvas);
 
-    this.thePlayer = new Player();
-    this.gameState = {};
+    this.thePlayer = new Player(-1);
+
+    this.gameState = new GameState();
   }
 
   load(callback)
@@ -38,7 +41,8 @@ class ClientGame extends Game
     this.socket.on('server-handshake', () => {
       console.log("Connected to server...");
       //Add this EntityPlayer...
-      this.gameState[this.socket.id] = this.thePlayer;
+      this.thePlayer.id = this.socket.id;
+      this.gameState.addEntity(this.thePlayer.id, this.thePlayer);
       //Start game...
       callback();
     });
@@ -50,16 +54,18 @@ class ClientGame extends Game
       for(var i in data)
       {
         //Create EntityPlayer...
-        this.gameState[data[i]] = new Player();
+        let player = new Player(data[i]);
+        this.gameState.addEntity(player.id, player);
       }
     });
     this.socket.on('server-addclient', (data) => {
       //Create EntityPlayer...
-      this.gameState[data] = new Player();
+      let player = new Player(data);
+      this.gameState.addEntity(player.id, player);
     })
     this.socket.on('server-delclient', (data) => {
       //Delete EntityPlayer...
-      delete this.gameState[data];
+      this.gameState.removeEntity(data);
     });
 
     this.socket.on('disconnect', () => {
@@ -70,33 +76,29 @@ class ClientGame extends Game
   update(frame)
   {
     let input = this.input.poll();
+    let vec = ViewPort.getPointFromScreen(vec3.create(), this.renderer.camera, this.renderer.viewport, input.x, input.y);
+    input.x = vec[0];
+    input.y = vec[1];
 
-    //Predict state...
-    //Simulating changes in state...
-    let v = ViewPort.getPointFromScreen(vec3.create(), this.renderer.camera, this.renderer.viewport, input.x, input.y);
-    //this.gameState[this.socket.id].x = v[0];
-    //this.gameState[this.socket.id].y = v[1];
+    //TODO: Apply input to game state... PREDICTIVE!
+    let entity = this.gameState.getEntity(this.socket.id);
+    entity.x = input.x;
+    entity.y = input.y;
 
     //Render state...
-    this.renderer.render(this.gameState);
+    this.renderer.render(this.gameState.entities);
 
     if (input.dx != 0 || input.dy != 0)
     {
       //Force 200ms lag...
-      setTimeout(() => PacketHandler.sendToServer('client-input',
-      {
-        timestamp: frame.then,
-        x: v[0],
-        y: v[1]
-      },
-      this.socket), 200);
+      setTimeout(() => PacketHandler.sendToServer('client-input', input, this.socket), 200);
     }
   }
 
   onServerUpdate(socket, data)
   {
     //Update state to authoritative state...
-    this.gameState = data;
+    this.gameState.decode(data);
   }
 }
 

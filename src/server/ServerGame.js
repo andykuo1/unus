@@ -1,25 +1,26 @@
 import Game from '../integrated/Game.js';
 import Player from '../integrated/Player.js';
 import PacketHandler from '../integrated/packet/PacketHandler.js';
-
 import PriorityQueue from '../util/PriorityQueue.js';
 
 import Console from './console/Console.js';
+
+import GameState from '../integrated/GameState.js';
 
 class ServerGame extends Game
 {
   constructor(io)
   {
-    super();
+    super(false);
 
     this.io = io;
 
     this.clients = new Map();
     this.inputs = new PriorityQueue((a, b) => {
-      return (a.timestamp || 0) - (b.timestamp || 0);
+      return (a.time || 0) - (b.time || 0);
     });
 
-    this.gameState = {};
+    this.gameState = new GameState();
   }
 
   load(callback)
@@ -66,15 +67,13 @@ class ServerGame extends Game
       let input = this.inputs.dequeue();
 
       //TODO: Apply input to game state...
-
-      //Game Logic...
-      let entity = this.gameState[input.id];
+      let entity = this.gameState.getEntity(input.id);
       entity.x = input.x;
       entity.y = input.y;
     }
 
     //Send final game state to all
-    PacketHandler.sendToAll('server-update', this.gameState, this.clients);
+    PacketHandler.sendToAll('server-update', this.gameState.encode(), this.clients);
   }
 
   onClientInput(socket, data)
@@ -92,7 +91,8 @@ class ServerGame extends Game
     this.clients.set(socket.id, socket);
 
     //Create EntityPlayer here...
-    this.gameState[socket.id] = new Player();
+    let player = new Player(socket.id);
+    this.gameState.addEntity(socket.id, player);
   }
 
   removeClient(socket)
@@ -103,7 +103,7 @@ class ServerGame extends Game
     this.clients.delete(socket.id);
 
     //Delete EntityPlayer here...
-    delete this.gameState[socket.id];
+    this.gameState.removeEntity(socket.id);
   }
 }
 

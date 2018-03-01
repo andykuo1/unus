@@ -1,4 +1,4 @@
-class System
+class EntitySystem
 {
   constructor(id)
   {
@@ -21,6 +21,28 @@ class System
   onUpdate()
   {
 
+  }
+
+  encodeEntityData(src, dst)
+  {
+
+  }
+
+  decodeEntityData(src, dst)
+  {
+
+  }
+
+  getEntityByID(id)
+  {
+    //TODO: make a hash map for this
+    for(const entity of this.entities)
+    {
+      if (entity.id == id)
+      {
+        return entity;
+      }
+    }
   }
 
   static requireComponent(system, entity, component)
