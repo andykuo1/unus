@@ -15,7 +15,7 @@ export function resolve(specifier, parentModuleURL, defaultResolve) {
   }
   if (/^\.{0,2}[/]/.test(specifier) !== true && !specifier.startsWith('file:')) {
     // For node_modules support:
-      return defaultResolve(specifier, parentModuleURL);
+    return defaultResolve(specifier, parentModuleURL);
     //throw new Error(
     //  `imports must begin with '/', './', or '../'; '${specifier}' does not`);
   }
