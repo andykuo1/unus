@@ -1,4 +1,5 @@
 import Transform from '../integrated/world/TransformComponent.js';
+import Motion from '../integrated/world/MotionComponent.js';
 import Player from '../integrated/world/PlayerComponent.js';
 
 class PlayerManager
@@ -14,6 +15,7 @@ class PlayerManager
   {
     const entity = this.entityManager.createEntity()
       .addComponent(Transform)
+      .addComponent(Motion)
       .addComponent(Player);
     entity.player.socketID = socketID;
     this.players.set(socketID, entity);

@@ -12,7 +12,7 @@ class System
 
   onEntityDestroy(entity)
   {
-    
+
   }
 
   onUpdate(entityManager, frame)

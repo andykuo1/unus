@@ -1,25 +1,30 @@
-import System from '../entity/System.js';
+import SimpleSystem from './SimpleSystem.js';
+import Transform from './TransformComponent.js';
 
-class TransformSystem extends System
+class TransformSystem extends SimpleSystem
 {
   constructor()
   {
-
+    super(Transform);
   }
 
-  onUpdate(entityManager, frame)
+  onEntityUpdate(entity, frame)
   {
-    super.onUpdate(entityManager, frame);
+    //HACK: This is just what the renderer reads...
+    entity.x = entity.transform.x;
+    entity.y = entity.transform.y;
   }
 
-  writeToGameState(entityManager, gameState)
+  writeEntityToData(entity, dst)
   {
-    super.writeToGameState(entityManager, gameState);
+    dst.transform.x = entity.transform.x;
+    dst.transform.y = entity.transform.y;
   }
 
-  readFromGameState(entityManager, gameState)
+  readEntityFromData(src, entity)
   {
-    super.readFromGameState(entityManager, gameState);
+    entity.transform.x = src.transform.x;
+    entity.transform.y = src.transform.y;
   }
 }
 
