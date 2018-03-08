@@ -47,14 +47,14 @@ class PlayerSystem extends System
   {
     dst.player.nextX = entity.player.nextX;
     dst.player.nextY = entity.player.nextY;
-    dst.player.socketID = entity.player.socketID;
+    //dst.player.socketID = entity.player.socketID;
   }
 
   readEntityFromData(src, entity)
   {
     entity.player.nextX = src.player.nextX;
     entity.player.nextY = src.player.nextY;
-    entity.player.socketID = src.player.socketID;
+    //entity.player.socketID = src.player.socketID;
   }
 
   writeToGameState(entityManager, gameState)

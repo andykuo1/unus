@@ -9,14 +9,14 @@ class NetworkHandler
     {
       //Server-side init
       this.clients = new Map();
-      this.onClientConnect = (client) => {};
+      this.onClientConnect = (client, data) => {};
       this.onClientDisconnect = (client) => {};
     }
     else
     {
       //Client-side init
       this.socketID = -1;
-      this.onServerConnect = (server) => {};
+      this.onServerConnect = (server, data) => {};
       this.onServerDisconnect = (server) => {};
     }
   }
@@ -30,7 +30,7 @@ class NetworkHandler
     this.socket.on('server-handshake', (data) => {
       console.log("Connected to server...");
       this.socketID = data.socketID;
-      this.onServerConnect(this.socket);
+      this.onServerConnect(this.socket, data);
 
       //Start game...
       callback();
@@ -53,8 +53,10 @@ class NetworkHandler
       socket.on('client-handshake', () => {
         console.log("Added client: " + socket.id);
         this.clients.set(socket.id, socket);
-        socket.emit('server-handshake', {socketID: socket.id});
-        this.onClientConnect(socket);
+        const data = { socketID: socket.id };
+        this.onClientConnect(socket, data);
+        
+        socket.emit('server-handshake', data);
 
         socket.on('disconnect', () => {
           this.onClientDisconnect(socket);

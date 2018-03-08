@@ -572,7 +572,16 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
   {
     console.log("Connecting client...");
     this.networkHandler.initClient(callback);
-    this.networkHandler.onServerConnect = (server) => {
+    this.networkHandler.onServerConnect = (server, data) => {
+      //Setup the world from state...
+      this.world.resetState(data['gameState']);
+
+      //Get this client player...
+      const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
+      if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
+      this.world.playerManager.setClientPlayer(clientEntity);
+
+      //Listening to the server...
       server.on('server.gamestate', (data) => {
         this.onServerUpdate(server, data);
       });
@@ -593,7 +602,8 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
     this.inputStates.push(currentInputState);
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
-    this.world.step(currentInputState, frame, this.networkHandler.socketID);
+    const targetEntity = this.world.playerManager.getClientPlayer();
+    this.world.step(frame, currentInputState, targetEntity);
     this.renderer.render(this.world);
 
     //CLIENT sends CURRENT_INPUT_STATE.
@@ -610,9 +620,10 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
       this.inputStates.shift();
     }
     //CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
+    const targetEntity = this.world.playerManager.getClientPlayer();
     for(const inputState of this.inputStates)
     {
-      this.world.step(inputState, inputState.frame, this.networkHandler.socketID);
+      this.world.step(inputState.frame, inputState, targetEntity);
     }
   }
 
@@ -695,7 +706,6 @@ class World
     this.predictiveFrame = this.frame;
 
     this.entityManager = new __WEBPACK_IMPORTED_MODULE_0__entity_EntityManager_js__["a" /* default */]();
-    //TODO: move player manager to server code only
     this.playerManager = new __WEBPACK_IMPORTED_MODULE_1__player_PlayerManager_js__["a" /* default */](this.entityManager);
 
     this.systems = [];
@@ -703,12 +713,11 @@ class World
     this.systems.push(new __WEBPACK_IMPORTED_MODULE_3__world_PlayerSystem_js__["a" /* default */]());
   }
 
-  step(inputState, frame, target)
+  step(frame, inputState, targetEntity)
   {
     this.predictiveFrame = frame;
 
     //Update target with inputState
-    const targetEntity = this.playerManager.getPlayerByClientID(target);
     if (targetEntity)
     {
       for(const system of this.systems)
@@ -751,11 +760,6 @@ class World
   isNewerThan(frame)
   {
     return this.frame.then > frame.then;
-  }
-
-  get players()
-  {
-    return this.playerManager.getPlayers();
   }
 
   get entities()
@@ -887,14 +891,28 @@ class PlayerManager
 {
   constructor(entityManager)
   {
-    //This should only be used by server
     this.entityManager = entityManager;
+
+    //This should only be used by server
     this.players = new Map();
+
+    //This should only be used by client
+    this.clientPlayer = null;
 
     this.onPlayerConnect = (client) => {};
     this.onPlayerCreate = (player) => {};
     this.onPlayerDestroy = (player) => {};
     this.onPlayerDisconnect = (client) => {};
+  }
+
+  setClientPlayer(entity)
+  {
+    this.clientPlayer = entity;
+  }
+
+  getClientPlayer()
+  {
+    return this.clientPlayer;
   }
 
   createPlayer(socketID)
@@ -904,6 +922,7 @@ class PlayerManager
       .addComponent(__WEBPACK_IMPORTED_MODULE_1__world_PlayerComponent_js__["a" /* default */]);
     entity.player.socketID = socketID;
     this.players.set(socketID, entity);
+    return entity;
   }
 
   destroyPlayer(socketID)
@@ -915,15 +934,7 @@ class PlayerManager
 
   getPlayerByClientID(socketID)
   {
-    for(const entity of this.entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_1__world_PlayerComponent_js__["a" /* default */]))
-    {
-      if (entity.player.socketID == socketID)
-      {
-        return entity;
-      }
-    }
-
-    return null;
+    return this.players.get(socketID);
   }
 
   getPlayers()
@@ -1108,14 +1119,14 @@ class PlayerSystem extends __WEBPACK_IMPORTED_MODULE_1__entity_System_js__["a" /
   {
     dst.player.nextX = entity.player.nextX;
     dst.player.nextY = entity.player.nextY;
-    dst.player.socketID = entity.player.socketID;
+    //dst.player.socketID = entity.player.socketID;
   }
 
   readEntityFromData(src, entity)
   {
     entity.player.nextX = src.player.nextX;
     entity.player.nextY = src.player.nextY;
-    entity.player.socketID = src.player.socketID;
+    //entity.player.socketID = src.player.socketID;
   }
 
   writeToGameState(entityManager, gameState)
@@ -2133,14 +2144,14 @@ class NetworkHandler
     {
       //Server-side init
       this.clients = new Map();
-      this.onClientConnect = (client) => {};
+      this.onClientConnect = (client, data) => {};
       this.onClientDisconnect = (client) => {};
     }
     else
     {
       //Client-side init
       this.socketID = -1;
-      this.onServerConnect = (server) => {};
+      this.onServerConnect = (server, data) => {};
       this.onServerDisconnect = (server) => {};
     }
   }
@@ -2154,7 +2165,7 @@ class NetworkHandler
     this.socket.on('server-handshake', (data) => {
       console.log("Connected to server...");
       this.socketID = data.socketID;
-      this.onServerConnect(this.socket);
+      this.onServerConnect(this.socket, data);
 
       //Start game...
       callback();
@@ -2177,8 +2188,10 @@ class NetworkHandler
       socket.on('client-handshake', () => {
         console.log("Added client: " + socket.id);
         this.clients.set(socket.id, socket);
-        socket.emit('server-handshake', {socketID: socket.id});
-        this.onClientConnect(socket);
+        const data = { socketID: socket.id };
+        this.onClientConnect(socket, data);
+        
+        socket.emit('server-handshake', data);
 
         socket.on('disconnect', () => {
           this.onClientDisconnect(socket);

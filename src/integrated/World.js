@@ -14,7 +14,6 @@ class World
     this.predictiveFrame = this.frame;
 
     this.entityManager = new EntityManager();
-    //TODO: move player manager to server code only
     this.playerManager = new PlayerManager(this.entityManager);
 
     this.systems = [];
@@ -22,12 +21,11 @@ class World
     this.systems.push(new PlayerSystem());
   }
 
-  step(inputState, frame, target)
+  step(frame, inputState, targetEntity)
   {
     this.predictiveFrame = frame;
 
     //Update target with inputState
-    const targetEntity = this.playerManager.getPlayerByClientID(target);
     if (targetEntity)
     {
       for(const system of this.systems)
@@ -70,11 +68,6 @@ class World
   isNewerThan(frame)
   {
     return this.frame.then > frame.then;
-  }
-
-  get players()
-  {
-    return this.playerManager.getPlayers();
   }
 
   get entities()

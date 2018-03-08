@@ -38,7 +38,16 @@ class ClientGame extends Game
   {
     console.log("Connecting client...");
     this.networkHandler.initClient(callback);
-    this.networkHandler.onServerConnect = (server) => {
+    this.networkHandler.onServerConnect = (server, data) => {
+      //Setup the world from state...
+      this.world.resetState(data['gameState']);
+
+      //Get this client player...
+      const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
+      if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
+      this.world.playerManager.setClientPlayer(clientEntity);
+
+      //Listening to the server...
       server.on('server.gamestate', (data) => {
         this.onServerUpdate(server, data);
       });
@@ -59,7 +68,8 @@ class ClientGame extends Game
     this.inputStates.push(currentInputState);
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
-    this.world.step(currentInputState, frame, this.networkHandler.socketID);
+    const targetEntity = this.world.playerManager.getClientPlayer();
+    this.world.step(frame, currentInputState, targetEntity);
     this.renderer.render(this.world);
 
     //CLIENT sends CURRENT_INPUT_STATE.
@@ -76,9 +86,10 @@ class ClientGame extends Game
       this.inputStates.shift();
     }
     //CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
+    const targetEntity = this.world.playerManager.getClientPlayer();
     for(const inputState of this.inputStates)
     {
-      this.world.step(inputState, inputState.frame, this.networkHandler.socketID);
+      this.world.step(inputState.frame, inputState, targetEntity);
     }
   }
 

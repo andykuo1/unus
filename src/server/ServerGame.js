@@ -27,6 +27,9 @@ class ServerGame extends Game
     //Setup console...
     this.onCommandSetup();
 
+    //Setup world...
+    this.onWorldSetup();
+
     callback();
   }
 
@@ -35,16 +38,22 @@ class ServerGame extends Game
     console.log("Connecting server...");
 
     this.networkHandler.initServer(callback);
-    this.networkHandler.onClientConnect = (client) => {
+    this.networkHandler.onClientConnect = (client, data) => {
+      //Insert new player...
       const clientEntity = this.world.playerManager.createPlayer(client.id);
+      data.entityID = clientEntity._id;
+
+      //Send previous game state...
+      const gameState = this.world.captureState(this.world.frame);
+      data.gameState = gameState;
+
+      //Listening to the client...
       client.on('client.inputstate', (data) => {
         this.onClientUpdate(client, data);
       });
     };
     this.networkHandler.onClientDisconnect = (client) => {
-      const clientEntity = this.world.playerManager.getPlayerByClientID(client.id);
-      if (clientEntity == null) return;
-      this.world.entityManager.destroyEntity(clientEntity);
+      this.world.playerManager.destroyPlayer(client.id);
     };
 
     callback();
@@ -67,13 +76,19 @@ class ServerGame extends Game
     });
   }
 
+  onWorldSetup()
+  {
+    //TODO: ADD initial world state / loading
+  }
+
   onUpdate(frame)
   {
     //SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
     while(this.inputStates.length > 0)
     {
-      let inputState = this.inputStates.dequeue();
-      this.world.step(inputState, inputState.frame, inputState.target);
+      const inputState = this.inputStates.dequeue();
+      const targetEntity = this.world.playerManager.getPlayerByClientID(inputState.target);
+      this.world.step(inputState.frame, inputState, targetEntity);
     }
 
     //SERVER sends CURRENT_GAME_STATE to all CLIENTS.
@@ -89,7 +104,7 @@ class ServerGame extends Game
 
   sendServerUpdate(frame)
   {
-    let gameState = this.world.captureState(frame);
+    const gameState = this.world.captureState(frame);
     this.networkHandler.sendToAll('server.gamestate', gameState);
   }
 }

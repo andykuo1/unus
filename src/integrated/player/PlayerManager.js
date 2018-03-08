@@ -5,14 +5,28 @@ class PlayerManager
 {
   constructor(entityManager)
   {
-    //This should only be used by server
     this.entityManager = entityManager;
+
+    //This should only be used by server
     this.players = new Map();
+
+    //This should only be used by client
+    this.clientPlayer = null;
 
     this.onPlayerConnect = (client) => {};
     this.onPlayerCreate = (player) => {};
     this.onPlayerDestroy = (player) => {};
     this.onPlayerDisconnect = (client) => {};
+  }
+
+  setClientPlayer(entity)
+  {
+    this.clientPlayer = entity;
+  }
+
+  getClientPlayer()
+  {
+    return this.clientPlayer;
   }
 
   createPlayer(socketID)
@@ -22,6 +36,7 @@ class PlayerManager
       .addComponent(Player);
     entity.player.socketID = socketID;
     this.players.set(socketID, entity);
+    return entity;
   }
 
   destroyPlayer(socketID)
@@ -33,15 +48,7 @@ class PlayerManager
 
   getPlayerByClientID(socketID)
   {
-    for(const entity of this.entityManager.getEntitiesByComponent(Player))
-    {
-      if (entity.player.socketID == socketID)
-      {
-        return entity;
-      }
-    }
-
-    return null;
+    return this.players.get(socketID);
   }
 
   getPlayers()
