@@ -15,13 +15,11 @@ This will create 'node_modules', which should now have all required dependencies
 # Running
 To run the server, open the _Terminal_ at the project folder and run:
 
-> node index.js
+> npm start
 
 To run the client, open a browser and go to url for your _localhost_ at the specified port number found in the server files, for example:
 
 > localhost:3000
-
-To use additional script files on the client side, be sure to add the script's path to the script loader in _app.js_.
 
 # Future Plans
 * Load files with a pretty loading screen

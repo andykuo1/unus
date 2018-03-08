@@ -1,0 +1,81 @@
+PlayerShips
+NPCShips
+Drones
+- Dynamic
+- Controlled
+- Logic
+
+Planets
+- Static, Circle body
+
+Asteroids
+- Dynamic, Circle body
+
+DroppedItems
+- Dynamic, Point body
+
+PlayerShip / NPCShip / Drone
+Module
+- x, y (onChange)
+- rotation (onChange)
+
+- hull (onChange)
+- target (onChange)
+- inventory (onChange)
+
+Static
+- x, y (onCreate)
+- rotation (onChange)
+
+Dynamic
+- x, y (onChange)
+- rotation (onChange)
+- velocity (onChange)
+- mass (onCreate)
+
+- radius (onCreate)
+
+
+
+
+
+
+
+
+Server - Client System
+  CLIENT sends INPUT
+  SERVER gets CLIENT.INPUT and updates the CURRENT_GAME_STATE
+  SERVER sends CURRENT_GAME_STATE
+  CLIENT reads CURRENT_GAME_STATE and OVERWRITE the GAME_STATE
+  Each system that is synchronized needs some way to take a GAME_STATE and extrapolate, based
+    on inputs between to a timestamp.
+
+
+CLIENT gets CURRENT_GAME_STATE.
+CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
+CLIENT removes all INPUT_STATE older than CURRENT_GAME_STATE.
+CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
+. . .
+CLIENT stores CURRENT_INPUT_STATE.
+CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
+CLIENT sends CURRENT_INPUT_STATE.
+=-=-=
+SERVER stores CURRENT_INPUT_STATE.
+SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
+SERVER sends CURRENT_GAME_STATE to all CLIENTS.
+
+
+
+EntitySystem
+  - Created?
+  - Dead?
+MotionSystem
+  - MotionX, MotionY, MotionRot
+  - X, Y, Rotation
+
+
+
+Synchronized Systems
+- Motion / Position / Direction
+- Shooting
+- Trading

@@ -2,9 +2,10 @@
   "name": "unus",
   "version": "1.0.0",
   "description": "An online browser game.",
-  "main": "index.js",
+  "main": "./src/server.js",
   "scripts": {
-    "test": "node index.js"
+    "build": "webpack --config webpack.config.js",
+    "start": "npm run build && bash run.sh"
   },
   "repository": {
     "type": "git",
@@ -20,5 +21,8 @@
     "express": "^4.16.2",
     "gl-matrix": "^2.4.0",
     "socket.io": "^2.0.4"
+  },
+  "devDependencies": {
+    "webpack": "^3.10.0"
   }
 }
