@@ -1,26 +1,25 @@
-import Game from '../integrated/Game.js';
-import Player from '../integrated/Player.js';
-import PacketHandler from '../integrated/packet/PacketHandler.js';
 import PriorityQueue from '../util/PriorityQueue.js';
 
 import Console from './console/Console.js';
 
-import GameState from '../integrated/GameState.js';
+import Player from '../integrated/entity/PlayerComponent.js';
 
-class ServerGame extends Game
+/*
+
+SERVER stores CURRENT_INPUT_STATE.
+SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
+SERVER sends CURRENT_GAME_STATE to all CLIENTS.
+
+*/
+
+class ServerGame// extends Game
 {
-  constructor(io)
+  constructor(world, networkHandler)
   {
-    super(false);
+    this.world = world;
+    this.networkHandler = networkHandler;
 
-    this.io = io;
-
-    this.clients = new Map();
-    this.inputs = new PriorityQueue((a, b) => {
-      return (a.time || 0) - (b.time || 0);
-    });
-
-    this.gameState = new GameState();
+    this.inputStates = new PriorityQueue();
   }
 
   load(callback)
@@ -42,68 +41,52 @@ class ServerGame extends Game
   {
     console.log("Connecting server...");
 
-    //Setup server..
-    this.io.on('connection', (socket) => {
-      socket.on('client-handshake', () => {
-        this.addClient(socket);
-        socket.emit('server-handshake');
-        socket.on('client-input', (data) => {
-          this.onClientInput(socket, data);
-        });
-        socket.on('disconnect', () => {
-          this.removeClient(socket);
-        });
+    this.networkHandler.initServer(callback);
+    this.networkHandler.onClientConnect = (client) => {
+      const clientEntity = this.world.entityManager.createEntity().addComponent(Player);
+      clientEntity.player.socketID = client.id;
+      client.on('client.inputstate', (data) => {
+        this.onClientUpdate(client, data);
       });
-    });
+    };
+    this.networkHandler.onClientDisconnect = (client) => {
+      const clientEntity = this.world.getEntityByClientID(client.id);
+      if (clientEntity == null) return;
+      this.world.entityManager.destroyEntity(clientEntity);
+    };
 
     callback();
   }
 
   update(frame)
   {
-    //Poll clients to GameState
-    while(this.inputs.length > 0)
-    {
-      let input = this.inputs.dequeue();
+    this.onUpdate(frame);
+  }
 
-      //TODO: Apply input to game state...
-      let entity = this.gameState.getEntity(input.id);
-      entity.x = input.x;
-      entity.y = input.y;
+  onUpdate(frame)
+  {
+    //SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
+    while(this.inputStates.length > 0)
+    {
+      let inputState = this.inputStates.dequeue();
+      this.world.step(inputState, inputState.frame, inputState.target);
     }
 
-    //Send final game state to all
-    PacketHandler.sendToAll('server-update', this.gameState.encode(), this.clients);
+    //SERVER sends CURRENT_GAME_STATE to all CLIENTS.
+    this.sendServerUpdate(frame);
   }
 
-  onClientInput(socket, data)
+  onClientUpdate(client, inputState)
   {
-    data.id = socket.id;
-    this.inputs.queue(data);
+    //SERVER stores CURRENT_INPUT_STATE.
+    inputState.target = client.id;
+    this.inputStates.queue(inputState);
   }
 
-  addClient(socket)
+  sendServerUpdate(frame)
   {
-    PacketHandler.sendToAll('server-addclient', socket.id, this.clients);
-    PacketHandler.sendToClient('server-extclient', this.clients.keys(), socket);
-
-    console.log("Added client: " + socket.id);
-    this.clients.set(socket.id, socket);
-
-    //Create EntityPlayer here...
-    let player = new Player(socket.id);
-    this.gameState.addEntity(socket.id, player);
-  }
-
-  removeClient(socket)
-  {
-    PacketHandler.sendToAll('server-delclient', socket.id, this.clients);
-
-    console.log("Removed client: " + socket.id);
-    this.clients.delete(socket.id);
-
-    //Delete EntityPlayer here...
-    this.gameState.removeEntity(socket.id);
+    let gameState = this.world.captureState(frame);
+    this.networkHandler.sendToAll('server.gamestate', gameState);
   }
 }
 

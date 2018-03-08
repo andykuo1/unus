@@ -390,7 +390,7 @@ function Player()
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__client_TestClientGame_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__client_ClientGame_js__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__integrated_World_js__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__integrated_NetworkHandler_js__ = __webpack_require__(21);
 
@@ -412,7 +412,7 @@ var socket = io();
 var game;
 function start()
 {
-  game = new __WEBPACK_IMPORTED_MODULE_0__client_TestClientGame_js__["a" /* default */](
+  game = new __WEBPACK_IMPORTED_MODULE_0__client_ClientGame_js__["a" /* default */](
 		new __WEBPACK_IMPORTED_MODULE_1__integrated_World_js__["a" /* default */]({delta: 0, then: Date.now(), count: 0}, true),
 		new __WEBPACK_IMPORTED_MODULE_2__integrated_NetworkHandler_js__["a" /* default */](socket, true)
 	);
@@ -552,7 +552,7 @@ class ClientGame// extends Game
     //CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
     for(const inputState of this.inputStates)
     {
-      this.world.step(inputState, inputState.frame, null);
+      this.world.step(inputState, inputState.frame, this.networkHandler.socketID);
     }
   }
 
@@ -570,7 +570,8 @@ class ClientGame// extends Game
 
   sendClientInput(inputState)
   {
-    this.networkHandler.sendToServer('client.inputstate', inputState);
+    //FIXME: Force 200ms lag...
+    setTimeout(() => this.networkHandler.sendToServer('client.inputstate', inputState), 200);
   }
 }
 

@@ -1,4 +1,4 @@
-import ClientGame from './client/TestClientGame.js';
+import ClientGame from './client/ClientGame.js';
 import World from './integrated/World.js';
 import NetworkHandler from './integrated/NetworkHandler.js';
 
