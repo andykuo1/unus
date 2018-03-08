@@ -5,12 +5,5 @@ module.exports = {
   output: {
     path: __dirname + '/public',
     filename: 'bundle.js',
-  }
-  /*
-  resolve: {
-    root: [
-      path.resolve(__dirname + '/src');
-    ],
-  }
-  */
+  },
 };
