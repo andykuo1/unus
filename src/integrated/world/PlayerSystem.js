@@ -3,6 +3,8 @@ import System from '../entity/System.js';
 import Player from './PlayerComponent.js';
 import Transform from './TransformComponent.js';
 
+import Reflection from '../../util/Reflection.js';
+
 class PlayerSystem extends System
 {
   constructor()
@@ -57,7 +59,7 @@ class PlayerSystem extends System
 
   writeToGameState(entityManager, gameState)
   {
-    const PLAYER_NAME = EntityManager.getComponentName(Player);
+    const PLAYER_NAME = Reflection.getClassVarName(Player);
 
     let dst = gameState['entities'];
     if (!dst) dst = gameState['entities'] = {};
@@ -73,7 +75,7 @@ class PlayerSystem extends System
 
   readFromGameState(entityManager, gameState)
   {
-    const PLAYER_NAME = EntityManager.getComponentName(Player);
+    const PLAYER_NAME = Reflection.getClassVarName(Player);
 
     let src = gameState['entities'] || {};
     for(const entityID in src)

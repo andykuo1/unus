@@ -1,5 +1,6 @@
 import Entity from './Entity.js';
 
+import Reflection from '../../util/Reflection.js';
 import ObjectPool from '../../util/ObjectPool.js';
 
 class EntityManager
@@ -53,10 +54,10 @@ class EntityManager
   {
     if (this.hasComponent(entity, component))
     {
-      throw new Error("entity already includes component \'" + EntityManager.getComponentName(component) + "\'");
+      throw new Error("entity already includes component \'" + Reflection.getClassVarName(component) + "\'");
     }
 
-    entity[EntityManager.getComponentName(component)] = new component();
+    entity[Reflection.getClassVarName(component)] = new component();
 
     var list = this.components.get(component) || [];
     list.push(entity);
@@ -67,10 +68,10 @@ class EntityManager
   {
     if (!this.hasComponent(entity, component))
     {
-      throw new Error("entity does not include component \'" + EntityManager.getComponentName(component) + "\'");
+      throw new Error("entity does not include component \'" + Reflection.getClassVarName(component) + "\'");
     }
 
-    delete entity[EntityManager.getComponentName(component)];
+    delete entity[Reflection.getClassVarName(component)];
 
     var list = this.components.get(component);
     if (list)
@@ -85,7 +86,7 @@ class EntityManager
     {
       if (list.includes(entity))
       {
-        delete entity[EntityManager.getComponentName(key)];
+        delete entity[Reflection.getClassVarName(key)];
 
         list.splice(list.indexOf(entity), 1);
       }
@@ -121,15 +122,14 @@ class EntityManager
     return this.entities;
   }
 
+  getEntityIterator()
+  {
+    return new EntityIterator(this);
+  }
+
   getNextAvailableEntityID()
   {
     return this.nextEntityID++;
-  }
-
-  static getComponentName(component)
-  {
-    var name = component.name;
-    return name.charAt(0).toLowerCase() + name.slice(1);
   }
 }
 
