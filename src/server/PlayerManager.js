@@ -1,5 +1,5 @@
-import Transform from '../world/TransformComponent.js';
-import Player from '../world/PlayerComponent.js';
+import Transform from '../integrated/world/TransformComponent.js';
+import Player from '../integrated/world/PlayerComponent.js';
 
 class PlayerManager
 {
@@ -7,26 +7,8 @@ class PlayerManager
   {
     this.entityManager = entityManager;
 
-    //This should only be used by server
     this.players = new Map();
-
-    //This should only be used by client
-    this.clientPlayer = null;
   }
-
-  /** CLIENT CODE */
-
-  setClientPlayer(entity)
-  {
-    this.clientPlayer = entity;
-  }
-
-  getClientPlayer()
-  {
-    return this.clientPlayer;
-  }
-
-  /** SERVER CODE */
 
   createPlayer(socketID)
   {

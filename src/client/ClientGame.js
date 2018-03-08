@@ -1,5 +1,6 @@
 import Game from '../integrated/Game.js';
 import World from '../integrated/World.js';
+import PlayerController from './PlayerController.js';
 
 import Mouse from './input/Mouse.js';
 import Renderer from './Renderer.js';
@@ -26,6 +27,8 @@ class ClientGame extends Game
     this.input = new Mouse(document);
     this.inputStates = [];
     this.renderer = new Renderer(canvas);
+
+    this.playerController = new PlayerController(this.world.entityManager);
   }
 
   load(callback)
@@ -45,7 +48,7 @@ class ClientGame extends Game
       //Get this client player...
       const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
       if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
-      this.world.playerManager.setClientPlayer(clientEntity);
+      this.playerController.setClientPlayer(clientEntity);
 
       //Listening to the server...
       server.on('server.gamestate', (data) => {
@@ -68,7 +71,7 @@ class ClientGame extends Game
     this.inputStates.push(currentInputState);
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
-    const targetEntity = this.world.playerManager.getClientPlayer();
+    const targetEntity = this.playerController.getClientPlayer();
     this.world.step(frame, currentInputState, targetEntity);
     this.renderer.render(this.world);
 
@@ -86,7 +89,7 @@ class ClientGame extends Game
       this.inputStates.shift();
     }
     //CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
-    const targetEntity = this.world.playerManager.getClientPlayer();
+    const targetEntity = this.playerController.getClientPlayer();
     for(const inputState of this.inputStates)
     {
       this.world.step(inputState.frame, inputState, targetEntity);

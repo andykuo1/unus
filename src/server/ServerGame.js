@@ -1,5 +1,6 @@
 import Game from '../integrated/Game.js';
 import World from '../integrated/World.js';
+import PlayerManager from './PlayerManager.js';
 
 import PriorityQueue from '../util/PriorityQueue.js';
 import Console from './console/Console.js';
@@ -18,6 +19,8 @@ class ServerGame extends Game
 
     this.world = new World({delta: 0, then: Date.now(), count: 0}, false);
     this.inputStates = new PriorityQueue();
+
+    this.playerManager = new PlayerManager(this.world.entityManager);
   }
 
   load(callback)
@@ -40,7 +43,7 @@ class ServerGame extends Game
     this.networkHandler.initServer(callback);
     this.networkHandler.onClientConnect = (client, data) => {
       //Insert new player...
-      const clientEntity = this.world.playerManager.createPlayer(client.id);
+      const clientEntity = this.playerManager.createPlayer(client.id);
       data.entityID = clientEntity._id;
 
       //Send previous game state...
@@ -53,7 +56,7 @@ class ServerGame extends Game
       });
     };
     this.networkHandler.onClientDisconnect = (client) => {
-      this.world.playerManager.destroyPlayer(client.id);
+      this.playerManager.destroyPlayer(client.id);
     };
 
     callback();
@@ -87,7 +90,7 @@ class ServerGame extends Game
     while(this.inputStates.length > 0)
     {
       const inputState = this.inputStates.dequeue();
-      const targetEntity = this.world.playerManager.getPlayerByClientID(inputState.target);
+      const targetEntity = this.playerManager.getPlayerByClientID(inputState.target);
       this.world.step(inputState.frame, inputState, targetEntity);
     }
 

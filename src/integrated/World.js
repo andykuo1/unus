@@ -1,5 +1,4 @@
 import EntityManager from './entity/EntityManager.js';
-import PlayerManager from './player/PlayerManager.js';
 
 import NetworkEntitySystem from './world/NetworkEntitySystem.js';
 import PlayerSystem from './world/PlayerSystem.js';
@@ -14,7 +13,6 @@ class World
     this.predictiveFrame = this.frame;
 
     this.entityManager = new EntityManager();
-    this.playerManager = new PlayerManager(this.entityManager);
 
     this.systems = [];
     this.systems.push(new NetworkEntitySystem(this.entityManager));
