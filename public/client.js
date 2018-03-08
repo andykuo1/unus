@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -68,14 +68,20 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-//WebGL Setup
-const gl = canvas.getContext('webgl');
-if (!gl) throw new Error("Unable to initialize WebGL. Your browser or machine may not support it.");
+function init(canvas)
+{
+  console.log("Initializing WebGL...");
+  var gl = canvas.getContext('webgl');
+  if (!gl) throw new Error("Unable to initialize WebGL. Your browser or machine may not support it.");
+  console.log("Found WebGL " + gl.VERSION);
 
-gl.clearColor(0.0, 0.0, 0.0, 1.0);
-gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  return gl;
+}
 
-/* harmony default export */ __webpack_exports__["a"] = (gl);
+//TODO: assumes canvas is a global variable...
+/* harmony default export */ __webpack_exports__["a"] = (init(canvas));
 
 
 /***/ }),
@@ -83,26 +89,144 @@ gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-class Transform
-{
-  constructor(x = 0, y = 0, z = 0)
-  {
-    this.position = vec3.create();
-    vec3.set(this.position, x, y, z);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Entity_js__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_ObjectPool_js__ = __webpack_require__(12);
 
-    this.rotation = quat.create();
-    this.scale = vec3.create();
-    vec3.set(this.scale, 1, 1, 1);
+
+
+
+class EntityManager
+{
+  constructor(E)
+  {
+    this.entities = [];
+    this.entityPool = new __WEBPACK_IMPORTED_MODULE_1__util_ObjectPool_js__["a" /* default */](E || __WEBPACK_IMPORTED_MODULE_0__Entity_js__["a" /* default */]);
+
+    this.components = new Map();
+    this.nextEntityID = 1;
+
+    this.onEntityCreate = (entity) => {};
+    this.onEntityDestroy = (entity) => {};
   }
 
-  getTransformation(dst)
+  createEntity(id)
   {
-    mat4.fromRotationTranslationScale(dst, this.rotation, this.position, this.scale);
-    return dst;
+    const entity = this.entityPool.obtain();
+    entity._manager = this;
+    entity._id = id || this.getNextAvailableEntityID();
+    this.entities.push(entity);
+
+    this.onEntityCreate(entity);
+
+    return entity;
+  }
+
+  destroyEntity(entity)
+  {
+    this.onEntityDestroy(entity);
+
+    this.clearComponentsFromEntity(entity);
+    this.entities.splice(this.entities.indexOf(entity), 1);
+    this.entityPool.release(entity);
+  }
+
+  getEntityByID(id)
+  {
+    for(let entity of this.entities)
+    {
+      if (entity._id == id)
+      {
+        return entity;
+      }
+    }
+    return null;
+  }
+
+  addComponentToEntity(entity, component)
+  {
+    if (this.hasComponent(entity, component))
+    {
+      throw new Error("entity already includes component \'" + EntityManager.getComponentName(component) + "\'");
+    }
+
+    entity[EntityManager.getComponentName(component)] = new component();
+
+    var list = this.components.get(component) || [];
+    list.push(entity);
+    this.components.set(component, list);
+  }
+
+  removeComponentFromEntity(entity, component)
+  {
+    if (!this.hasComponent(entity, component))
+    {
+      throw new Error("entity does not include component \'" + EntityManager.getComponentName(component) + "\'");
+    }
+
+    delete entity[EntityManager.getComponentName(component)];
+
+    var list = this.components.get(component);
+    if (list)
+    {
+      list.splice(list.indexOf(entity), 1);
+    }
+  }
+
+  clearComponentsFromEntity(entity)
+  {
+    for(const [key, list] of this.components)
+    {
+      if (list.includes(entity))
+      {
+        delete entity[EntityManager.getComponentName(key)];
+
+        list.splice(list.indexOf(entity), 1);
+      }
+    }
+  }
+
+  hasComponent(entity, component)
+  {
+    let list = this.components.get(component);
+    return list && list.includes(entity);
+  }
+
+  getComponentsByEntity(entity)
+  {
+    let result = [];
+    for(const [key, list] of this.components)
+    {
+      if (list.includes(entity))
+      {
+        result.push(key);
+      }
+    }
+    return result;
+  }
+
+  getEntitiesByComponent(component)
+  {
+    return this.components.get(component) || [];
+  }
+
+  getEntities()
+  {
+    return this.entities;
+  }
+
+  getNextAvailableEntityID()
+  {
+    return this.nextEntityID++;
+  }
+
+  static getComponentName(component)
+  {
+    var name = component.name;
+    return name.charAt(0).toLowerCase() + name.slice(1);
   }
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (Transform);
+/* harmony default export */ __webpack_exports__["a"] = (EntityManager);
 
 
 /***/ }),
@@ -110,31 +234,153 @@ class Transform
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__mogli_gl_js__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__mogli_Shader_js__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__mogli_Program_js__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__mogli_VBO_js__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mogli_Mesh_js__ = __webpack_require__(11);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_1__mogli_Shader_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_2__mogli_Program_js__["a"]; });
-/* unused harmony reexport VBO */
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_4__mogli_Mesh_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return __WEBPACK_IMPORTED_MODULE_0__mogli_gl_js__["a"]; });
-/**
- * @file My OpenGL Interface
- * @author Andrew Kuo <akuo1198@gmail.com>
- */
+class System
+{
+  constructor()
+  {
 
+  }
 
+  onEntityCreate(entity)
+  {
 
+  }
 
+  onEntityDestroy(entity)
+  {
+    
+  }
 
+  onUpdate(entityManager, frame)
+  {
 
+  }
 
+  onInputUpdate(targetEntity, inputState)
+  {
+
+  }
+
+  writeToGameState(entityManager, gameState)
+  {
+
+  }
+
+  readFromGameState(entityManager, gameState)
+  {
+
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (System);
 
 
 /***/ }),
 /* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+function Player()
+{
+  this.socketID = -1;
+  this.nextX = 0;
+  this.nextY = 0;
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Player);
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+function Transform()
+{
+  this.x = 0;
+  this.y = 0;
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Transform);
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__mogli_gl_js__ = __webpack_require__(0);
+
+
+class ViewPort
+{
+  constructor(canvas)
+  {
+    this.canvas = canvas;
+  }
+
+  update()
+  {
+    __WEBPACK_IMPORTED_MODULE_0__mogli_gl_js__["a" /* default */].clear(__WEBPACK_IMPORTED_MODULE_0__mogli_gl_js__["a" /* default */].COLOR_BUFFER_BIT | __WEBPACK_IMPORTED_MODULE_0__mogli_gl_js__["a" /* default */].DEPTH_BUFFER_BIT);
+    __WEBPACK_IMPORTED_MODULE_0__mogli_gl_js__["a" /* default */].viewport(0, 0, this.width, this.height);
+  }
+
+  get width()
+  {
+    return this.canvas.clientWidth;
+  }
+
+  get height()
+  {
+    return this.canvas.clientHeight;
+  }
+
+  static getPointFromScreen(dst, camera, viewport, screenX, screenY)
+  {
+    let invViewProj = getInvertedViewProjection(mat4.create(), camera);
+    let x = screenX;
+    let y = viewport.height - screenY;
+
+    //TODO: The depth should be 0 if perspective...
+    let near = unproject(vec3.create(), invViewProj, viewport, x, y, -1.0);
+    let far = unproject(vec3.create(), invViewProj, viewport, x, y, 1.0);
+
+    let f = (0 - near[2]) / (far[2] - near[2]);
+    dst[0] = (near[0] + f * (far[0] - near[0]));
+    dst[1] = (near[1] + f * (far[1] - near[1]));
+    dst[2] = 0;
+    return dst;
+  }
+}
+
+function getInvertedViewProjection(dst, camera)
+{
+  mat4.mul(dst, camera.projection, camera.view);
+  mat4.invert(dst, dst);
+  return dst;
+}
+
+function unproject(dst, invertedViewProjection, viewport, screenX, screenY, screenZ)
+{
+  let normalizedDeviceCoords = vec4.create();
+  normalizedDeviceCoords[0] = screenX / viewport.width * 2.0 - 1.0;
+  normalizedDeviceCoords[1] = screenY / viewport.height * 2.0 - 1.0;
+  normalizedDeviceCoords[2] = screenZ * 2.0 - 1.0;
+  normalizedDeviceCoords[3] = 1.0;
+
+  let objectCoords = vec4.transformMat4(normalizedDeviceCoords, normalizedDeviceCoords, invertedViewProjection);
+  if (objectCoords[3] != 0) objectCoords[3] = 1.0 / objectCoords[3];
+  dst[0] = objectCoords[0] * objectCoords[3];
+  dst[1] = objectCoords[1] * objectCoords[3];
+  dst[2] = objectCoords[2] * objectCoords[3];
+  return dst;
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (ViewPort);
+
+
+/***/ }),
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -185,492 +431,677 @@ class Shader
 
 
 /***/ }),
-/* 4 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_js__ = __webpack_require__(0);
-
-
-/**
- * VBO - Data buffer representation
- */
-class VBO
-{
-  constructor(target)
-  {
-    this.target = target || __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].ARRAY_BUFFER;
-    this.handle = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].createBuffer();
-    this.normalized = false;
-    this.length = 0;
-    this.vertexSize = 0;
-    this.stride = 0;
-  }
-
-  /**
-   * close - Destroys the buffer object
-   */
-  close()
-  {
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].deleteBuffer(this.handle);
-    this.handle = null;
-  }
-
-  /**
-   * putData - Put the passed-in data in this buffer object with specific
-   * instructions to how to use it.
-   *
-   * @param {Array} data          the array data
-   *                              (i.e. Float32Array, Uint16Array)
-   * @param {GLEnum} dataType     the type of data
-   *                              (i.e. gl.FLOAT, gl.UNSIGNED_INT)
-   * @param {Number} vertexSize   the size of the vertices this buffer holds
-   * @param {Boolean} normalized  whether this buffer is normalized
-   * @param {GLEnum} usage        how this buffer is stored and used
-   *                              (i.e. gl.STATIC_DRAW)
-   * @param {Number} stride       the 'step' indices to each vertex (default 0)
-   */
-  putData(data, dataType, vertexSize, normalized, usage, stride)
-  {
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, this.handle);
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bufferData(this.target, data, usage);
-    this.type = dataType;
-    this.vertexSize = vertexSize;
-    this.normalized = normalized;
-    this.length = data.length;
-    this.stride = stride || 0;
-  }
-
-  /**
-   * updateData - Update the buffer data to the passed-in data
-   *
-   * @param {Array} data    the array data (i.e. Float32Array)
-   * @param {Number} offset the index from which to update
-   */
-  updateData(data, offset)
-  {
-    if (offset + data.length > this.length)
-    {
-      var usage = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getBufferParameter(this.target, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].BUFFER_USAGE);
-      this.putData(data, this.normalized, usage);
-    }
-
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, this.handle);
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bufferSubData(this.target, offset, data);
-  }
-
-  /**
-   * bind - Binds the buffer object to the current target context
-   * (specified by putData())
-   */
-  bind()
-  {
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, this.handle);
-  }
-
-  /**
-   * unbind - Binds an empty buffer object to the current target context
-   * (specified by putData())
-   */
-  unbind()
-  {
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, null);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (VBO);
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* unused harmony export Entity */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return EntityManager; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return System; });
-class Entity
-{
-  constructor()
-  {
-  }
-
-  onCreate()
-  {
-  }
-
-  onDestroy()
-  {
-  }
-}
-
-class EntityManager
-{
-  constructor()
-  {
-    this.systems = {};
-    this.entities = [];
-  }
-
-  registerSystem(system)
-  {
-    this.systems[system.id] = system;
-    system.entityManager = this;
-    return this;
-  }
-
-  createEntity(components)
-  {
-    return this.addEntity(new Entity(), components);
-  }
-
-  addEntity(entity, components)
-  {
-    if (entity.dead == false)
-    {
-      throw new Error("entity already created!");
-    }
-
-    this.entities.push(entity);
-    if (components)
-    {
-      for(let i in components)
-      {
-        this.addComponent(entity, components[i]);
-      }
-    }
-    entity.dead = false;
-    entity.onCreate();
-    return entity;
-  }
-
-  removeEntity(entity)
-  {
-    if (entity.dead == true)
-    {
-      throw new Error("entity already destroyed!");
-    }
-
-    entity.onDestroy();
-    this.clearComponents(entity);
-    entity.dead = true;
-    this.entities.splice(this.entities.indexOf(entity), 1);
-    return entity;
-  }
-
-  getEntities(component)
-  {
-    return this.systems[component].entities;
-  }
-
-  addComponent(entity, component)
-  {
-    let system = this.systems[component];
-    if (system)
-    {
-      system.onEntityCreate(entity);
-      return this;
-    }
-    throw new Error("could not find system for \'" + component + "\'");
-  }
-
-  removeComponent(entity, component)
-  {
-    let system = this.systems[component];
-    if (system)
-    {
-      if (system.entities.includes(entity))
-      {
-        system.onEntityDestroy(entity);
-        return this;
-      }
-
-      throw new Error("entity does not include component \'" + component + "\'");
-    }
-    throw new Error("could not find system for \'" + component + "\'");
-  }
-
-  clearComponents(entity)
-  {
-    for(let i = this.systems.size; i >= 0; --i)
-    {
-      let system = this.systems[i];
-      if (system.entities.includes(entity))
-      {
-        system.onEntityDestroy(entity);
-      }
-    }
-  }
-
-  hasComponent(entity, component)
-  {
-    let system = this.systems[component];
-    if (system)
-    {
-      return system.entities.includes(entity);
-    }
-    throw new Error("could not find system for \'" + component + "\'");
-  }
-
-  update()
-  {
-    for(let id in this.systems)
-    {
-      this.systems[id].onUpdate();
-    }
-
-    var i = this.entities.length;
-    while(i--)
-    {
-      let entity = this.entities[i];
-      if (entity.dead)
-      {
-        this.removeEntity(entity);
-      }
-    }
-  }
-}
-
-class System
-{
-  constructor(id)
-  {
-    this.id = id;
-    this.entityManager = null;
-
-    this.entities = [];
-  }
-
-  onEntityCreate(entity)
-  {
-    this.entities.push(entity);
-  }
-
-  onEntityDestroy(entity)
-  {
-    this.entities.splice(this.entities.indexOf(entity), 1);
-  }
-
-  onUpdate()
-  {
-
-  }
-
-  requireComponent(entity, component)
-  {
-    if (!this.entityManager.hasComponent(entity, component))
-    {
-      throw new Error("missing component dependency: \'" + component + "\'");
-    }
-  }
-}
-
-
-
-
-/***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Mouse_js__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__AssetManager_js__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Transform_js__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Viewport_js__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__entities_js__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_camera_js__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_ecs_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__client_ClientGame_js__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__integrated_NetworkHandler_js__ = __webpack_require__(24);
 
 
 
+//Window Setup
+var canvas = document.getElementById('canvas');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+window.addEventListener('resize', function() {
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+}, true);
+window.onload = start;
 
-
-
-
-
-
-
-/**
- * Application - The main entry point for the program
- */
-class Application {
-  constructor()
-  {
-    this.assets = new __WEBPACK_IMPORTED_MODULE_1__AssetManager_js__["a" /* default */]();
-    this.camera = new __WEBPACK_IMPORTED_MODULE_5__lib_camera_js__["a" /* OrthographicCamera */]();
-    this.camera.transform.position[2] = 1.0;
-    this.viewport = new __WEBPACK_IMPORTED_MODULE_3__Viewport_js__["a" /* default */]();
-
-    this.clientInput = new __WEBPACK_IMPORTED_MODULE_0__Mouse_js__["a" /* default */](document);
-
-    this.square = null;
-  }
-
-  onLoad(callback)
-  {
-    //Register all resources here
-
-    //Shaders
-    this.assets.register('shader', 'vdef', './res/def.vsh');
-    this.assets.register('shader', 'fdef', './res/def.fsh');
-
-    this.assets.flush(callback);
-  }
-
-	/**
-	 * onStart - Called first before the application runs
-	 */
-  onStart()
-  {
-    socket.on('connect', function() {
-      console.log("Connected to server!");
-    });
-    //Close client when the server closes...
-    socket.on('disconnect', function() {
-      window.close();
-    })
-
-    let i = Math.random();
-    //Test ping
-    socket.emit('echo', {value: i});
-    console.log("Echoing \'" + i + "\'...");
-
-		//Load resources
-		const vsrc = this.assets.getAsset('shader', 'vdef');
-		const fsrc = this.assets.getAsset('shader', 'fdef');
-
-		//Shader Programs
-		var vertexShader = new __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["c" /* Shader */](vsrc, __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].VERTEX_SHADER);
-		var fragmentShader = new __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["c" /* Shader */](fsrc, __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].FRAGMENT_SHADER);
-		this.prgm = new __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["b" /* Program */]();
-		this.prgm.link([vertexShader, fragmentShader]);
-
-		//Mesh
-    //TODO: get a proper OBJ loader!
-		this.mesh = __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["a" /* Mesh */].createMesh({
-			position: new Float32Array([
-				-0.5, 0.5,
-				0.5, 0.5,
-				0.5, -0.5,
-				-0.5, -0.5
-			]),
-			indices: new Uint16Array([
-				0, 1, 2, 3
-			])},
-			__WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].GL_STATIC_DRAW);
-
-		this.mesh2 = __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["a" /* Mesh */].createMesh({
-			position: new Float32Array([
-				-1.0, 1.0,
-				1.0, 1.0,
-				1.0, -1.0,
-				-1.0, -1.0
-			]),
-			indices: new Uint16Array([
-				0, 1, 2, 3
-			])},
-			__WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].GL_STATIC_DRAW);
-
-      this.entityManager = new __WEBPACK_IMPORTED_MODULE_7__lib_ecs_js__["a" /* EntityManager */]();
-      this.entityManager.registerSystem(new __WEBPACK_IMPORTED_MODULE_4__entities_js__["d" /* TransformSystem */]());
-      this.entityManager.registerSystem(new __WEBPACK_IMPORTED_MODULE_4__entities_js__["c" /* TrackerSystem */]());
-      this.entityManager.registerSystem(new __WEBPACK_IMPORTED_MODULE_4__entities_js__["b" /* RenderableSystem */]());
-      this.entityManager.registerSystem(new __WEBPACK_IMPORTED_MODULE_4__entities_js__["a" /* MotionSystem */]());
-
-      /**** ENTIT CODE BELOW! ****/
-
-      var e = this.entityManager.createEntity(["transform", "renderable", "motion"]);
-      e.transform.position[0] = 1;
-
-      e = this.entityManager.createEntity(["transform", "renderable", "motion"]);
-      e.transform.position[0] = -1;
-
-      this.square = this.entityManager.createEntity(["transform", "renderable", "motion"]);
-      this.square.transform.position[1] = 1;
-  }
-
-	/**
-	 * onUpdate - Called every frame to update the application
-	 */
-  onUpdate()
-  {
-		__WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].clear(__WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].COLOR_BUFFER_BIT | __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].DEPTH_BUFFER_BIT);
-    this.viewport.applyView();
-
-    /**** LOGIC CODE BELOW! ****/
-
-    //Calculate rotation
-    let clientPos = __WEBPACK_IMPORTED_MODULE_3__Viewport_js__["a" /* default */].getPointFromScreen(vec3.create(), this.camera, this.viewport, this.clientInput.x, this.clientInput.y);
-    var dx = clientPos[0] - this.square.transform.position[0];
-    var dy = -clientPos[1] + this.square.transform.position[1];
-    let rotation = -Math.atan2(dy, dx);
-
-    const speed = 0.1;
-    this.square.transform.position[0] += Math.cos(rotation) * speed;
-    this.square.transform.position[1] += Math.sin(rotation) * speed;
-
-    /**** RENDERING CODE BELOW! ****/
-
-    //Setting up the Projection Matrix
-    const projection = this.camera.projection;
-
-    //Setting up the View Matrix
-    const view = this.camera.view;
-		const modelview = mat4.create();
-
-		this.prgm.bind();
-		{
-			__WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].uniformMatrix4fv(this.prgm.uniforms.uProjection, false, projection);
-
-			this.mesh.bind();
-			{
-        let entities = this.entityManager.getEntities("renderable");
-        for(let i in entities)
-        {
-          let entity = entities[i];
-          if (entity.dead) continue;
-
-          //Setting up the Model Matrix
-          entity.transform.getTransformation(modelview);
-          mat4.mul(modelview, modelview, view);
-    			__WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["d" /* gl */].uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
-
-          //Draw it!
-          __WEBPACK_IMPORTED_MODULE_6__lib_mogli_js__["a" /* Mesh */].draw(this.mesh);
-        }
-			}
-			this.mesh.unbind();
-
-      //mat4.identity(modelview);
-			//gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
-
-      /*
-			this.mesh2.bind();
-			{
-        //Setting up the Model Matrix
-        mat4.identity(modelview);
-        mat4.translate(modelview, modelview, [square[0], square[1], 0.0]);
-        mat4.rotateZ(modelview, modelview, rotation);
-        gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
-
-        //Draw it!
-				Mesh.draw(this.mesh2);
-			}
-			this.mesh2.unbind();
-      */
-		}
-		this.prgm.unbind();
-  }
+//Application setup
+var socket = io();
+var game;
+function start()
+{
+  game = new __WEBPACK_IMPORTED_MODULE_0__client_ClientGame_js__["a" /* default */](new __WEBPACK_IMPORTED_MODULE_1__integrated_NetworkHandler_js__["a" /* default */](socket, true));
+	onApplicationLoad(game);
 }
 
-app = new Application();
-/* harmony default export */ __webpack_exports__["default"] = (Application);
+//Update the application
+const frame = {delta: 0, then: 0, count: 0};
+function update(now = 0)
+{
+	now *= 0.001;
+	frame.delta = now - frame.then;
+	frame.then = now;
+	++frame.count;
+  game.update(frame);
+	onApplicationUpdate(game, frame);
+
+  //Call again...
+	requestAnimationFrame(update);
+}
+
+//Display frames per second
+setInterval(function(){
+	console.log("FPS: " + frame.count);
+	frame.count = 0;
+}, 1000);
+
+/******************************************************************************/
+
+/**
+ * Called when game is loaded, but before the game loop
+ */
+function onApplicationLoad(app)
+{
+	app.load(() => {
+		app.connect(() => {
+			update();
+		});
+	});
+}
+
+/**
+ * Called every tick by the game loop
+ */
+function onApplicationUpdate(app, frame)
+{
+
+}
 
 
 /***/ }),
-/* 7 */
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__integrated_World_js__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__input_Mouse_js__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Renderer_js__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__camera_ViewPort_js__ = __webpack_require__(5);
+
+
+
+
+
+
+
+/*
+CLIENT gets CURRENT_GAME_STATE.
+CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
+CLIENT removes all INPUT_STATE older than CURRENT_GAME_STATE.
+CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
+. . .
+CLIENT stores CURRENT_INPUT_STATE.
+CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
+CLIENT sends CURRENT_INPUT_STATE.
+*/
+
+class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /* default */]
+{
+  constructor(networkHandler)
+  {
+    super(networkHandler);
+
+    this.world = new __WEBPACK_IMPORTED_MODULE_1__integrated_World_js__["a" /* default */]({delta: 0, then: Date.now(), count: 0}, true);
+    this.input = new __WEBPACK_IMPORTED_MODULE_2__input_Mouse_js__["a" /* default */](document);
+    this.inputStates = [];
+    this.renderer = new __WEBPACK_IMPORTED_MODULE_3__Renderer_js__["a" /* default */](canvas);
+  }
+
+  load(callback)
+  {
+    console.log("Loading client...");
+    this.renderer.load(callback);
+  }
+
+  connect(callback)
+  {
+    console.log("Connecting client...");
+    this.networkHandler.initClient(callback);
+    this.networkHandler.onServerConnect = (server) => {
+      server.on('server.gamestate', (data) => {
+        this.onServerUpdate(server, data);
+      });
+    };
+  }
+
+  update(frame)
+  {
+    this.onUpdate(frame);
+  }
+
+  /************* Game Implementation *************/
+
+  onUpdate(frame)
+  {
+    //CLIENT stores CURRENT_INPUT_STATE.
+    var currentInputState = this.getCurrentInputState(frame);
+    this.inputStates.push(currentInputState);
+
+    //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
+    this.world.step(currentInputState, frame, this.networkHandler.socketID);
+    this.renderer.render(this.world);
+
+    //CLIENT sends CURRENT_INPUT_STATE.
+    this.sendClientInput(currentInputState);
+  }
+
+  onServerUpdate(server, gameState)
+  {
+    //CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
+    this.world.resetState(gameState);
+    //CLIENT removes all INPUT_STATE older than CURRENT_GAME_STATE.
+    while(this.inputStates.length > 0 && this.world.isNewerThan(this.inputStates[this.inputStates.length - 1].frame))
+    {
+      this.inputStates.shift();
+    }
+    //CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
+    for(const inputState of this.inputStates)
+    {
+      this.world.step(inputState, inputState.frame, this.networkHandler.socketID);
+    }
+  }
+
+  getCurrentInputState(frame)
+  {
+    const inputState = this.input.poll();
+    const vec = __WEBPACK_IMPORTED_MODULE_4__camera_ViewPort_js__["a" /* default */].getPointFromScreen(vec3.create(),
+      this.renderer.camera, this.renderer.viewport,
+      inputState.x, inputState.y);
+    inputState.x = vec[0];
+    inputState.y = vec[1];
+    inputState.frame = frame;
+    return inputState;
+  }
+
+  sendClientInput(inputState)
+  {
+    //FIXME: Force 200ms lag...
+    setTimeout(() => this.networkHandler.sendToServer('client.inputstate', inputState), 200);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (ClientGame);
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Game
+{
+  constructor(networkHandler)
+  {
+    this.networkHandler = networkHandler;
+  }
+
+  load(callback)
+  {
+    throw new Error("must be overriden");
+  }
+
+  connect(callback)
+  {
+    throw new Error("must be overriden");
+  }
+
+  update(frame)
+  {
+    throw new Error("must be overriden");
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Game);
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__entity_EntityManager_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__world_NetworkEntitySystem_js__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__world_PlayerSystem_js__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__world_PlayerComponent_js__ = __webpack_require__(3);
+
+
+
+
+
+
+class World
+{
+  constructor(frame, remote=true)
+  {
+    this.remote = remote;
+    this.frame = frame;
+    this.predictiveFrame = this.frame;
+
+    this.entityManager = new __WEBPACK_IMPORTED_MODULE_0__entity_EntityManager_js__["a" /* default */]();
+    this.systems = [];
+    this.systems.push(new __WEBPACK_IMPORTED_MODULE_1__world_NetworkEntitySystem_js__["a" /* default */](this.entityManager));
+    this.systems.push(new __WEBPACK_IMPORTED_MODULE_2__world_PlayerSystem_js__["a" /* default */]());
+  }
+
+  step(inputState, frame, target)
+  {
+    this.predictiveFrame = frame;
+
+    //Update target with inputState
+    const targetEntity = this.getEntityByClientID(target);
+    if (targetEntity)
+    {
+      for(const system of this.systems)
+      {
+        system.onInputUpdate(targetEntity, inputState);
+      }
+    }
+
+    //Continue to update the world state
+    for(const system of this.systems)
+    {
+      system.onUpdate(this.entityManager, frame);
+    }
+  }
+
+  captureState(frame)
+  {
+    //Capture a GameState and return it for sending...
+    const dst = {};
+    for(const system of this.systems)
+    {
+      system.writeToGameState(this.entityManager, dst);
+    }
+    dst.frame = frame;
+    return dst;
+  }
+
+  resetState(gameState)
+  {
+    this.frame = gameState.frame;
+    this.predictiveFrame = this.frame;
+
+    //Continue to reset the world state
+    for(const system of this.systems)
+    {
+      system.readFromGameState(this.entityManager, gameState);
+    }
+  }
+
+  isNewerThan(frame)
+  {
+    return this.frame.then > frame.then;
+  }
+
+  getEntityByClientID(socketID)
+  {
+    for(const entity of this.entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_3__world_PlayerComponent_js__["a" /* default */]))
+    {
+      if (entity.player.socketID == socketID)
+      {
+        return entity;
+      }
+    }
+
+    return null;
+  }
+
+  get entities()
+  {
+    return this.entityManager.getEntities();
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (World);
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Entity
+{
+  constructor()
+  {
+    this.__init();
+  }
+
+  __init()
+  {
+    this._id = 0;
+    this.x = 0;
+    this.y = 0;
+  }
+
+  addComponent(component)
+  {
+    this._manager.addComponentToEntity(this, component);
+    return this;
+  }
+
+  removeComponent(component)
+  {
+    this._manager.removeComponentFromEntity(this, component);
+    return this;
+  }
+
+  clearComponents()
+  {
+    this._manager.clearComponentsFromEntity(this);
+  }
+
+  hasComponent(component)
+  {
+    return this._manager.hasComponent(this, component);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Entity);
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class ObjectPool
+{
+  constructor(T)
+  {
+    this._freeList = [];
+    this.size = 0;
+    this.T = T;
+  }
+
+  obtain()
+  {
+    if (this._freeList.length <= 0)
+    {
+      this.expand(Math.round(this.size * 0.2) + 1);
+    }
+
+    var item = this._freeList.pop();
+    if (item.__init)
+    {
+      item.__init();
+    }
+    else
+    {
+      this.T.call(item);
+    }
+    return item;
+  }
+
+  release(item)
+  {
+    this._freeList.push(item);
+  }
+
+  expand(count)
+  {
+    for(let i = 0; i < count; ++i)
+    {
+      this._freeList.push(new this.T());
+    }
+    this.size += count;
+  }
+
+  getTotalObjectsFree()
+  {
+    return this._freeList.length;
+  }
+
+  getTotalObjectsUsed()
+  {
+    return this._count - this._freeList.length;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (ObjectPool);
+
+
+/***/ }),
+/* 13 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__entity_System_js__ = __webpack_require__(2);
+
+
+class NetworkEntitySystem extends __WEBPACK_IMPORTED_MODULE_0__entity_System_js__["a" /* default */]
+{
+  constructor(entityManager)
+  {
+    super();
+    
+    this.createCache = [];
+    this.destroyCache = [];
+
+    entityManager.onEntityCreate = (entity) => {
+      if (this.destroyCache.includes(entity._id))
+      {
+        this.destroyCache.splice(this.destroyCache.indexOf(entity._id), 1);
+      }
+      this.createCache.push(entity._id);
+    };
+
+    entityManager.onEntityDestroy = (entity) => {
+      if (this.createCache.includes(entity._id))
+      {
+        this.createCache.splice(this.createCache.indexOf(entity._id), 1);
+      }
+      this.destroyCache.push(entity._id);
+    };
+  }
+
+  onUpdate(entityManager, frame)
+  {
+    super.onUpdate(entityManager, frame);
+  }
+
+  onInputUpdate(entity, inputState)
+  {
+    super.onInputUpdate(entity, inputState)
+  }
+
+  writeToGameState(entityManager, gameState)
+  {
+    super.writeToGameState(entityManager, gameState);
+
+    let entities = gameState['entities.create'];
+    if (!entities) entities = gameState['entities.create'] = [];
+    for(const entityID of this.createCache)
+    {
+      entities.push(entityID);
+    }
+    this.createCache.length = 0;
+
+    entities = gameState['entities.destroy'];
+    if (!entities) entities = gameState['entities.destroy'] = [];
+    for(const entityID of entities)
+    {
+      entities.push(entityID);
+    }
+    this.destroyCache.length = 0;
+  }
+
+  readFromGameState(entityManager, gameState)
+  {
+    super.readFromGameState(entityManager, gameState);
+
+    let entities = gameState['entities.create'] || [];
+    for(const entityID of entities)
+    {
+      const entity = entityManager.getEntityByID(entityID);
+      if (entity) continue;
+
+      entityManager.createEntity(entityID);
+    }
+
+    entities = gameState['entities.destroy'] || [];
+    for(const entityID of entities)
+    {
+      const entity = entityManager.getEntityByID(entityID);
+      if (!entity) continue;
+
+      entityManager.destroyEntity(entity);
+    }
+
+    entities = gameState['entities'] || {};
+    for(const entity of entityManager.getEntities())
+    {
+      if (!entities[entity._id])
+      {
+        //Maybe missed destruction event from server...
+        entityManager.destroyEntity(entity);
+      }
+    }
+    for(const entityID in entities)
+    {
+      const entity = entityManager.getEntityByID(entityID);
+      if (!entity)
+      {
+        //Maybe missed creation event from server...
+        entityManager.createEntity(entityID);
+      }
+    }
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (NetworkEntitySystem);
+
+
+/***/ }),
+/* 14 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__entity_EntityManager_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__entity_System_js__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__PlayerComponent_js__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__TransformComponent_js__ = __webpack_require__(4);
+
+
+
+
+
+class PlayerSystem extends __WEBPACK_IMPORTED_MODULE_1__entity_System_js__["a" /* default */]
+{
+  constructor()
+  {
+    super();
+  }
+
+  onUpdate(entityManager, frame)
+  {
+    super.onUpdate(entityManager, frame);
+
+    const entities = entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_2__PlayerComponent_js__["a" /* default */]);
+    for(const entity of entities)
+    {
+      this.onEntityUpdate(entity, frame);
+    }
+  }
+
+  onEntityUpdate(entity, frame)
+  {
+    const dx = entity.player.nextX - entity.x;
+    const dy = entity.player.nextY - entity.y;
+    const rot = -Math.atan2(-dy, dx);
+
+    const speed = 10.0;
+    entity.x += Math.cos(rot) * speed * frame.delta;
+    entity.y += Math.sin(rot) * speed * frame.delta;
+  }
+
+  onInputUpdate(entity, inputState)
+  {
+    super.onInputUpdate(entity, inputState);
+
+    if (!entity.hasComponent(__WEBPACK_IMPORTED_MODULE_2__PlayerComponent_js__["a" /* default */])) return;
+    entity.player.nextX = inputState.x;
+    entity.player.nextY = inputState.y;
+  }
+
+  writeEntityToData(entity, dst)
+  {
+    dst.player.nextX = entity.player.nextX;
+    dst.player.nextY = entity.player.nextY;
+    dst.player.socketID = entity.player.socketID;
+  }
+
+  readEntityFromData(src, entity)
+  {
+    entity.player.nextX = src.player.nextX;
+    entity.player.nextY = src.player.nextY;
+    entity.player.socketID = src.player.socketID;
+  }
+
+  writeToGameState(entityManager, gameState)
+  {
+    const PLAYER_NAME = __WEBPACK_IMPORTED_MODULE_0__entity_EntityManager_js__["a" /* default */].getComponentName(__WEBPACK_IMPORTED_MODULE_2__PlayerComponent_js__["a" /* default */]);
+
+    let dst = gameState['entities'];
+    if (!dst) dst = gameState['entities'] = {};
+    const entities = entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_2__PlayerComponent_js__["a" /* default */]);
+    for(const entity of entities)
+    {
+      let entityData = dst[entity._id];
+      if (!entityData) entityData = dst[entity._id] = {};
+      if (!entityData[PLAYER_NAME]) entityData[PLAYER_NAME] = {};
+      this.writeEntityToData(entity, entityData);
+    }
+  }
+
+  readFromGameState(entityManager, gameState)
+  {
+    const PLAYER_NAME = __WEBPACK_IMPORTED_MODULE_0__entity_EntityManager_js__["a" /* default */].getComponentName(__WEBPACK_IMPORTED_MODULE_2__PlayerComponent_js__["a" /* default */]);
+
+    let src = gameState['entities'] || {};
+    for(const entityID in src)
+    {
+      let entity = entityManager.getEntityByID(entityID);
+      if (!entity) throw new Error("Cannot find entity with id \'" + entityID + "\'");
+
+      let entityData = src[entityID];
+
+      if (entityData[PLAYER_NAME])
+      {
+        if (!entity[PLAYER_NAME]) entity.addComponent(__WEBPACK_IMPORTED_MODULE_2__PlayerComponent_js__["a" /* default */]);
+        this.readEntityFromData(entityData, entity);
+      }
+      else if (entity[PLAYER_NAME])
+      {
+        entity.removeComponent(__WEBPACK_IMPORTED_MODULE_2__PlayerComponent_js__["a" /* default */]);
+      }
+    }
+  }
+
+  static createPlayerEntity(entityManager, socketID)
+  {
+    const entity = entityManager.createEntity()
+      .addComponent(__WEBPACK_IMPORTED_MODULE_3__TransformComponent_js__["a" /* default */])
+      .addComponent(__WEBPACK_IMPORTED_MODULE_2__PlayerComponent_js__["a" /* default */]);
+    entity.player.socketID = socketID;
+  }
+
+  static getPlayerByClientID(entityManager, socketID)
+  {
+    for(const entity of entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_2__PlayerComponent_js__["a" /* default */]))
+    {
+      if (entity.player.socketID == socketID)
+      {
+        return entity;
+      }
+    }
+
+    return null;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (PlayerSystem);
+
+
+/***/ }),
+/* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -687,6 +1118,8 @@ class Mouse
   {
     this.x = 0.0;
     this.y = 0.0;
+    this._prevX = 0.0;
+    this._prevY = 0.0;
     this.scrollX = 0.0;
     this.scrollY = 0.0;
     this.down = false;
@@ -766,6 +1199,35 @@ class Mouse
     this._element.removeEventListener('touchstart', this.onTouchStart);
   }
 
+  poll()
+  {
+    return {
+      x: this.x,
+      y: this.y,
+      dx: this.dx,
+      dy: this.dy,
+      scrollX: this.scrollX,
+      scrollY: this.scrollY,
+      down: this.down,
+      click: this.click,
+      time: Date.now()
+    };
+  }
+
+  get dx()
+  {
+    var result = this.x - this._prevX;
+    this._prevX = this.x;
+    return result;
+  }
+
+  get dy()
+  {
+    var result = this.y - this._prevY;
+    this._prevY = this.y;
+    return result;
+  }
+
   get click()
   {
     var result = this._click;
@@ -778,7 +1240,121 @@ class Mouse
 
 
 /***/ }),
-/* 8 */
+/* 16 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__asset_AssetManager_js__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera_ViewPort_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera_OrthographicCamera_js__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__mogli_Shader_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mogli_Program_js__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__mogli_Mesh_js__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__mogli_gl_js__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__integrated_world_TransformComponent_js__ = __webpack_require__(4);
+
+
+
+
+
+
+
+
+
+
+
+
+class Renderer
+{
+  constructor(canvas)
+  {
+    this.canvas = canvas;
+    this.viewport = new __WEBPACK_IMPORTED_MODULE_1__camera_ViewPort_js__["a" /* default */](this.canvas);
+
+    this.assets = new __WEBPACK_IMPORTED_MODULE_0__asset_AssetManager_js__["a" /* default */]();
+
+    this.camera = new __WEBPACK_IMPORTED_MODULE_2__camera_OrthographicCamera_js__["a" /* default */](this.viewport);
+    this.camera.transform.position[2] = 1.0;
+  }
+
+  load(callback)
+  {
+    this.assets.register('shader', 'vdef', './res/def.vsh');
+    this.assets.register('shader', 'fdef', './res/def.fsh');
+
+    this.assets.flush(() => {
+      this._prepareAssets();
+      callback();
+    });
+  }
+
+  _prepareAssets(callback)
+  {
+		//Load resources
+		const vsrc = this.assets.getAsset('shader', 'vdef');
+		const fsrc = this.assets.getAsset('shader', 'fdef');
+
+		//Shader Programs
+		var vertexShader = new __WEBPACK_IMPORTED_MODULE_3__mogli_Shader_js__["a" /* default */](vsrc, __WEBPACK_IMPORTED_MODULE_6__mogli_gl_js__["a" /* default */].VERTEX_SHADER);
+		var fragmentShader = new __WEBPACK_IMPORTED_MODULE_3__mogli_Shader_js__["a" /* default */](fsrc, __WEBPACK_IMPORTED_MODULE_6__mogli_gl_js__["a" /* default */].FRAGMENT_SHADER);
+		this.prgm = new __WEBPACK_IMPORTED_MODULE_4__mogli_Program_js__["a" /* default */]();
+		this.prgm.link([vertexShader, fragmentShader]);
+
+		//Mesh
+    //TODO: get a proper OBJ loader!
+		this.mesh = __WEBPACK_IMPORTED_MODULE_5__mogli_Mesh_js__["a" /* default */].createMesh({
+			position: new Float32Array([
+				-0.5, 0.5,
+				0.5, 0.5,
+				0.5, -0.5,
+				-0.5, -0.5
+			]),
+			indices: new Uint16Array([
+				0, 1, 2, 3
+			])},
+			__WEBPACK_IMPORTED_MODULE_6__mogli_gl_js__["a" /* default */].GL_STATIC_DRAW);
+  }
+
+  render(world)
+  {
+		__WEBPACK_IMPORTED_MODULE_6__mogli_gl_js__["a" /* default */].clear(__WEBPACK_IMPORTED_MODULE_6__mogli_gl_js__["a" /* default */].COLOR_BUFFER_BIT | __WEBPACK_IMPORTED_MODULE_6__mogli_gl_js__["a" /* default */].DEPTH_BUFFER_BIT);
+    this.viewport.update();
+
+    //Setting up the Projection Matrix
+    const projection = this.camera.projection;
+
+    //Setting up the View Matrix
+    const view = this.camera.view;
+		const modelview = mat4.create();
+
+		this.prgm.bind();
+		{
+			__WEBPACK_IMPORTED_MODULE_6__mogli_gl_js__["a" /* default */].uniformMatrix4fv(this.prgm.uniforms.uProjection, false, projection);
+
+			this.mesh.bind();
+			{
+        for(const entity of world.entities)
+        {
+          //Setting up the Model Matrix
+          mat4.fromTranslation(modelview, [entity.x, entity.y, 0]);
+          mat4.mul(modelview, modelview, view);
+    			__WEBPACK_IMPORTED_MODULE_6__mogli_gl_js__["a" /* default */].uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
+
+          //Draw it!
+          __WEBPACK_IMPORTED_MODULE_5__mogli_Mesh_js__["a" /* default */].draw(this.mesh);
+        }
+			}
+			this.mesh.unbind();
+		}
+		this.prgm.unbind();
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Renderer);
+
+
+/***/ }),
+/* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -912,79 +1488,131 @@ class AssetManager
 
 
 /***/ }),
-/* 9 */
+/* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_mogli_js__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Camera_js__ = __webpack_require__(19);
 
 
-class Viewport
+class OrthographicCamera extends __WEBPACK_IMPORTED_MODULE_0__Camera_js__["a" /* default */]
 {
-  constructor()
+  constructor(viewport, left = -10, right = 10, top = -10, bottom = 10, near = -10, far = 10)
   {
-    this.width = 1;
-    this.height = 1;
+    super(viewport);
+    //near plane must be > 0
+    //far plane must be > near
+    this.left = left;
+    this.right = right;
+    this.top = top;
+    this.bottom = bottom;
+    this.near = near;
+    this.far = far;
   }
 
-  applyView()
+  get projection()
   {
-    this.width = __WEBPACK_IMPORTED_MODULE_0__lib_mogli_js__["d" /* gl */].canvas.clientWidth;
-    this.height = __WEBPACK_IMPORTED_MODULE_0__lib_mogli_js__["d" /* gl */].canvas.clientHeight;
-    __WEBPACK_IMPORTED_MODULE_0__lib_mogli_js__["d" /* gl */].viewport(0, 0, this.width, this.height);
+    //TODO: maybe cache this?
+    let width = this.right - this.left;
+    let height = this.bottom - this.top;
+    let a = width / height;
+    let v = this.viewport.width / this.viewport.height;
+    if (v >= a)
+    {
+      return mat4.ortho(this._projection,
+        -(v / a) * width / 2.0, (v / a) * width / 2.0,
+        -height / 2.0, height / 2.0,
+        this.near, this.far);
+    }
+    else
+    {
+      return mat4.ortho(this._projection,
+        -width / 2.0, width / 2.0,
+        -(a / v) * height / 2.0, (a / v) * height / 2.0,
+        this.near, this.far);
+    }
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (OrthographicCamera);
+
+
+/***/ }),
+/* 19 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__integrated_transform_Transform_js__ = __webpack_require__(20);
+
+
+class Camera
+{
+  constructor(viewport)
+  {
+    this.transform = new __WEBPACK_IMPORTED_MODULE_0__integrated_transform_Transform_js__["a" /* default */]();
+
+    this.viewport = viewport;
+    this._view = mat4.create();
+    this._orientation = mat4.create();
+    this._projection = mat4.create();
   }
 
-  static getPointFromScreen(dst, camera, viewport, screenX, screenY)
+  get view()
   {
-    let invViewProj = getInvertedViewProjection(mat4.create(), camera);
-    let x = screenX;
-    let y = viewport.height - screenY;
+    return mat4.fromRotationTranslationScale(this._view,
+      this.transform.rotation,
+      [-this.transform.position[0], -this.transform.position[1], -this.transform.position[2]],
+      this.transform.scale);
+  }
 
-    //TODO: The depth should be 0 if perspective...
-    let near = unproject(vec3.create(), invViewProj, viewport, x, y, -1.0);
-    let far = unproject(vec3.create(), invViewProj, viewport, x, y, 1.0);
+  get orientation()
+  {
+    return mat4.fromQuat(this._orientation, this.transform.rotation);
+  }
 
-    let f = (0 - near[2]) / (far[2] - near[2]);
-    dst[0] = (near[0] + f * (far[0] - near[0]));
-    dst[1] = (near[1] + f * (far[1] - near[1]));
-    dst[2] = 0;
+  get projection()
+  {
+    throw new Error("undefined camera type - must be perspective or orthographic");
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Camera);
+
+
+/***/ }),
+/* 20 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Transform
+{
+  constructor(x = 0, y = 0, z = 0)
+  {
+    this.position = vec3.create();
+    vec3.set(this.position, x, y, z);
+
+    this.rotation = quat.create();
+    this.scale = vec3.create();
+    vec3.set(this.scale, 1, 1, 1);
+  }
+
+  getTransformation(dst)
+  {
+    mat4.fromRotationTranslationScale(dst, this.rotation, this.position, this.scale);
     return dst;
   }
 }
 
-function getInvertedViewProjection(dst, camera)
-{
-  mat4.mul(dst, camera.projection, camera.view);
-  mat4.invert(dst, dst);
-  return dst;
-}
-
-function unproject(dst, invertedViewProjection, viewport, screenX, screenY, screenZ)
-{
-  let normalizedDeviceCoords = vec4.create();
-  normalizedDeviceCoords[0] = screenX / viewport.width * 2.0 - 1.0;
-  normalizedDeviceCoords[1] = screenY / viewport.height * 2.0 - 1.0;
-  normalizedDeviceCoords[2] = screenZ * 2.0 - 1.0;
-  normalizedDeviceCoords[3] = 1.0;
-
-  let objectCoords = vec4.transformMat4(normalizedDeviceCoords, normalizedDeviceCoords, invertedViewProjection);
-  if (objectCoords[3] != 0) objectCoords[3] = 1.0 / objectCoords[3];
-  dst[0] = objectCoords[0] * objectCoords[3];
-  dst[1] = objectCoords[1] * objectCoords[3];
-  dst[2] = objectCoords[2] * objectCoords[3];
-  return dst;
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Viewport);
+/* harmony default export */ __webpack_exports__["a"] = (Transform);
 
 
 /***/ }),
-/* 10 */
+/* 21 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_js__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Shader_js__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Shader_js__ = __webpack_require__(6);
 
 
 
@@ -1140,12 +1768,12 @@ class Program
 
 
 /***/ }),
-/* 11 */
+/* 22 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_js__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__VBO_js__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__VBO_js__ = __webpack_require__(23);
 
 
 
@@ -1331,319 +1959,197 @@ class Mesh
 
 
 /***/ }),
-/* 12 */
+/* 23 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return TransformSystem; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return TrackerSystem; });
-/* unused harmony export SolidSystem */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return RenderableSystem; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return MotionSystem; });
-/* unused harmony export FollowSystem */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Transform_js__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_js__ = __webpack_require__(0);
 
 
-
-
-class TransformSystem extends __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__["b" /* System */]
+/**
+ * VBO - Data buffer representation
+ */
+class VBO
 {
-  constructor()
+  constructor(target)
   {
-    super("transform");
+    this.target = target || __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].ARRAY_BUFFER;
+    this.handle = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].createBuffer();
+    this.normalized = false;
+    this.length = 0;
+    this.vertexSize = 0;
+    this.stride = 0;
   }
 
-  onEntityCreate(entity)
+  /**
+   * close - Destroys the buffer object
+   */
+  close()
   {
-    super.onEntityCreate(entity);
-
-    entity.transform = new __WEBPACK_IMPORTED_MODULE_0__Transform_js__["a" /* default */]();
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].deleteBuffer(this.handle);
+    this.handle = null;
   }
 
-  onEntityDestroy(entity)
+  /**
+   * putData - Put the passed-in data in this buffer object with specific
+   * instructions to how to use it.
+   *
+   * @param {Array} data          the array data
+   *                              (i.e. Float32Array, Uint16Array)
+   * @param {GLEnum} dataType     the type of data
+   *                              (i.e. gl.FLOAT, gl.UNSIGNED_INT)
+   * @param {Number} vertexSize   the size of the vertices this buffer holds
+   * @param {Boolean} normalized  whether this buffer is normalized
+   * @param {GLEnum} usage        how this buffer is stored and used
+   *                              (i.e. gl.STATIC_DRAW)
+   * @param {Number} stride       the 'step' indices to each vertex (default 0)
+   */
+  putData(data, dataType, vertexSize, normalized, usage, stride)
   {
-    super.onEntityDestroy(entity);
-
-    delete entity.transform;
-  }
-}
-
-class TrackerSystem extends __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__["b" /* System */]
-{
-  constructor()
-  {
-    super("tracked");
-  }
-
-  onEntityCreate(entity)
-  {
-    super.onEntityCreate(entity);
-
-    entity.guid = TrackerSystem.generateGUID();
-    entity.trackers = [];
-  }
-
-  onEntityDestroy(entity)
-  {
-    super.onEntityDestroy(entity);
-
-    delete entity.guid;
-    delete entity.trackers;
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, this.handle);
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bufferData(this.target, data, usage);
+    this.type = dataType;
+    this.vertexSize = vertexSize;
+    this.normalized = normalized;
+    this.length = data.length;
+    this.stride = stride || 0;
   }
 
-  static generateGUID()
+  /**
+   * updateData - Update the buffer data to the passed-in data
+   *
+   * @param {Array} data    the array data (i.e. Float32Array)
+   * @param {Number} offset the index from which to update
+   */
+  updateData(data, offset)
   {
-    function s4()
+    if (offset + data.length > this.length)
     {
-      return Math.floor((1 + Math.random()) * 0x10000)
-        .toString(16)
-        .substring(1);
+      var usage = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getBufferParameter(this.target, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].BUFFER_USAGE);
+      this.putData(data, this.normalized, usage);
     }
 
-    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, this.handle);
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bufferSubData(this.target, offset, data);
+  }
+
+  /**
+   * bind - Binds the buffer object to the current target context
+   * (specified by putData())
+   */
+  bind()
+  {
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, this.handle);
+  }
+
+  /**
+   * unbind - Binds an empty buffer object to the current target context
+   * (specified by putData())
+   */
+  unbind()
+  {
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, null);
   }
 }
 
-class SolidSystem extends __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__["b" /* System */]
-{
-  constructor()
-  {
-    super("solid");
-  }
-
-  onEntityCreate(entity)
-  {
-    super.onEntityCreate(entity);
-    this.requireComponent(entity, "transform");
-
-    entity.radius = 0.5;
-  }
-
-  onEntityDestroy(entity)
-  {
-    super.onEntityDestroy(entity);
-
-    delete entity.radius;
-  }
-}
-
-class RenderableSystem extends __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__["b" /* System */]
-{
-  constructor()
-  {
-    super("renderable");
-  }
-
-  onEntityCreate(entity)
-  {
-    super.onEntityCreate(entity);
-    this.requireComponent(entity, "transform");
-  }
-}
-
-class MotionSystem extends __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__["b" /* System */]
-{
-  constructor()
-  {
-    super("motion");
-  }
-
-  onEntityCreate(entity)
-  {
-    super.onEntityCreate(entity);
-    this.requireComponent(entity, "transform");
-
-    entity.motion = vec2.create();
-    entity.friction = 0.1;
-  }
-
-  onEntityDestroy(entity)
-  {
-    super.onEntityDestroy(entity);
-
-    delete entity.motion;
-    delete entity.friction;
-  }
-
-  onUpdate()
-  {
-    super.onUpdate();
-
-    for(let i in this.entities)
-    {
-      let entity = this.entities[i];
-      entity.transform.position[0] += entity.motion[0];
-      entity.transform.position[1] += entity.motion[1];
-
-      const fric = 1.0 - entity.friction;
-      entity.motion[0] *= fric;
-      entity.motion[1] *= fric;
-
-      if (entity.motion[0] < MotionSystem.MOTION_MIN && entity.motion[0] > -MotionSystem.MOTION_MIN) entity.motion[0] = 0;
-      if (entity.motion[1] < MotionSystem.MOTION_MIN && entity.motion[1] > -MotionSystem.MOTION_MIN) entity.motion[1] = 0;
-    }
-  }
-}
-MotionSystem.MOTION_MIN = 0.01;
-
-class FollowSystem extends __WEBPACK_IMPORTED_MODULE_1__lib_ecs_js__["b" /* System */]
-{
-  constructor()
-  {
-    super("follow");
-  }
-
-  onEntityCreate(entity)
-  {
-    super.onEntityCreate(entity);
-    this.requireComponent(entity, "transform");
-    this.requireComponent(entity, "motion");
-    this.requireComponent(entity, "solid");
-
-    entity.target = null;
-    entity.distance = 1.0;
-  }
-
-  onEntityDestroy(entity)
-  {
-    super.onEntityDestroy(entity);
-
-    delete entity.target;
-    delete entity.distance;
-  }
-
-  onUpdate()
-  {
-    super.onUpdate();
-
-    for(let i in this.entities)
-    {
-      var entity = this.entities[i];
-      var target = entity.target;
-      if (target != null)
-      {
-        var dx = entity.transform.position[0] - target.transform.position[0];
-        var dy = entity.transform.position[1] - target.transform.position[1];
-        var dx2 = dx * dx;
-        var dy2 = dy * dy;
-        var d = dx * dx + dy * dy;
-        //TODO: COMPLETE THIS!
-        entity.motion[0] += dx / d;
-        entity.motion[1] += dy / d;
-      }
-    }
-  }
-}
-
-
+/* harmony default export */ __webpack_exports__["a"] = (VBO);
 
 
 /***/ }),
-/* 13 */
+/* 24 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* unused harmony export Camera */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return OrthographicCamera; });
-/* unused harmony export PerspectiveCamera */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__mogli_js__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Transform_js__ = __webpack_require__(1);
-
-
-
-
-class Camera
+class NetworkHandler
 {
-  constructor()
+  constructor(socket, remote=true)
   {
-    this.transform = new __WEBPACK_IMPORTED_MODULE_1__Transform_js__["a" /* default */]();
+    this.socket = socket;
+    this.remote = remote;
 
-    this._view = mat4.create();
-    this._orientation = mat4.create();
-    this._projection = mat4.create();
-  }
-
-  get view()
-  {
-    return mat4.fromRotationTranslationScale(this._view,
-      this.transform.rotation,
-      [-this.transform.position[0], -this.transform.position[1], -this.transform.position[2]],
-      this.transform.scale);
-  }
-
-  get orientation()
-  {
-    return mat4.fromQuat(this._orientation, this.transform.rotation);
-  }
-
-  get projection()
-  {
-    throw new Error("undefined camera type - must be perspective or orthographic");
-  }
-}
-
-class OrthographicCamera extends Camera
-{
-  constructor(left = -10, right = 10, top = -10, bottom = 10, near = -10, far = 10)
-  {
-    super();
-    //near plane must be > 0
-    //far plane must be > near
-    this.left = left;
-    this.right = right;
-    this.top = top;
-    this.bottom = bottom;
-    this.near = near;
-    this.far = far;
-  }
-
-  get projection()
-  {
-    //TODO: maybe cache this?
-    let width = this.right - this.left;
-    let height = this.bottom - this.top;
-    let a = width / height;
-    let v = __WEBPACK_IMPORTED_MODULE_0__mogli_js__["d" /* gl */].canvas.clientWidth / __WEBPACK_IMPORTED_MODULE_0__mogli_js__["d" /* gl */].canvas.clientHeight;
-    if (v >= a)
+    if (!this.remote)
     {
-      return mat4.ortho(this._projection,
-        -(v / a) * width / 2.0, (v / a) * width / 2.0,
-        -height / 2.0, height / 2.0,
-        this.near, this.far);
+      //Server-side init
+      this.clients = new Map();
+      this.onClientConnect = (client) => {};
+      this.onClientDisconnect = (client) => {};
     }
     else
     {
-      return mat4.ortho(this._projection,
-        -width / 2.0, width / 2.0,
-        -(a / v) * height / 2.0, (a / v) * height / 2.0,
-        this.near, this.far);
+      //Client-side init
+      this.socketID = -1;
+      this.onServerConnect = (server) => {};
+      this.onServerDisconnect = (server) => {};
     }
   }
-}
 
-class PerspectiveCamera extends Camera
-{
-  constructor(fieldOfView = 70.0, clippingNear = 0.01, clippingFar = 100)
+  initClient(callback)
   {
-    super();
-    //near plane must be > 0
-    //far plane must be > near
-    //Field of view must be within 0 to 180 degrees
-    this.fieldOfView = fieldOfView;
-    this.clippingNear = clippingNear;
-    this.clippingFar = clippingFar;
+    if (!this.remote) throw new Error("Initializing wrong network side");
+
+    this.socket.emit('client-handshake');
+
+    this.socket.on('server-handshake', (data) => {
+      console.log("Connected to server...");
+      this.socketID = data.socketID;
+      this.onServerConnect(this.socket);
+
+      //Start game...
+      callback();
+    });
+
+    this.socket.on('disconnect', () => {
+      console.log("Disconnected from server...");
+      this.socketID = -1;
+      this.onServerDisconnect(this.socket);
+
+      window.close();
+    });
   }
 
-  get projection()
+  initServer(callback)
   {
-    //TODO: maybe cache this?
-    let v = __WEBPACK_IMPORTED_MODULE_0__mogli_js__["d" /* gl */].canvas.clientWidth / __WEBPACK_IMPORTED_MODULE_0__mogli_js__["d" /* gl */].canvas.clientHeight;
-    return mat4.perspective(this._projection, this.fieldOfView, v, this.clippingNear, this.clippingFar);
+    if (this.remote) throw new Error("Initializing wrong network side");
+
+    this.socket.on('connection', (socket) => {
+      socket.on('client-handshake', () => {
+        console.log("Added client: " + socket.id);
+        this.clients.set(socket.id, socket);
+        socket.emit('server-handshake', {socketID: socket.id});
+        this.onClientConnect(socket);
+
+        socket.on('disconnect', () => {
+          this.onClientDisconnect(socket);
+          console.log("Removed client: " + socket.id);
+          this.clients.delete(socket.id);
+        });
+      });
+    });
+  }
+
+  sendToServer(id, data)
+  {
+    if (!this.remote) throw new Error("Unable to send packet to self");
+
+    this.socket.emit(id, data);
+  }
+
+  sendTo(id, data, dst)
+  {
+    dst.emit(id, data);
+  }
+
+  sendToAll(id, data)
+  {
+    if (this.remote) throw new Error("Unable to send packet to all from client");
+
+    this.clients.forEach((client, key) => {
+      this.sendTo(id, data, client);
+    });
   }
 }
 
-
+/* harmony default export */ __webpack_exports__["a"] = (NetworkHandler);
 
 
 /***/ })

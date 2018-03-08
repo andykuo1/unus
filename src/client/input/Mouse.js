@@ -11,6 +11,8 @@ class Mouse
   {
     this.x = 0.0;
     this.y = 0.0;
+    this._prevX = 0.0;
+    this._prevY = 0.0;
     this.scrollX = 0.0;
     this.scrollY = 0.0;
     this.down = false;
@@ -88,6 +90,35 @@ class Mouse
     this._element.removeEventListener('wheel', this.onMouseWheel);
     this._element.removeEventListener('mousemove', this.onMouseMove);
     this._element.removeEventListener('touchstart', this.onTouchStart);
+  }
+
+  poll()
+  {
+    return {
+      x: this.x,
+      y: this.y,
+      dx: this.dx,
+      dy: this.dy,
+      scrollX: this.scrollX,
+      scrollY: this.scrollY,
+      down: this.down,
+      click: this.click,
+      time: Date.now()
+    };
+  }
+
+  get dx()
+  {
+    var result = this.x - this._prevX;
+    this._prevX = this.x;
+    return result;
+  }
+
+  get dy()
+  {
+    var result = this.y - this._prevY;
+    this._prevY = this.y;
+    return result;
   }
 
   get click()

@@ -1,18 +1,26 @@
-import { gl } from './lib/mogli.js';
+import gl from '../mogli/gl.js';
 
-class Viewport
+class ViewPort
 {
-  constructor()
+  constructor(canvas)
   {
-    this.width = 1;
-    this.height = 1;
+    this.canvas = canvas;
   }
 
-  applyView()
+  update()
   {
-    this.width = gl.canvas.clientWidth;
-    this.height = gl.canvas.clientHeight;
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.viewport(0, 0, this.width, this.height);
+  }
+
+  get width()
+  {
+    return this.canvas.clientWidth;
+  }
+
+  get height()
+  {
+    return this.canvas.clientHeight;
   }
 
   static getPointFromScreen(dst, camera, viewport, screenX, screenY)
@@ -56,4 +64,4 @@ function unproject(dst, invertedViewProjection, viewport, screenX, screenY, scre
   return dst;
 }
 
-export default Viewport;
+export default ViewPort;

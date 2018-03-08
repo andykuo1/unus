@@ -2,7 +2,7 @@
   "name": "unus",
   "version": "1.0.0",
   "description": "An online browser game.",
-  "main": "server.js",
+  "main": "./src/server.js",
   "scripts": {
     "build": "webpack --config webpack.config.js",
     "start": "npm run build && bash run.sh"
