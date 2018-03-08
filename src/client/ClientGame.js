@@ -31,7 +31,7 @@ class ClientGame extends Game
   load(callback)
   {
     console.log("Loading client...");
-    this.onRenderSetup(callback);
+    this.renderer.load(callback);
   }
 
   connect(callback)
@@ -51,11 +51,6 @@ class ClientGame extends Game
   }
 
   /************* Game Implementation *************/
-
-  onRenderSetup(callback)
-  {
-    this.renderer.load(callback);
-  }
 
   onUpdate(frame)
   {

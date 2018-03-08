@@ -1,6 +1,7 @@
 import EntityManager from '../entity/EntityManager.js';
 import System from '../entity/System.js';
 import Player from './PlayerComponent.js';
+import Transform from './TransformComponent.js';
 
 class PlayerSystem extends System
 {
@@ -22,8 +23,13 @@ class PlayerSystem extends System
 
   onEntityUpdate(entity, frame)
   {
-    entity.x = entity.player.nextX;
-    entity.y = entity.player.nextY;
+    const dx = entity.player.nextX - entity.x;
+    const dy = entity.player.nextY - entity.y;
+    const rot = -Math.atan2(-dy, dx);
+
+    const speed = 10.0;
+    entity.x += Math.cos(rot) * speed * frame.delta;
+    entity.y += Math.sin(rot) * speed * frame.delta;
   }
 
   onInputUpdate(entity, inputState)
@@ -51,7 +57,7 @@ class PlayerSystem extends System
 
   writeToGameState(entityManager, gameState)
   {
-    const CNAME = EntityManager.getComponentName(Player);
+    const PLAYER_NAME = EntityManager.getComponentName(Player);
 
     let dst = gameState['entities'];
     if (!dst) dst = gameState['entities'] = {};
@@ -60,14 +66,14 @@ class PlayerSystem extends System
     {
       let entityData = dst[entity._id];
       if (!entityData) entityData = dst[entity._id] = {};
-      if (!entityData[CNAME]) entityData[CNAME] = {};
+      if (!entityData[PLAYER_NAME]) entityData[PLAYER_NAME] = {};
       this.writeEntityToData(entity, entityData);
     }
   }
 
   readFromGameState(entityManager, gameState)
   {
-    const CNAME = EntityManager.getComponentName(Player);
+    const PLAYER_NAME = EntityManager.getComponentName(Player);
 
     let src = gameState['entities'] || {};
     for(const entityID in src)
@@ -77,16 +83,37 @@ class PlayerSystem extends System
 
       let entityData = src[entityID];
 
-      if (entityData[CNAME])
+      if (entityData[PLAYER_NAME])
       {
-        if (!entity[CNAME]) entity.addComponent(Player);
+        if (!entity[PLAYER_NAME]) entity.addComponent(Player);
         this.readEntityFromData(entityData, entity);
       }
-      else if (entity[CNAME])
+      else if (entity[PLAYER_NAME])
       {
         entity.removeComponent(Player);
       }
     }
+  }
+
+  static createPlayerEntity(entityManager, socketID)
+  {
+    const entity = entityManager.createEntity()
+      .addComponent(Transform)
+      .addComponent(Player);
+    entity.player.socketID = socketID;
+  }
+
+  static getPlayerByClientID(entityManager, socketID)
+  {
+    for(const entity of entityManager.getEntitiesByComponent(Player))
+    {
+      if (entity.player.socketID == socketID)
+      {
+        return entity;
+      }
+    }
+
+    return null;
   }
 }
 

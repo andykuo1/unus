@@ -8,6 +8,8 @@ import Mesh from './mogli/Mesh.js';
 
 import gl from './mogli/gl.js';
 
+import Transform from '../integrated/world/TransformComponent.js';
+
 class Renderer
 {
   constructor(canvas)

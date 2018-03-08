@@ -3,7 +3,7 @@ import World from '../integrated/World.js';
 
 import PriorityQueue from '../util/PriorityQueue.js';
 import Console from './console/Console.js';
-import Player from '../integrated/world/PlayerComponent.js';
+import PlayerSystem from '../integrated/world/PlayerSystem.js';
 
 /*
 SERVER stores CURRENT_INPUT_STATE.
@@ -37,14 +37,13 @@ class ServerGame extends Game
 
     this.networkHandler.initServer(callback);
     this.networkHandler.onClientConnect = (client) => {
-      const clientEntity = this.world.entityManager.createEntity().addComponent(Player);
-      clientEntity.player.socketID = client.id;
+      const clientEntity = PlayerSystem.createPlayerEntity(this.world.entityManager, client.id);
       client.on('client.inputstate', (data) => {
         this.onClientUpdate(client, data);
       });
     };
     this.networkHandler.onClientDisconnect = (client) => {
-      const clientEntity = this.world.getEntityByClientID(client.id);
+      const clientEntity = PlayerSystem.getPlayerByClientID(this.world.entityManager, client.id);
       if (clientEntity == null) return;
       this.world.entityManager.destroyEntity(clientEntity);
     };

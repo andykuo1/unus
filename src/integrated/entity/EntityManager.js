@@ -4,10 +4,10 @@ import ObjectPool from '../../util/ObjectPool.js';
 
 class EntityManager
 {
-  constructor()
+  constructor(E)
   {
     this.entities = [];
-    this.entityPool = new ObjectPool(Entity);
+    this.entityPool = new ObjectPool(E || Entity);
 
     this.components = new Map();
     this.nextEntityID = 1;
@@ -18,13 +18,13 @@ class EntityManager
 
   createEntity(id)
   {
-    var entity = this.entityPool.obtain();
+    const entity = this.entityPool.obtain();
     entity._manager = this;
     entity._id = id || this.getNextAvailableEntityID();
     this.entities.push(entity);
 
     this.onEntityCreate(entity);
-    
+
     return entity;
   }
 
