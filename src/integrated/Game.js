@@ -1,8 +1,23 @@
 class Game
 {
-  constructor()
+  constructor(networkHandler)
   {
-    this.entities = [];
+    this.networkHandler = networkHandler;
+  }
+
+  load(callback)
+  {
+    throw new Error("must be overriden");
+  }
+
+  connect(callback)
+  {
+    throw new Error("must be overriden");
+  }
+
+  update(frame)
+  {
+    throw new Error("must be overriden");
   }
 }
 

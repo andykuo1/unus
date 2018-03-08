@@ -1,25 +1,24 @@
 import Game from '../integrated/Game.js';
-import Player from '../integrated/Player.js';
-import PacketHandler from '../integrated/packet/PacketHandler.js';
+import World from '../integrated/World.js';
 
 import PriorityQueue from '../util/PriorityQueue.js';
-
 import Console from './console/Console.js';
+import PlayerSystem from '../integrated/world/PlayerSystem.js';
+
+/*
+SERVER stores CURRENT_INPUT_STATE.
+SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
+SERVER sends CURRENT_GAME_STATE to all CLIENTS.
+*/
 
 class ServerGame extends Game
 {
-  constructor(io)
+  constructor(networkHandler)
   {
-    super();
+    super(networkHandler);
 
-    this.io = io;
-
-    this.clients = new Map();
-    this.inputs = new PriorityQueue((a, b) => {
-      return (a.timestamp || 0) - (b.timestamp || 0);
-    });
-
-    this.gameState = {};
+    this.world = new World({delta: 0, then: Date.now(), count: 0}, false);
+    this.inputStates = new PriorityQueue();
   }
 
   load(callback)
@@ -27,12 +26,7 @@ class ServerGame extends Game
     console.log("Loading server...");
 
     //Setup console...
-    Console.addCommand("stop", "stop", (args) => {
-      console.log("Stopping server...");
-      //TODO: ADD state-preservation features...
-      console.log("Server stopped.");
-      process.exit(0);
-    });
+    this.onCommandSetup();
 
     callback();
   }
@@ -41,69 +35,63 @@ class ServerGame extends Game
   {
     console.log("Connecting server...");
 
-    //Setup server..
-    this.io.on('connection', (socket) => {
-      socket.on('client-handshake', () => {
-        this.addClient(socket);
-        socket.emit('server-handshake');
-        socket.on('client-input', (data) => {
-          this.onClientInput(socket, data);
-        });
-        socket.on('disconnect', () => {
-          this.removeClient(socket);
-        });
+    this.networkHandler.initServer(callback);
+    this.networkHandler.onClientConnect = (client) => {
+      const clientEntity = PlayerSystem.createPlayerEntity(this.world.entityManager, client.id);
+      client.on('client.inputstate', (data) => {
+        this.onClientUpdate(client, data);
       });
-    });
+    };
+    this.networkHandler.onClientDisconnect = (client) => {
+      const clientEntity = PlayerSystem.getPlayerByClientID(this.world.entityManager, client.id);
+      if (clientEntity == null) return;
+      this.world.entityManager.destroyEntity(clientEntity);
+    };
 
     callback();
   }
 
   update(frame)
   {
-    //Poll clients to GameState
-    while(this.inputs.length > 0)
+    this.onUpdate(frame);
+  }
+
+  /************* Game Implementation *************/
+
+  onCommandSetup()
+  {
+    Console.addCommand("stop", "stop", (args) => {
+      console.log("Stopping server...");
+      //TODO: ADD state-preservation features...
+      console.log("Server stopped.");
+      process.exit(0);
+    });
+  }
+
+  onUpdate(frame)
+  {
+    //SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
+    while(this.inputStates.length > 0)
     {
-      let input = this.inputs.dequeue();
-
-      //TODO: Apply input to game state...
-
-      //Game Logic...
-      let entity = this.gameState[input.id];
-      entity.x = input.x;
-      entity.y = input.y;
+      let inputState = this.inputStates.dequeue();
+      this.world.step(inputState, inputState.frame, inputState.target);
     }
 
-    //Send final game state to all
-    PacketHandler.sendToAll('server-update', this.gameState, this.clients);
+    //SERVER sends CURRENT_GAME_STATE to all CLIENTS.
+    this.sendServerUpdate(frame);
   }
 
-  onClientInput(socket, data)
+  onClientUpdate(client, inputState)
   {
-    data.id = socket.id;
-    this.inputs.queue(data);
+    //SERVER stores CURRENT_INPUT_STATE.
+    inputState.target = client.id;
+    this.inputStates.queue(inputState);
   }
 
-  addClient(socket)
+  sendServerUpdate(frame)
   {
-    PacketHandler.sendToAll('server-addclient', socket.id, this.clients);
-    PacketHandler.sendToClient('server-extclient', this.clients.keys(), socket);
-
-    console.log("Added client: " + socket.id);
-    this.clients.set(socket.id, socket);
-
-    //Create EntityPlayer here...
-    this.gameState[socket.id] = new Player();
-  }
-
-  removeClient(socket)
-  {
-    PacketHandler.sendToAll('server-delclient', socket.id, this.clients);
-
-    console.log("Removed client: " + socket.id);
-    this.clients.delete(socket.id);
-
-    //Delete EntityPlayer here...
-    delete this.gameState[socket.id];
+    let gameState = this.world.captureState(frame);
+    this.networkHandler.sendToAll('server.gamestate', gameState);
   }
 }
 

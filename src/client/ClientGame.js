@@ -1,102 +1,103 @@
 import Game from '../integrated/Game.js';
-import Player from '../integrated/Player.js';
-import PacketHandler from '../integrated/packet/PacketHandler.js';
+import World from '../integrated/World.js';
 
-import ViewPort from './camera/ViewPort.js';
 import Mouse from './input/Mouse.js';
 import Renderer from './Renderer.js';
+import ViewPort from './camera/ViewPort.js';
+
+/*
+CLIENT gets CURRENT_GAME_STATE.
+CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
+CLIENT removes all INPUT_STATE older than CURRENT_GAME_STATE.
+CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
+. . .
+CLIENT stores CURRENT_INPUT_STATE.
+CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
+CLIENT sends CURRENT_INPUT_STATE.
+*/
 
 class ClientGame extends Game
 {
-  constructor(socket, canvas)
+  constructor(networkHandler)
   {
-    super();
+    super(networkHandler);
 
-    this.socket = socket;
-    this.canvas = canvas;
-
+    this.world = new World({delta: 0, then: Date.now(), count: 0}, true);
     this.input = new Mouse(document);
-    this.renderer = new Renderer(this.canvas);
-
-    this.thePlayer = new Player();
-    this.gameState = {};
+    this.inputStates = [];
+    this.renderer = new Renderer(canvas);
   }
 
   load(callback)
   {
-  	console.log("Loading client...");
-
+    console.log("Loading client...");
     this.renderer.load(callback);
   }
 
   connect(callback)
   {
     console.log("Connecting client...");
-
-    this.socket.emit('client-handshake');
-
-    this.socket.on('server-handshake', () => {
-      console.log("Connected to server...");
-      //Add this EntityPlayer...
-      this.gameState[this.socket.id] = this.thePlayer;
-      //Start game...
-      callback();
-    });
-
-    this.socket.on('server-update', (data) => {
-      this.onServerUpdate(this.socket, data);
-    });
-    this.socket.on('server-extclient', (data) => {
-      for(var i in data)
-      {
-        //Create EntityPlayer...
-        this.gameState[data[i]] = new Player();
-      }
-    });
-    this.socket.on('server-addclient', (data) => {
-      //Create EntityPlayer...
-      this.gameState[data] = new Player();
-    })
-    this.socket.on('server-delclient', (data) => {
-      //Delete EntityPlayer...
-      delete this.gameState[data];
-    });
-
-    this.socket.on('disconnect', () => {
-      window.close();
-    });
+    this.networkHandler.initClient(callback);
+    this.networkHandler.onServerConnect = (server) => {
+      server.on('server.gamestate', (data) => {
+        this.onServerUpdate(server, data);
+      });
+    };
   }
 
   update(frame)
   {
-    let input = this.input.poll();
+    this.onUpdate(frame);
+  }
 
-    //Predict state...
-    //Simulating changes in state...
-    let v = ViewPort.getPointFromScreen(vec3.create(), this.renderer.camera, this.renderer.viewport, input.x, input.y);
-    //this.gameState[this.socket.id].x = v[0];
-    //this.gameState[this.socket.id].y = v[1];
+  /************* Game Implementation *************/
 
-    //Render state...
-    this.renderer.render(this.gameState);
+  onUpdate(frame)
+  {
+    //CLIENT stores CURRENT_INPUT_STATE.
+    var currentInputState = this.getCurrentInputState(frame);
+    this.inputStates.push(currentInputState);
 
-    if (input.dx != 0 || input.dy != 0)
+    //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
+    this.world.step(currentInputState, frame, this.networkHandler.socketID);
+    this.renderer.render(this.world);
+
+    //CLIENT sends CURRENT_INPUT_STATE.
+    this.sendClientInput(currentInputState);
+  }
+
+  onServerUpdate(server, gameState)
+  {
+    //CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
+    this.world.resetState(gameState);
+    //CLIENT removes all INPUT_STATE older than CURRENT_GAME_STATE.
+    while(this.inputStates.length > 0 && this.world.isNewerThan(this.inputStates[this.inputStates.length - 1].frame))
     {
-      //Force 200ms lag...
-      setTimeout(() => PacketHandler.sendToServer('client-input',
-      {
-        timestamp: frame.then,
-        x: v[0],
-        y: v[1]
-      },
-      this.socket), 200);
+      this.inputStates.shift();
+    }
+    //CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
+    for(const inputState of this.inputStates)
+    {
+      this.world.step(inputState, inputState.frame, this.networkHandler.socketID);
     }
   }
 
-  onServerUpdate(socket, data)
+  getCurrentInputState(frame)
   {
-    //Update state to authoritative state...
-    this.gameState = data;
+    const inputState = this.input.poll();
+    const vec = ViewPort.getPointFromScreen(vec3.create(),
+      this.renderer.camera, this.renderer.viewport,
+      inputState.x, inputState.y);
+    inputState.x = vec[0];
+    inputState.y = vec[1];
+    inputState.frame = frame;
+    return inputState;
+  }
+
+  sendClientInput(inputState)
+  {
+    //FIXME: Force 200ms lag...
+    setTimeout(() => this.networkHandler.sendToServer('client.inputstate', inputState), 200);
   }
 }
 

@@ -1,4 +1,5 @@
 import ClientGame from './client/ClientGame.js';
+import NetworkHandler from './integrated/NetworkHandler.js';
 
 //Window Setup
 var canvas = document.getElementById('canvas');
@@ -15,7 +16,7 @@ var socket = io();
 var game;
 function start()
 {
-  game = new ClientGame(socket, canvas);
+  game = new ClientGame(new NetworkHandler(socket, true));
 	onApplicationLoad(game);
 }
 

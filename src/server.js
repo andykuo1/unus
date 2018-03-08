@@ -3,10 +3,11 @@ import path from 'path'
 import socketio from 'socket.io';
 
 import ServerGame from './server/ServerGame.js';
+import NetworkHandler from './integrated/NetworkHandler.js';
 
 const __dirname = path.resolve();
 const DEVMODE = process.argv.indexOf('--dev') != -1;
-const TIMESTEP = 200;
+const TIMESTEP = 1000/10;
 const PORT = process.env.PORT || 8082;
 
 //Server Setup
@@ -29,7 +30,7 @@ var io = socketio(server);
 var game;
 function start()
 {
-  game = new ServerGame(io);
+  game = new ServerGame(new NetworkHandler(io, false));
   onApplicationLoad(game);
 }
 

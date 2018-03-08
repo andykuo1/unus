@@ -8,6 +8,8 @@ import Mesh from './mogli/Mesh.js';
 
 import gl from './mogli/gl.js';
 
+import Transform from '../integrated/world/TransformComponent.js';
+
 class Renderer
 {
   constructor(canvas)
@@ -59,7 +61,7 @@ class Renderer
 			gl.GL_STATIC_DRAW);
   }
 
-  render(gameState)
+  render(world)
   {
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     this.viewport.update();
@@ -77,19 +79,15 @@ class Renderer
 
 			this.mesh.bind();
 			{
-        for(var i in gameState)
+        for(const entity of world.entities)
         {
-          let entity = gameState[i];
-          if (entity)
-          {
-            //Setting up the Model Matrix
-            mat4.fromTranslation(modelview, [entity.x, entity.y, 0]);
-            mat4.mul(modelview, modelview, view);
-      			gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
+          //Setting up the Model Matrix
+          mat4.fromTranslation(modelview, [entity.x, entity.y, 0]);
+          mat4.mul(modelview, modelview, view);
+    			gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
 
-            //Draw it!
-            Mesh.draw(this.mesh);
-          }
+          //Draw it!
+          Mesh.draw(this.mesh);
         }
 			}
 			this.mesh.unbind();

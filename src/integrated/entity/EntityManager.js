@@ -1,129 +1,135 @@
 import Entity from './Entity.js';
 
+import ObjectPool from '../../util/ObjectPool.js';
+
 class EntityManager
 {
-  constructor()
+  constructor(E)
   {
-    this.systems = {};
     this.entities = [];
+    this.entityPool = new ObjectPool(E || Entity);
+
+    this.components = new Map();
+    this.nextEntityID = 1;
+
+    this.onEntityCreate = (entity) => {};
+    this.onEntityDestroy = (entity) => {};
   }
 
-  registerSystem(system)
+  createEntity(id)
   {
-    this.systems[system.id] = system;
-    system.entityManager = this;
-    return this;
-  }
-
-  createEntity(components)
-  {
-    return this.addEntity(new Entity(), components);
-  }
-
-  addEntity(entity, components)
-  {
-    if (entity.dead == false)
-    {
-      throw new Error("entity already created!");
-    }
-
+    const entity = this.entityPool.obtain();
+    entity._manager = this;
+    entity._id = id || this.getNextAvailableEntityID();
     this.entities.push(entity);
-    if (components)
-    {
-      for(let i in components)
-      {
-        this.addComponent(entity, components[i]);
-      }
-    }
-    entity.dead = false;
-    entity.onCreate(this);
+
+    this.onEntityCreate(entity);
+
     return entity;
   }
 
-  removeEntity(entity)
+  destroyEntity(entity)
   {
-    if (entity.dead == true)
-    {
-      throw new Error("entity already destroyed!");
-    }
+    this.onEntityDestroy(entity);
 
-    entity.onDestroy(this);
-    this.clearComponents(entity);
-    entity.dead = true;
+    this.clearComponentsFromEntity(entity);
     this.entities.splice(this.entities.indexOf(entity), 1);
-    return entity;
+    this.entityPool.release(entity);
   }
 
-  getEntities(component)
+  getEntityByID(id)
   {
-    return this.systems[component].entities;
-  }
-
-  addComponent(entity, component)
-  {
-    let system = this.systems[component];
-    if (system)
+    for(let entity of this.entities)
     {
-      system.onEntityCreate(entity);
-      return this;
-    }
-    throw new Error("could not find system for \'" + component + "\'");
-  }
-
-  removeComponent(entity, component)
-  {
-    let system = this.systems[component];
-    if (system)
-    {
-      if (system.entities.includes(entity))
+      if (entity._id == id)
       {
-        system.onEntityDestroy(entity);
-        return this;
+        return entity;
       }
-
-      throw new Error("entity does not include component \'" + component + "\'");
     }
-    throw new Error("could not find system for \'" + component + "\'");
+    return null;
   }
 
-  clearComponents(entity)
+  addComponentToEntity(entity, component)
   {
-    for(let i = this.systems.size; i >= 0; --i)
+    if (this.hasComponent(entity, component))
     {
-      let system = this.systems[i];
-      if (system.entities.includes(entity))
+      throw new Error("entity already includes component \'" + EntityManager.getComponentName(component) + "\'");
+    }
+
+    entity[EntityManager.getComponentName(component)] = new component();
+
+    var list = this.components.get(component) || [];
+    list.push(entity);
+    this.components.set(component, list);
+  }
+
+  removeComponentFromEntity(entity, component)
+  {
+    if (!this.hasComponent(entity, component))
+    {
+      throw new Error("entity does not include component \'" + EntityManager.getComponentName(component) + "\'");
+    }
+
+    delete entity[EntityManager.getComponentName(component)];
+
+    var list = this.components.get(component);
+    if (list)
+    {
+      list.splice(list.indexOf(entity), 1);
+    }
+  }
+
+  clearComponentsFromEntity(entity)
+  {
+    for(const [key, list] of this.components)
+    {
+      if (list.includes(entity))
       {
-        system.onEntityDestroy(entity);
+        delete entity[EntityManager.getComponentName(key)];
+
+        list.splice(list.indexOf(entity), 1);
       }
     }
   }
 
   hasComponent(entity, component)
   {
-    let system = this.systems[component];
-    if (system)
-    {
-      return system.entities.includes(entity);
-    }
-    throw new Error("could not find system for \'" + component + "\'");
+    let list = this.components.get(component);
+    return list && list.includes(entity);
   }
 
-  update()
+  getComponentsByEntity(entity)
   {
-    for(let id in this.systems)
+    let result = [];
+    for(const [key, list] of this.components)
     {
-      this.systems[id].onUpdate();
-    }
-
-    var i = this.entities.length;
-    while(i--)
-    {
-      let entity = this.entities[i];
-      if (entity.dead)
+      if (list.includes(entity))
       {
-        this.removeEntity(entity);
+        result.push(key);
       }
     }
+    return result;
+  }
+
+  getEntitiesByComponent(component)
+  {
+    return this.components.get(component) || [];
+  }
+
+  getEntities()
+  {
+    return this.entities;
+  }
+
+  getNextAvailableEntityID()
+  {
+    return this.nextEntityID++;
+  }
+
+  static getComponentName(component)
+  {
+    var name = component.name;
+    return name.charAt(0).toLowerCase() + name.slice(1);
   }
 }
 
