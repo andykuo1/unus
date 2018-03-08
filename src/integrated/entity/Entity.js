@@ -1,14 +1,35 @@
 class Entity
 {
   constructor()
-  {}
-
-  onCreate(entityManager)
   {
+    this.__init();
   }
 
-  onDestroy(entityManager)
+  __init()
   {
+    this._id = 0;
+  }
+
+  addComponent(component)
+  {
+    this._manager.addComponentToEntity(this, component);
+    return this;
+  }
+
+  removeComponent(component)
+  {
+    this._manager.removeComponentFromEntity(this, component);
+    return this;
+  }
+
+  clearComponents()
+  {
+    this._manager.clearComponentsFromEntity(this);
+  }
+
+  hasComponent(component)
+  {
+    return this._manager.hasComponent(this, component);
   }
 }
 

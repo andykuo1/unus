@@ -2,11 +2,13 @@ import express from 'express';
 import path from 'path'
 import socketio from 'socket.io';
 
-import ServerGame from './server/ServerGame.js';
+import ServerGame from './server/TestServerGame.js';
+import World from './integrated/World.js';
+import NetworkHandler from './integrated/NetworkHandler.js';
 
 const __dirname = path.resolve();
 const DEVMODE = process.argv.indexOf('--dev') != -1;
-const TIMESTEP = 200;
+const TIMESTEP = 300; //FIXME: 1000/15;
 const PORT = process.env.PORT || 8082;
 
 //Server Setup
@@ -29,7 +31,10 @@ var io = socketio(server);
 var game;
 function start()
 {
-  game = new ServerGame(io);
+  game = new ServerGame(
+    new World({delta: 0, then: Date.now(), count: 0}, false),
+    new NetworkHandler(io, false)
+  );
   onApplicationLoad(game);
 }
 
