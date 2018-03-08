@@ -12,12 +12,9 @@ class PlayerManager
 
     //This should only be used by client
     this.clientPlayer = null;
-
-    this.onPlayerConnect = (client) => {};
-    this.onPlayerCreate = (player) => {};
-    this.onPlayerDestroy = (player) => {};
-    this.onPlayerDisconnect = (client) => {};
   }
+
+  /** CLIENT CODE */
 
   setClientPlayer(entity)
   {
@@ -28,6 +25,8 @@ class PlayerManager
   {
     return this.clientPlayer;
   }
+
+  /** SERVER CODE */
 
   createPlayer(socketID)
   {
