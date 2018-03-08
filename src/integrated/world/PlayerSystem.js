@@ -1,10 +1,18 @@
-import EntityManager from './EntityManager.js';
+import EntityManager from '../entity/EntityManager.js';
+import System from '../entity/System.js';
 import Player from './PlayerComponent.js';
 
-class PlayerSystem
+class PlayerSystem extends System
 {
+  constructor()
+  {
+    super();
+  }
+
   onUpdate(entityManager, frame)
   {
+    super.onUpdate(entityManager, frame);
+
     const entities = entityManager.getEntitiesByComponent(Player);
     for(const entity of entities)
     {
@@ -20,6 +28,8 @@ class PlayerSystem
 
   onInputUpdate(entity, inputState)
   {
+    super.onInputUpdate(entity, inputState);
+
     if (!entity.hasComponent(Player)) return;
     entity.player.nextX = inputState.x;
     entity.player.nextY = inputState.y;

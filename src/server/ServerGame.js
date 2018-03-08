@@ -1,24 +1,23 @@
+import Game from '../integrated/Game.js';
+import World from '../integrated/World.js';
+
 import PriorityQueue from '../util/PriorityQueue.js';
-
 import Console from './console/Console.js';
-
-import Player from '../integrated/entity/PlayerComponent.js';
+import Player from '../integrated/world/PlayerComponent.js';
 
 /*
-
 SERVER stores CURRENT_INPUT_STATE.
 SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
 SERVER sends CURRENT_GAME_STATE to all CLIENTS.
-
 */
 
-class ServerGame// extends Game
+class ServerGame extends Game
 {
-  constructor(world, networkHandler)
+  constructor(networkHandler)
   {
-    this.world = world;
-    this.networkHandler = networkHandler;
+    super(networkHandler);
 
+    this.world = new World({delta: 0, then: Date.now(), count: 0}, false);
     this.inputStates = new PriorityQueue();
   }
 
@@ -27,12 +26,7 @@ class ServerGame// extends Game
     console.log("Loading server...");
 
     //Setup console...
-    Console.addCommand("stop", "stop", (args) => {
-      console.log("Stopping server...");
-      //TODO: ADD state-preservation features...
-      console.log("Server stopped.");
-      process.exit(0);
-    });
+    this.onCommandSetup();
 
     callback();
   }
@@ -61,6 +55,18 @@ class ServerGame// extends Game
   update(frame)
   {
     this.onUpdate(frame);
+  }
+
+  /************* Game Implementation *************/
+
+  onCommandSetup()
+  {
+    Console.addCommand("stop", "stop", (args) => {
+      console.log("Stopping server...");
+      //TODO: ADD state-preservation features...
+      console.log("Server stopped.");
+      process.exit(0);
+    });
   }
 
   onUpdate(frame)

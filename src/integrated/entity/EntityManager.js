@@ -12,17 +12,8 @@ class EntityManager
     this.components = new Map();
     this.nextEntityID = 1;
 
-    this.callbacks = [];
-  }
-
-  addCallback(callback)
-  {
-    this.callbacks.push(callback);
-  }
-
-  removeCallback(callback)
-  {
-    this.callbacks.splice(this.callbacks.indexOf(entity), 1);
+    this.onEntityCreate = (entity) => {};
+    this.onEntityDestroy = (entity) => {};
   }
 
   createEntity(id)
@@ -32,19 +23,14 @@ class EntityManager
     entity._id = id || this.getNextAvailableEntityID();
     this.entities.push(entity);
 
-    for(const callback of this.callbacks)
-    {
-      callback(entity, 'create');
-    }
+    this.onEntityCreate(entity);
+    
     return entity;
   }
 
   destroyEntity(entity)
   {
-    for(const callback of this.callbacks)
-    {
-      callback(entity, 'destroy');
-    }
+    this.onEntityDestroy(entity);
 
     this.clearComponentsFromEntity(entity);
     this.entities.splice(this.entities.indexOf(entity), 1);

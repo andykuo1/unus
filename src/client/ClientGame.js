@@ -1,10 +1,11 @@
+import Game from '../integrated/Game.js';
+import World from '../integrated/World.js';
+
 import Mouse from './input/Mouse.js';
 import Renderer from './Renderer.js';
-
 import ViewPort from './camera/ViewPort.js';
 
 /*
-
 CLIENT gets CURRENT_GAME_STATE.
 CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
 CLIENT removes all INPUT_STATE older than CURRENT_GAME_STATE.
@@ -13,28 +14,24 @@ CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
 CLIENT stores CURRENT_INPUT_STATE.
 CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
 CLIENT sends CURRENT_INPUT_STATE.
-
 */
 
-class ClientGame// extends Game
+class ClientGame extends Game
 {
-  constructor(world, networkHandler)
+  constructor(networkHandler)
   {
-    this.world = world;
-    this.networkHandler = networkHandler;
+    super(networkHandler);
 
+    this.world = new World({delta: 0, then: Date.now(), count: 0}, true);
     this.input = new Mouse(document);
     this.inputStates = [];
-
-    console.log(canvas);
     this.renderer = new Renderer(canvas);
   }
 
   load(callback)
   {
     console.log("Loading client...");
-
-    this.renderer.load(callback);
+    this.onRenderSetup(callback);
   }
 
   connect(callback)
@@ -51,6 +48,13 @@ class ClientGame// extends Game
   update(frame)
   {
     this.onUpdate(frame);
+  }
+
+  /************* Game Implementation *************/
+
+  onRenderSetup(callback)
+  {
+    this.renderer.load(callback);
   }
 
   onUpdate(frame)

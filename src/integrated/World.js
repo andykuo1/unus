@@ -1,8 +1,8 @@
 import EntityManager from './entity/EntityManager.js';
-import EntitySystem from './entity/EntitySystem.js';
 
-import PlayerSystem from './entity/PlayerSystem.js';
-import Player from './entity/PlayerComponent.js';
+import NetworkEntitySystem from './world/NetworkEntitySystem.js';
+import PlayerSystem from './world/PlayerSystem.js';
+import Player from './world/PlayerComponent.js';
 
 class World
 {
@@ -14,7 +14,7 @@ class World
 
     this.entityManager = new EntityManager();
     this.systems = [];
-    this.systems.push(new EntitySystem(this.entityManager));
+    this.systems.push(new NetworkEntitySystem(this.entityManager));
     this.systems.push(new PlayerSystem());
   }
 
@@ -55,7 +55,7 @@ class World
   {
     this.frame = gameState.frame;
     this.predictiveFrame = this.frame;
-    
+
     //Continue to reset the world state
     for(const system of this.systems)
     {

@@ -3,7 +3,6 @@ import path from 'path'
 import socketio from 'socket.io';
 
 import ServerGame from './server/ServerGame.js';
-import World from './integrated/World.js';
 import NetworkHandler from './integrated/NetworkHandler.js';
 
 const __dirname = path.resolve();
@@ -31,10 +30,7 @@ var io = socketio(server);
 var game;
 function start()
 {
-  game = new ServerGame(
-    new World({delta: 0, then: Date.now(), count: 0}, false),
-    new NetworkHandler(io, false)
-  );
+  game = new ServerGame(new NetworkHandler(io, false));
   onApplicationLoad(game);
 }
 

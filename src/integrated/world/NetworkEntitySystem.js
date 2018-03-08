@@ -1,41 +1,45 @@
-class EntitySystem
+import System from '../entity/System.js';
+
+class NetworkEntitySystem extends System
 {
   constructor(entityManager)
   {
+    super();
+    
     this.createCache = [];
     this.destroyCache = [];
 
-    entityManager.addCallback((entity, state) => {
-      switch(state)
+    entityManager.onEntityCreate = (entity) => {
+      if (this.destroyCache.includes(entity._id))
       {
-        case 'create':
-          if (this.destroyCache.includes(entity._id))
-          {
-            this.destroyCache.splice(this.destroyCache.indexOf(entity._id), 1);
-          }
-          this.createCache.push(entity._id);
-          break;
-        case 'destroy':
-          if (this.createCache.includes(entity._id))
-          {
-            this.createCache.splice(this.createCache.indexOf(entity._id), 1);
-          }
-          this.destroyCache.push(entity._id);
-          break;
+        this.destroyCache.splice(this.destroyCache.indexOf(entity._id), 1);
       }
-    });
+      this.createCache.push(entity._id);
+    };
+
+    entityManager.onEntityDestroy = (entity) => {
+      if (this.createCache.includes(entity._id))
+      {
+        this.createCache.splice(this.createCache.indexOf(entity._id), 1);
+      }
+      this.destroyCache.push(entity._id);
+    };
   }
 
   onUpdate(entityManager, frame)
   {
+    super.onUpdate(entityManager, frame);
   }
 
   onInputUpdate(entity, inputState)
   {
+    super.onInputUpdate(entity, inputState)
   }
 
   writeToGameState(entityManager, gameState)
   {
+    super.writeToGameState(entityManager, gameState);
+
     let entities = gameState['entities.create'];
     if (!entities) entities = gameState['entities.create'] = [];
     for(const entityID of this.createCache)
@@ -55,13 +59,14 @@ class EntitySystem
 
   readFromGameState(entityManager, gameState)
   {
+    super.readFromGameState(entityManager, gameState);
+
     let entities = gameState['entities.create'] || [];
     for(const entityID of entities)
     {
       const entity = entityManager.getEntityByID(entityID);
       if (entity) continue;
 
-      console.log("CREATE ENTITY!");
       entityManager.createEntity(entityID);
     }
 
@@ -70,7 +75,7 @@ class EntitySystem
     {
       const entity = entityManager.getEntityByID(entityID);
       if (!entity) continue;
-      console.log("DESTROY ENTITY!");
+
       entityManager.destroyEntity(entity);
     }
 
@@ -95,4 +100,4 @@ class EntitySystem
   }
 }
 
-export default EntitySystem;
+export default NetworkEntitySystem;
