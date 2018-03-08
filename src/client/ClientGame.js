@@ -68,15 +68,18 @@ class ClientGame extends Game
   {
     //CLIENT stores CURRENT_INPUT_STATE.
     var currentInputState = this.getCurrentInputState(frame);
-    this.inputStates.push(currentInputState);
+    if (currentInputState != null) this.inputStates.push(currentInputState);
+    var targetEntity = currentInputState ? this.playerController.getClientPlayer() : null;
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
-    const targetEntity = this.playerController.getClientPlayer();
     this.world.step(frame, currentInputState, targetEntity);
     this.renderer.render(this.world);
 
     //CLIENT sends CURRENT_INPUT_STATE.
-    this.sendClientInput(currentInputState);
+    if (currentInputState != null)
+    {
+      this.sendClientInput(currentInputState);
+    }
   }
 
   onServerUpdate(server, gameState)
@@ -98,7 +101,9 @@ class ClientGame extends Game
 
   getCurrentInputState(frame)
   {
+    if (!this.input.isDirty()) return null;
     const inputState = this.input.poll();
+
     const vec = ViewPort.getPointFromScreen(vec3.create(),
       this.renderer.camera, this.renderer.viewport,
       inputState.x, inputState.y);

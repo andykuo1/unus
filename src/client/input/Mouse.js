@@ -20,6 +20,8 @@ class Mouse
     this._click = false;
     this._element = element;
 
+    this._dirty = true;
+
     var self = this;
     this.onMouseUp = function(event)
     {
@@ -27,6 +29,7 @@ class Mouse
       self.x = event.clientX - screen.left;
       self.y = event.clientY - screen.top;
       self.down = false;
+      self._dirty = true;
     }
     this.onMouseDown = function(event)
     {
@@ -34,6 +37,7 @@ class Mouse
       self.x = event.clientX - screen.left;
       self.y = event.clientY - screen.top;
       self.down = true;
+      self._dirty = true;
     }
     this.onMouseClick = function(event)
     {
@@ -41,17 +45,20 @@ class Mouse
       self.x = event.clientX - screen.left;
       self.y = event.clientY - screen.top;
       self._click = true;
+      self._dirty = true;
     }
     this.onMouseWheel = function(event)
     {
       self.scrollX = event.deltaX;
       self.scrollY = event.deltaY;
+      self._dirty = true;
     }
     this.onMouseMove = function(event)
     {
       let screen = canvas.getBoundingClientRect();
       self.x = event.clientX - screen.left;
       self.y = event.clientY - screen.top;
+      self._dirty = true;
     }
     this.onTouchStart = function(event)
     {
@@ -72,6 +79,7 @@ class Mouse
       let screen = canvas.getBoundingClientRect();
       self.x = event.touches[0].clientX - screen.left;
       self.y = event.touches[0].clientY - screen.right;
+      self._dirty = true;
     }
 
     this._element.addEventListener('mouseup', this.onMouseUp);
@@ -94,6 +102,7 @@ class Mouse
 
   poll()
   {
+    this._dirty = false;
     return {
       x: this.x,
       y: this.y,
@@ -107,24 +116,35 @@ class Mouse
     };
   }
 
+  isDirty()
+  {
+    return this._dirty;
+  }
+
   get dx()
   {
+    if (this._prevX == this.x) return 0;
     var result = this.x - this._prevX;
     this._prevX = this.x;
+    this._dirty = true;
     return result;
   }
 
   get dy()
   {
+    if (this._prevY == this.y) return 0;
     var result = this.y - this._prevY;
     this._prevY = this.y;
+    this._dirty = true;
     return result;
   }
 
   get click()
   {
+    if (!this._click) return false;
     var result = this._click;
     this._click = false;
+    this._dirty = true;
     return result;
   }
 }
