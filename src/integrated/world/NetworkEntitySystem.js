@@ -5,7 +5,7 @@ class NetworkEntitySystem extends System
   constructor(entityManager)
   {
     super();
-    
+
     this.createCache = [];
     this.destroyCache = [];
 
@@ -61,6 +61,7 @@ class NetworkEntitySystem extends System
   {
     super.readFromGameState(entityManager, gameState);
 
+    //BUG: This is not actually running...
     let entities = gameState['entities.create'] || [];
     for(const entityID of entities)
     {
@@ -70,6 +71,7 @@ class NetworkEntitySystem extends System
       entityManager.createEntity(entityID);
     }
 
+    //BUG: This is not actually running...
     entities = gameState['entities.destroy'] || [];
     for(const entityID of entities)
     {
@@ -79,6 +81,7 @@ class NetworkEntitySystem extends System
       entityManager.destroyEntity(entity);
     }
 
+    //HACK: This is to correct any dead / alive entities left...
     entities = gameState['entities'] || {};
     for(const entity of entityManager.getEntities())
     {

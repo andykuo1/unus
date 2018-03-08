@@ -96,27 +96,6 @@ class PlayerSystem extends System
       }
     }
   }
-
-  static createPlayerEntity(entityManager, socketID)
-  {
-    const entity = entityManager.createEntity()
-      .addComponent(Transform)
-      .addComponent(Player);
-    entity.player.socketID = socketID;
-  }
-
-  static getPlayerByClientID(entityManager, socketID)
-  {
-    for(const entity of entityManager.getEntitiesByComponent(Player))
-    {
-      if (entity.player.socketID == socketID)
-      {
-        return entity;
-      }
-    }
-
-    return null;
-  }
 }
 
 export default PlayerSystem;

@@ -1,4 +1,5 @@
 import EntityManager from './entity/EntityManager.js';
+import PlayerManager from './player/PlayerManager.js';
 
 import NetworkEntitySystem from './world/NetworkEntitySystem.js';
 import PlayerSystem from './world/PlayerSystem.js';
@@ -13,6 +14,9 @@ class World
     this.predictiveFrame = this.frame;
 
     this.entityManager = new EntityManager();
+    //TODO: move player manager to server code only
+    this.playerManager = new PlayerManager(this.entityManager);
+
     this.systems = [];
     this.systems.push(new NetworkEntitySystem(this.entityManager));
     this.systems.push(new PlayerSystem());
@@ -23,7 +27,7 @@ class World
     this.predictiveFrame = frame;
 
     //Update target with inputState
-    const targetEntity = this.getEntityByClientID(target);
+    const targetEntity = this.playerManager.getPlayerByClientID(target);
     if (targetEntity)
     {
       for(const system of this.systems)
@@ -68,17 +72,9 @@ class World
     return this.frame.then > frame.then;
   }
 
-  getEntityByClientID(socketID)
+  get players()
   {
-    for(const entity of this.entityManager.getEntitiesByComponent(Player))
-    {
-      if (entity.player.socketID == socketID)
-      {
-        return entity;
-      }
-    }
-
-    return null;
+    return this.playerManager.getPlayers();
   }
 
   get entities()
