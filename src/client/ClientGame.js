@@ -101,7 +101,8 @@ class ClientGame extends Game
 
   getCurrentInputState(frame)
   {
-    if (!this.input.isDirty()) return null;
+    //TODO: need to adjust the frame delta to match if skipped input frames
+    //TODO: if (!this.input.isDirty()) return null;
     const inputState = this.input.poll();
 
     const vec = ViewPort.getPointFromScreen(vec3.create(),
@@ -116,7 +117,8 @@ class ClientGame extends Game
   sendClientInput(inputState)
   {
     //FIXME: Force 200ms lag...
-    setTimeout(() => this.networkHandler.sendToServer('client.inputstate', inputState), 200);
+    //setTimeout(() => this.networkHandler.sendToServer('client.inputstate', inputState), 200);
+    this.networkHandler.sendToServer('client.inputstate', inputState);
   }
 }
 

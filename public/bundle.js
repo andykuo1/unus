@@ -709,7 +709,7 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
 
   getCurrentInputState(frame)
   {
-    if (!this.input.isDirty()) return null;
+    //TODO: if (!this.input.isDirty()) return null;
     const inputState = this.input.poll();
 
     const vec = __WEBPACK_IMPORTED_MODULE_5__camera_ViewPort_js__["a" /* default */].getPointFromScreen(vec3.create(),
@@ -724,7 +724,8 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
   sendClientInput(inputState)
   {
     //FIXME: Force 200ms lag...
-    setTimeout(() => this.networkHandler.sendToServer('client.inputstate', inputState), 200);
+    //setTimeout(() => this.networkHandler.sendToServer('client.inputstate', inputState), 200);
+    this.networkHandler.sendToServer('client.inputstate', inputState);
   }
 }
 
