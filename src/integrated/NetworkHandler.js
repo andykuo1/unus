@@ -55,7 +55,7 @@ class NetworkHandler
         this.clients.set(socket.id, socket);
         const data = { socketID: socket.id };
         this.onClientConnect(socket, data);
-        
+
         socket.emit('server-handshake', data);
 
         socket.on('disconnect', () => {

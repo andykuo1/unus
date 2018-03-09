@@ -4,10 +4,11 @@ import socketio from 'socket.io';
 
 import ServerGame from './server/ServerGame.js';
 import NetworkHandler from './integrated/NetworkHandler.js';
+import Frame from './util/Frame.js';
 
 const __dirname = path.resolve();
 const DEVMODE = process.argv.indexOf('--dev') != -1;
-const TIMESTEP = 1000/10;
+const TIMESTEP = 1000/1;
 const PORT = process.env.PORT || 8082;
 
 //Server Setup
@@ -35,13 +36,10 @@ function start()
 }
 
 //Update the application
-const frame = {delta: 0, then: 0, count: 0};
+const frame = new Frame();
 function update(now = 0)
 {
-	now *= 0.001;
-	frame.delta = now - frame.then;
-	frame.then = now;
-	++frame.count;
+  frame.next(now);
   game.update(frame);
   onApplicationUpdate(game, frame);
 
@@ -61,8 +59,9 @@ function onApplicationLoad(app)
   app.load(() => {
     app.connect(() => {
       update();
+      const startTime = Date.now();
       setInterval(() => {
-        update(Date.now());
+        update(Date.now() - startTime);
       }, TIMESTEP);
     });
   });

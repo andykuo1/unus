@@ -39,8 +39,8 @@ class SimpleSystem extends System
 
   writeToGameState(entityManager, gameState)
   {
-    let dst = gameState['entities'];
-    if (!dst) dst = gameState['entities'] = {};
+    let dst = gameState['entitylist'];
+    if (!dst) dst = gameState['entitylist'] = {};
     const entities = entityManager.getEntitiesByComponent(this.component);
     for(const entity of entities)
     {
@@ -53,7 +53,7 @@ class SimpleSystem extends System
 
   readFromGameState(entityManager, gameState)
   {
-    let src = gameState['entities'] || {};
+    let src = gameState['entitylist'] || {};
     for(const entityID in src)
     {
       let entity = entityManager.getEntityByID(entityID);

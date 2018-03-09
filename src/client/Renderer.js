@@ -73,6 +73,7 @@ class Renderer
 
 		this.prgm.bind();
 		{
+      gl.uniform3fv(this.prgm.uniforms.uColor, [1.0, 1.0, 1.0]);
 			gl.uniformMatrix4fv(this.prgm.uniforms.uProjection, false, projection);
 
 			this.mesh.bind();
@@ -91,6 +92,38 @@ class Renderer
 			this.mesh.unbind();
 		}
 		this.prgm.unbind();
+  }
+
+  renderGameState(gameState)
+  {
+    //Setting up the Projection Matrix
+    const projection = this.camera.projection;
+
+    //Setting up the View Matrix
+    const view = this.camera.view;
+    const modelview = mat4.create();
+
+    this.prgm.bind();
+    {
+      gl.uniform3fv(this.prgm.uniforms.uColor, [0.0, 0.5, 0.0]);
+      gl.uniformMatrix4fv(this.prgm.uniforms.uProjection, false, projection);
+
+      this.mesh.bind();
+      {
+        for(const entity of gameState.entities)
+        {
+          //Setting up the Model Matrix
+          mat4.fromTranslation(modelview, [entity.transform.x, entity.transform.y, -1]);
+          mat4.mul(modelview, modelview, view);
+          gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
+
+          //Draw it!
+          Mesh.draw(this.mesh);
+        }
+      }
+      this.mesh.unbind();
+    }
+    this.prgm.unbind();
   }
 }
 

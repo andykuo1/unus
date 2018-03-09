@@ -1,5 +1,6 @@
 import ClientGame from './client/ClientGame.js';
 import NetworkHandler from './integrated/NetworkHandler.js';
+import Frame from './util/Frame.js';
 
 //Window Setup
 var canvas = document.getElementById('canvas');
@@ -21,13 +22,10 @@ function start()
 }
 
 //Update the application
-const frame = {delta: 0, then: 0, count: 0};
+const frame = new Frame();
 function update(now = 0)
 {
-	now *= 0.001;
-	frame.delta = now - frame.then;
-	frame.then = now;
-	++frame.count;
+	frame.next(now);
   game.update(frame);
 	onApplicationUpdate(game, frame);
 

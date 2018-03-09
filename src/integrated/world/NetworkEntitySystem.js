@@ -82,7 +82,7 @@ class NetworkEntitySystem extends System
     }
 
     //HACK: This is to correct any dead / alive entities left...
-    entities = gameState['entities'] || {};
+    entities = gameState['entitylist'] || {};
     for(const entity of entityManager.getEntities())
     {
       if (!entities[entity._id])

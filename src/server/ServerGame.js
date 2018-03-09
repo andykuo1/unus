@@ -1,8 +1,10 @@
+import Frame from '../util/Frame.js';
+import PriorityQueue from '../util/PriorityQueue.js';
+
 import Game from '../integrated/Game.js';
 import World from '../integrated/World.js';
 import PlayerManager from './PlayerManager.js';
 
-import PriorityQueue from '../util/PriorityQueue.js';
 import Console from './console/Console.js';
 
 /*
@@ -17,8 +19,9 @@ class ServerGame extends Game
   {
     super(networkHandler);
 
-    this.world = new World({delta: 0, then: Date.now(), count: 0}, false);
-    this.inputStates = new PriorityQueue();
+    this.world = new World(false);
+    this.worldTicks = 0;
+    this.inputStates = [];
 
     this.playerManager = new PlayerManager(this.world.entityManager);
   }
@@ -49,6 +52,8 @@ class ServerGame extends Game
       //Send previous game state...
       const gameState = this.world.captureState(this.world.frame);
       data.gameState = gameState;
+
+      data.worldTicks = this.worldTicks;
 
       //Listening to the client...
       client.on('client.inputstate', (data) => {
@@ -86,12 +91,27 @@ class ServerGame extends Game
 
   onUpdate(frame)
   {
+    const dFrame = new Frame();
     //SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
     while(this.inputStates.length > 0)
     {
-      const inputState = this.inputStates.dequeue();
+      //Get oldest input state (ASSUMES INPUT STATES IS SORTED BY TIME!)
+      const inputState = this.inputStates.shift();
       const targetEntity = this.playerManager.getPlayerByClientID(inputState.target);
-      this.world.step(inputState.frame, inputState, targetEntity);
+
+      var prevFrame = this.world.frame;
+      var nextFrame = inputState.frame;
+
+      //If the next state is over current timestep...
+      if (nextFrame.then > frame.then)
+      {
+        console.log("CAUTION: Found future input event!");
+        nextFrame = inputState.frame = prevFrame;
+      }
+
+      //Update world to after this input state...
+      this.world.step(nextFrame, inputState, targetEntity, true);
+      this.worldTicks += nextFrame.delta;
     }
 
     //SERVER sends CURRENT_GAME_STATE to all CLIENTS.
@@ -102,12 +122,13 @@ class ServerGame extends Game
   {
     //SERVER stores CURRENT_INPUT_STATE.
     inputState.target = client.id;
-    this.inputStates.queue(inputState);
+    this.inputStates.push(inputState);
   }
 
   sendServerUpdate(frame)
   {
     const gameState = this.world.captureState(frame);
+    gameState.worldTicks = this.worldTicks;
     this.networkHandler.sendToAll('server.gamestate', gameState);
   }
 }

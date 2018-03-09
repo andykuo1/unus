@@ -1,3 +1,4 @@
+import Frame from '../util/Frame.js';
 import EntityManager from './entity/EntityManager.js';
 
 import NetworkEntitySystem from './world/NetworkEntitySystem.js';
@@ -9,11 +10,11 @@ import Player from './world/PlayerComponent.js';
 
 class World
 {
-  constructor(frame, remote=true)
+  constructor(remote=true)
   {
     this.remote = remote;
-    this.frame = frame;
-    this.predictiveFrame = this.frame;
+    this.frame = new Frame();
+    this.predictiveFrame = new Frame();
 
     this.entityManager = new EntityManager();
 
@@ -24,9 +25,10 @@ class World
     this.systems.push(new TransformSystem());
   }
 
-  step(frame, inputState, targetEntity)
+  step(frame, inputState, targetEntity, predictive=true)
   {
-    this.predictiveFrame = frame;
+    if (!predictive) this.frame.set(frame);
+    this.predictiveFrame.set(frame);
 
     //Update target with inputState
     if (targetEntity)
@@ -52,25 +54,20 @@ class World
     {
       system.writeToGameState(this.entityManager, dst);
     }
-    dst.frame = frame;
+    dst.frame = new Frame().set(frame);
     return dst;
   }
 
   resetState(gameState)
   {
-    this.frame = gameState.frame;
-    this.predictiveFrame = this.frame;
+    this.frame.set(gameState.frame);
+    this.predictiveFrame.set(this.frame);
 
     //Continue to reset the world state
     for(const system of this.systems)
     {
       system.readFromGameState(this.entityManager, gameState);
     }
-  }
-
-  isNewerThan(frame)
-  {
-    return this.frame.then > frame.then;
   }
 
   get entities()

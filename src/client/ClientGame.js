@@ -1,3 +1,5 @@
+import Frame from '../util/Frame.js';
+
 import Game from '../integrated/Game.js';
 import World from '../integrated/World.js';
 import PlayerController from './PlayerController.js';
@@ -23,9 +25,13 @@ class ClientGame extends Game
   {
     super(networkHandler);
 
-    this.world = new World({delta: 0, then: Date.now(), count: 0}, true);
+    this.world = new World(true);
+    this.worldTicks = 0;
+    this.nextWorldTicks = 0;
+    this.prevGameState = null;
     this.input = new Mouse(document);
     this.inputStates = [];
+    this.skippedFrames = 0;
     this.renderer = new Renderer(canvas);
 
     this.playerController = new PlayerController(this.world.entityManager);
@@ -44,6 +50,7 @@ class ClientGame extends Game
     this.networkHandler.onServerConnect = (server, data) => {
       //Setup the world from state...
       this.world.resetState(data['gameState']);
+      this.worldTicks = this.nextWorldTicks = data.worldTicks;
 
       //Get this client player...
       const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
@@ -68,12 +75,28 @@ class ClientGame extends Game
   {
     //CLIENT stores CURRENT_INPUT_STATE.
     var currentInputState = this.getCurrentInputState(frame);
-    if (currentInputState != null) this.inputStates.push(currentInputState);
+    if (currentInputState != null)
+    {
+      currentInputState.frame.delta += this.skippedFrames;
+      this.skippedFrames = 0;
+
+      //HACK: this should always be called, or else desync happens...
+      this.inputStates.push(currentInputState);
+    }
+    else
+    {
+      this.skippedFrames += frame.delta;
+    }
     var targetEntity = currentInputState ? this.playerController.getClientPlayer() : null;
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
     this.world.step(frame, currentInputState, targetEntity);
+    this.nextWorldTicks += frame.delta;
     this.renderer.render(this.world);
+    if (this.prevGameState != null)
+    {
+      this.renderer.renderGameState(this.prevGameState);
+    }
 
     //CLIENT sends CURRENT_INPUT_STATE.
     if (currentInputState != null)
@@ -85,18 +108,39 @@ class ClientGame extends Game
   onServerUpdate(server, gameState)
   {
     //CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
+    this.prevGameState = this.world.captureState(new Frame());//DEBUG: Just to see what is going on...
+    this.prevGameState.entities = Object.values(gameState.entitylist);
+    console.log("Got server state...");
+    console.log("Resetting from " + this.nextWorldTicks + " to " + gameState.worldTicks);
+    console.log("That is about " + (this.nextWorldTicks - gameState.worldTicks) + " ticks...");
     this.world.resetState(gameState);
+    this.worldTicks = this.nextWorldTicks = gameState.worldTicks;
+    console.log("State has been authorized to " + this.worldTicks + "...");
+
     //CLIENT removes all INPUT_STATE older than CURRENT_GAME_STATE.
-    while(this.inputStates.length > 0 && this.world.isNewerThan(this.inputStates[this.inputStates.length - 1].frame))
+    var is = null;
+    while(this.inputStates.length > 0 && this.worldTicks >= this.inputStates[0].worldTicks)
     {
-      this.inputStates.shift();
+      console.log("Found old input state from " + this.inputStates[0].worldTicks);
+      is = this.inputStates.shift();
     }
+
+    if (is != null) console.log("The last input state: " + is.worldTicks);
+
+    if (this.inputStates.length <= 0) console.log("no new inputs, this is awkward.");
+    else console.log("Found new input states from " + this.inputStates[0].worldTicks);
+
     //CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
     const targetEntity = this.playerController.getClientPlayer();
     for(const inputState of this.inputStates)
     {
       this.world.step(inputState.frame, inputState, targetEntity);
+      this.nextWorldTicks = inputState.worldTicks;
     }
+
+    console.log("This is now the present predicted state at " + this.nextWorldTicks);
+    console.log("==END==");
+    console.log("");
   }
 
   getCurrentInputState(frame)
@@ -110,7 +154,8 @@ class ClientGame extends Game
       inputState.x, inputState.y);
     inputState.x = vec[0];
     inputState.y = vec[1];
-    inputState.frame = frame;
+    inputState.frame = new Frame().set(frame);
+    inputState.worldTicks = this.nextWorldTicks + frame.delta;
     return inputState;
   }
 
