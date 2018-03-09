@@ -117,8 +117,8 @@ class ClientGame extends Game
   sendClientInput(inputState)
   {
     //FIXME: Force 200ms lag...
-    //setTimeout(() => this.networkHandler.sendToServer('client.inputstate', inputState), 200);
-    this.networkHandler.sendToServer('client.inputstate', inputState);
+    setTimeout(() => this.networkHandler.sendToServer('client.inputstate', inputState), 200);
+    //this.networkHandler.sendToServer('client.inputstate', inputState);
   }
 }
 

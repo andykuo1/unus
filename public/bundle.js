@@ -709,6 +709,7 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_0__integrated_Game_js__["a" /
 
   getCurrentInputState(frame)
   {
+    //TODO: need to adjust the frame delta to match if skipped input frames
     //TODO: if (!this.input.isDirty()) return null;
     const inputState = this.input.poll();
 
