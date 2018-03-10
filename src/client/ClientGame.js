@@ -31,8 +31,6 @@ class ClientGame extends Game
       return a.worldTicks - b.worldTicks;
     });
 
-    this.prevGameState = null;
-
     this.renderer = new Renderer(canvas);
 
     this.input = new Mouse(document);
@@ -91,19 +89,11 @@ class ClientGame extends Game
     if (targetEntity) this.world.updateInput(currentInputState, targetEntity);
     this.world.step(frame);
     this.renderer.render(this.world);
-
-    if (this.prevGameState != null)
-    {
-      this.renderer.renderGameState(this.prevGameState);
-    }
   }
 
   onServerUpdate(server, gameState)
   {
     //CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
-    this.prevGameState = this.world.captureState();//DEBUG: Just to see what is going on...
-    this.prevGameState.entities = Object.values(gameState.entitylist);
-
     const currentTicks = this.world.ticks;
     this.world.resetState(gameState);
 

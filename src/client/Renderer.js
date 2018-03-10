@@ -73,13 +73,38 @@ class Renderer
 
 		this.prgm.bind();
 		{
-      gl.uniform3fv(this.prgm.uniforms.uColor, [1.0, 1.0, 1.0]);
 			gl.uniformMatrix4fv(this.prgm.uniforms.uProjection, false, projection);
 
 			this.mesh.bind();
 			{
+        if (Renderer.RENDER_SERVER_STATE)
+        {
+          gl.uniform3fv(this.prgm.uniforms.uColor, [0.3, 0.3, 0.3]);
+          for(const serverEntity of world.serverState.entities)
+          {
+            if (!serverEntity.renderable || !serverEntity.renderable.visible) continue;
+
+            //Setting up the Model Matrix
+            mat4.fromTranslation(modelview, [serverEntity.transform.x, serverEntity.transform.y, 0]);
+            mat4.mul(modelview, modelview, view);
+      			gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
+
+            //Draw it!
+            Mesh.draw(this.mesh);
+          }
+          gl.clear(gl.DEPTH_BUFFER_BIT);
+        }
+
         for(const entity of world.entities)
         {
+          const renderable = entity.renderable;
+          if (!renderable || !renderable.visible) continue;
+
+          gl.uniform3fv(this.prgm.uniforms.uColor,
+            [((renderable.color >> 16) & 0xFF) / 255.0,
+            ((renderable.color >> 8) & 0xFF) / 255.0,
+            ((renderable.color) & 0xFF) / 255.0]);
+
           //Setting up the Model Matrix
           mat4.fromTranslation(modelview, [entity.transform.x, entity.transform.y, 0]);
           mat4.mul(modelview, modelview, view);
@@ -93,38 +118,8 @@ class Renderer
 		}
 		this.prgm.unbind();
   }
-
-  renderGameState(gameState)
-  {
-    //Setting up the Projection Matrix
-    const projection = this.camera.projection;
-
-    //Setting up the View Matrix
-    const view = this.camera.view;
-    const modelview = mat4.create();
-
-    this.prgm.bind();
-    {
-      gl.uniform3fv(this.prgm.uniforms.uColor, [0.0, 0.5, 0.0]);
-      gl.uniformMatrix4fv(this.prgm.uniforms.uProjection, false, projection);
-
-      this.mesh.bind();
-      {
-        for(const entity of gameState.entities)
-        {
-          //Setting up the Model Matrix
-          mat4.fromTranslation(modelview, [entity.transform.x, entity.transform.y, -1]);
-          mat4.mul(modelview, modelview, view);
-          gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
-
-          //Draw it!
-          Mesh.draw(this.mesh);
-        }
-      }
-      this.mesh.unbind();
-    }
-    this.prgm.unbind();
-  }
 }
+
+Renderer.RENDER_SERVER_STATE = true;
 
 export default Renderer;
