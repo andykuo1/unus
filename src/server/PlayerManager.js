@@ -1,7 +1,4 @@
-import Transform from '../integrated/world/TransformComponent.js';
-import Motion from '../integrated/world/MotionComponent.js';
-import Player from '../integrated/world/PlayerComponent.js';
-import Renderable from '../integrated/world/RenderableComponent.js';
+import GameFactory from '../integrated/game/GameFactory.js';
 
 class PlayerManager
 {
@@ -14,11 +11,7 @@ class PlayerManager
 
   createPlayer(socketID)
   {
-    const entity = this.entityManager.createEntity()
-      .addComponent(Transform)
-      .addComponent(Motion)
-      .addComponent(Player)
-      .addComponent(Renderable);
+    const entity = GameFactory.createEntity(this.entityManager, 'player');
     entity.player.socketID = socketID;
     this.players.set(socketID, entity);
     return entity;

@@ -1,6 +1,7 @@
 import Frame from '../util/Frame.js';
 import EntityManager from './entity/EntityManager.js';
-import SystemManager from './world/SystemManager.js';
+import SystemManager from './game/SystemManager.js';
+import GameFactory from './game/GameFactory.js';
 
 class World
 {
@@ -13,7 +14,8 @@ class World
 
     this.entityManager = new EntityManager();
     this.systemManager = new SystemManager();
-    this.systemManager.init(this.entityManager);
+    
+    GameFactory.init(this);
   }
 
   step(frame, predictive=true)
