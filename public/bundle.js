@@ -89,12 +89,12 @@ function init(canvas)
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__entity_System_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__integrated_entity_System_js__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_Reflection_js__ = __webpack_require__(5);
 
 
 
-class SynchronizedSystem extends __WEBPACK_IMPORTED_MODULE_0__entity_System_js__["a" /* default */]
+class SynchronizedSystem extends __WEBPACK_IMPORTED_MODULE_0__integrated_entity_System_js__["a" /* default */]
 {
   constructor(component)
   {
@@ -874,8 +874,9 @@ class Game
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_Frame_js__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__entity_EntityManager_js__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__game_SystemManager_js__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__entity_SystemManager_js__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game_GameFactory_js__ = __webpack_require__(21);
+
 
 
 
@@ -891,8 +892,8 @@ class World
     this.serverState = null;
 
     this.entityManager = new __WEBPACK_IMPORTED_MODULE_1__entity_EntityManager_js__["a" /* default */]();
-    this.systemManager = new __WEBPACK_IMPORTED_MODULE_2__game_SystemManager_js__["a" /* default */]();
-    
+    this.systemManager = new __WEBPACK_IMPORTED_MODULE_2__entity_SystemManager_js__["a" /* default */]();
+
     __WEBPACK_IMPORTED_MODULE_3__game_GameFactory_js__["a" /* default */].init(this);
   }
 
@@ -1326,10 +1327,10 @@ GameFactory.INSTANCE = new GameFactory();
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__entity_System_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__integrated_entity_System_js__ = __webpack_require__(6);
 
 
-class NetworkEntitySystem extends __WEBPACK_IMPORTED_MODULE_0__entity_System_js__["a" /* default */]
+class NetworkEntitySystem extends __WEBPACK_IMPORTED_MODULE_0__integrated_entity_System_js__["a" /* default */]
 {
   constructor(entityManager)
   {

@@ -1,5 +1,5 @@
-import System from '../entity/System.js';
-import Reflection from '../../util/Reflection.js';
+import System from '../integrated/entity/System.js';
+import Reflection from '../util/Reflection.js';
 
 class SynchronizedSystem extends System
 {
