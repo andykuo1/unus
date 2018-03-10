@@ -75,7 +75,7 @@ class ClientGame extends Game
   onUpdate(frame)
   {
     //CLIENT stores CURRENT_INPUT_STATE.
-    var currentInputState = this.getCurrentInputState(frame);
+    var currentInputState = this.getCurrentInputState();
     if (currentInputState != null)
     {
       //HACK: this should always be called, or else desync happens...
@@ -102,9 +102,10 @@ class ClientGame extends Game
   onServerUpdate(server, gameState)
   {
     //CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
-    this.prevGameState = this.world.captureState(new Frame());//DEBUG: Just to see what is going on...
+    this.prevGameState = this.world.captureState();//DEBUG: Just to see what is going on...
     this.prevGameState.entities = Object.values(gameState.entitylist);
 
+    const currentTicks = this.world.ticks;
     this.world.resetState(gameState);
 
     //CLIENT removes all INPUT_STATE older than CURRENT_GAME_STATE.
@@ -113,43 +114,45 @@ class ClientGame extends Game
       this.inputStates.dequeue();
     }
 
-    //CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
     const oldInputStates = [];
-    const dFrame = new Frame();
-    var prevTicks = this.world.ticks;
+    const nextFrame = new Frame();
 
+    //CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
     while(this.inputStates.length > 0)
     {
+      //Get oldest input state (ASSUMES INPUT STATES IS SORTED BY TIME!)
       const inputState = this.inputStates.dequeue();
       const targetEntity = this.playerController.getClientPlayer();
 
-      var nextFrame = inputState.frame;
-      var nextTicks = inputState.worldTicks;
-
       //Update world to just before input...
-      /*
-      const dt = nextTicks - prevTicks;
+      const dt = inputState.worldTicks - this.world.ticks;
       if (dt > 0)
       {
-        dFrame.delta = dt;
-        this.world.step(dFrame);
+        nextFrame.delta = dt;
+        this.world.step(nextFrame);
       }
-      */
 
       //Update world to after this input state...
       this.world.updateInput(inputState, targetEntity);
-      this.world.step(inputState.frame);
 
-      prevTicks = this.world.ticks;
       oldInputStates.push(inputState);
     }
+    //Re-add all future inputs...
     for(const state of oldInputStates)
     {
       this.inputStates.queue(state);
     }
+
+    //Update world to current tick...
+    const dt = currentTicks - this.world.ticks;
+    if (dt > 0)
+    {
+      nextFrame.delta = dt;
+      this.world.step(nextFrame);
+    }
   }
 
-  getCurrentInputState(frame)
+  getCurrentInputState()
   {
     //TODO: need to adjust the frame delta to match if skipped input frames
     //TODO: if (!this.input.isDirty()) return null;
@@ -160,8 +163,7 @@ class ClientGame extends Game
       inputState.x, inputState.y);
     inputState.x = vec[0];
     inputState.y = vec[1];
-    inputState.frame = new Frame().set(frame);
-    inputState.worldTicks = this.world.ticks + frame.delta;
+    inputState.worldTicks = this.world.ticks;
     return inputState;
   }
 

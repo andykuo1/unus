@@ -51,7 +51,7 @@ class ServerGame extends Game
       data.entityID = clientEntity._id;
 
       //Send previous game state...
-      const gameState = this.world.captureState(this.world.frame);
+      const gameState = this.world.captureState();
       data.gameState = gameState;
 
       //Listening to the client...
@@ -88,8 +88,8 @@ class ServerGame extends Game
 
   onUpdate(frame)
   {
-    const dFrame = new Frame();
-    var prevTicks = this.world.ticks;
+    const currentTicks = this.world.ticks + frame.delta;
+    const nextFrame = new Frame();
 
     //SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
     while(this.inputStates.length > 0)
@@ -98,35 +98,28 @@ class ServerGame extends Game
       const inputState = this.inputStates.dequeue();
       const targetEntity = this.playerManager.getPlayerByClientID(inputState.target);
 
-      var nextFrame = inputState.frame;
-      var nextTicks = inputState.worldTicks;
-
-      //If the next state is over current timestep...
-      if (nextFrame.then > frame.then)
-      {
-        console.log("CAUTION: Found future input event!");
-        nextFrame = inputState.frame = prevFrame;
-      }
-
       //Update world to just before input...
-      /*
-      const dt = nextTicks - prevTicks;
+      const dt = inputState.worldTicks - this.world.ticks;
       if (dt > 0)
       {
-        dFrame.delta = dt;
-        this.world.step(dFrame, true);
+        nextFrame.delta = dt;
+        this.world.step(nextFrame, true);
       }
-      */
 
       //Update world to after this input state...
-      this.world.updateInput(inputState, targetEntity);
-      this.world.step(nextFrame, true);
+      if (targetEntity) this.world.updateInput(inputState, targetEntity);
+    }
 
-      prevTicks = this.world.ticks;
+    //Update world to current tick...
+    const dt = currentTicks - this.world.ticks;
+    if (dt > 0)
+    {
+      nextFrame.delta = dt;
+      this.world.step(nextFrame, true);
     }
 
     //SERVER sends CURRENT_GAME_STATE to all CLIENTS.
-    this.sendServerUpdate(frame);
+    this.sendServerUpdate();
   }
 
   onClientUpdate(client, inputState)
@@ -136,9 +129,9 @@ class ServerGame extends Game
     this.inputStates.queue(inputState);
   }
 
-  sendServerUpdate(frame)
+  sendServerUpdate()
   {
-    const gameState = this.world.captureState(frame);
+    const gameState = this.world.captureState();
     this.networkHandler.sendToAll('server.gamestate', gameState);
   }
 }

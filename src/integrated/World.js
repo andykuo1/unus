@@ -14,8 +14,6 @@ class World
   {
     this.remote = remote;
     this.ticks = 0;
-    this.frame = new Frame();
-    this.predictiveFrame = new Frame();
 
     this.entityManager = new EntityManager();
 
@@ -28,8 +26,6 @@ class World
 
   step(frame, predictive=true)
   {
-    if (!predictive) this.frame.set(frame);
-    this.predictiveFrame.set(frame);
     this.ticks += frame.delta;
 
     //Continue to update the world state
@@ -47,7 +43,7 @@ class World
     }
   }
 
-  captureState(frame)
+  captureState()
   {
     //Capture a GameState and return it for sending...
     const dst = {};
@@ -55,16 +51,13 @@ class World
     {
       system.writeToGameState(this.entityManager, dst);
     }
-    dst.frame = new Frame().set(frame);
-    dst.ticks = this.ticks;
+    dst.worldTicks = this.ticks;
     return dst;
   }
 
   resetState(gameState)
   {
-    this.ticks = gameState.ticks;
-    this.frame.set(gameState.frame);
-    this.predictiveFrame.set(this.frame);
+    this.ticks = gameState.worldTicks;
 
     //Continue to reset the world state
     for(const system of this.systems)
