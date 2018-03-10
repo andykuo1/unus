@@ -5,16 +5,6 @@ class System
 
   }
 
-  onEntityCreate(entity)
-  {
-
-  }
-
-  onEntityDestroy(entity)
-  {
-
-  }
-
   onUpdate(entityManager, frame)
   {
 

@@ -1,7 +1,7 @@
-import SimpleSystem from './SimpleSystem.js';
+import SynchronizedSystem from './SynchronizedSystem.js';
 import Player from './PlayerComponent.js';
 
-class PlayerSystem extends SimpleSystem
+class PlayerSystem extends SynchronizedSystem
 {
   constructor()
   {
@@ -10,8 +10,6 @@ class PlayerSystem extends SimpleSystem
 
   onInputUpdate(entity, inputState)
   {
-    super.onInputUpdate(entity, inputState);
-
     if (!entity.hasComponent(Player)) return;
     entity.player.nextX = inputState.x;
     entity.player.nextY = inputState.y;

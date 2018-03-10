@@ -1,8 +1,7 @@
-import EntityManager from '../entity/EntityManager.js';
 import System from '../entity/System.js';
 import Reflection from '../../util/Reflection.js';
 
-class SimpleSystem extends System
+class SynchronizedSystem extends System
 {
   constructor(component)
   {
@@ -18,18 +17,22 @@ class SimpleSystem extends System
 
   writeEntityToData(entity, dst)
   {
-
+    for(const [key, value] of Object.entries(entity[this.componentName]))
+    {
+      dst[this.componentName][key] = value;
+    }
   }
 
   readEntityFromData(src, entity)
   {
-
+    for(const [key, value] of Object.entries(src[this.componentName]))
+    {
+      entity[this.componentName][key] = value;
+    }
   }
 
   onUpdate(entityManager, frame)
   {
-    super.onUpdate(entityManager, frame);
-
     const entities = entityManager.getEntitiesByComponent(this.component);
     for(const entity of entities)
     {
@@ -74,4 +77,4 @@ class SimpleSystem extends System
   }
 }
 
-export default SimpleSystem;
+export default SynchronizedSystem;
