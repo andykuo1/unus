@@ -1314,9 +1314,9 @@ class PlayerSystem extends __WEBPACK_IMPORTED_MODULE_0__SimpleSystem_js__["a" /*
       const dy = entity.player.nextY - entity.transform.y;
       const rot = -Math.atan2(-dy, dx);
 
-      const speed = 5.0;
-      entity.motion.motionX = Math.cos(rot) * speed;
-      entity.motion.motionY = Math.sin(rot) * speed;
+      const speed = 15.0;
+      entity.motion.motionX += Math.cos(rot) * speed * frame.delta;
+      entity.motion.motionY += Math.sin(rot) * speed * frame.delta;
     }
   }
 
