@@ -1,15 +1,6 @@
 import Frame from '../util/Frame.js';
 import EntityManager from './entity/EntityManager.js';
-
-import NetworkEntitySystem from './world/NetworkEntitySystem.js';
-import PlayerSystem from './world/PlayerSystem.js';
-import MotionSystem from './world/MotionSystem.js';
-import TransformSystem from './world/TransformSystem.js';
-import BulletSystem from './world/BulletSystem.js';
-import SynchronizedSystem from './world/SynchronizedSystem.js';
-import Renderable from './world/RenderableComponent.js';
-
-import Player from './world/PlayerComponent.js';
+import SystemManager from './world/SystemManager.js';
 
 class World
 {
@@ -21,14 +12,8 @@ class World
     this.serverState = null;
 
     this.entityManager = new EntityManager();
-
-    this.systems = [];
-    this.systems.push(new NetworkEntitySystem(this.entityManager));
-    this.systems.push(new PlayerSystem());
-    this.systems.push(new MotionSystem());
-    this.systems.push(new TransformSystem());
-    this.systems.push(new SynchronizedSystem(Renderable));
-    this.systems.push(new BulletSystem());
+    this.systemManager = new SystemManager();
+    this.systemManager.init(this.entityManager);
   }
 
   step(frame, predictive=true)
@@ -36,28 +21,19 @@ class World
     this.ticks += frame.delta;
 
     //Continue to update the world state
-    for(const system of this.systems)
-    {
-      system.onUpdate(this.entityManager, frame);
-    }
+    this.systemManager.update(this.entityManager, frame);
   }
 
   updateInput(inputState, targetEntity)
   {
-    for(const system of this.systems)
-    {
-      system.onInputUpdate(targetEntity, inputState);
-    }
+    this.systemManager.updateInput(inputState, targetEntity);
   }
 
   captureState()
   {
     //Capture a GameState and return it for sending...
     const dst = {};
-    for(const system of this.systems)
-    {
-      system.writeToGameState(this.entityManager, dst);
-    }
+    this.systemManager.captureSystemStates(this.entityManager, dst);
     dst.worldTicks = this.ticks;
     return dst;
   }
@@ -67,10 +43,7 @@ class World
     this.ticks = gameState.worldTicks;
 
     //Continue to reset the world state
-    for(const system of this.systems)
-    {
-      system.readFromGameState(this.entityManager, gameState);
-    }
+    this.systemManager.resetSystemStates(this.entityManager, gameState);
 
     //HACK: Prepare server state for rendering...
     this.serverState = gameState;
