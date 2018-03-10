@@ -668,8 +668,6 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_1__integrated_Game_js__["a" /
     super(networkHandler);
 
     this.world = new __WEBPACK_IMPORTED_MODULE_2__integrated_World_js__["a" /* default */](true);
-    this.worldTicks = 0;
-    this.nextWorldTicks = 0;
     this.prevGameState = null;
     this.input = new __WEBPACK_IMPORTED_MODULE_4__input_Mouse_js__["a" /* default */](document);
     this.inputStates = [];
@@ -692,7 +690,6 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_1__integrated_Game_js__["a" /
     this.networkHandler.onServerConnect = (server, data) => {
       //Setup the world from state...
       this.world.resetState(data['gameState']);
-      this.worldTicks = this.nextWorldTicks = data.worldTicks;
 
       //Get this client player...
       const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
@@ -733,7 +730,7 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_1__integrated_Game_js__["a" /
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
     this.world.step(frame, currentInputState, targetEntity);
-    this.nextWorldTicks += frame.delta;
+    this.world.ticks += frame.delta;
     this.renderer.render(this.world);
     if (this.prevGameState != null)
     {
@@ -752,37 +749,22 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_1__integrated_Game_js__["a" /
     //CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
     this.prevGameState = this.world.captureState(new __WEBPACK_IMPORTED_MODULE_0__util_Frame_js__["a" /* default */]());//DEBUG: Just to see what is going on...
     this.prevGameState.entities = Object.values(gameState.entitylist);
-    console.log("Got server state...");
-    console.log("Resetting from " + this.nextWorldTicks + " to " + gameState.worldTicks);
-    console.log("That is about " + (this.nextWorldTicks - gameState.worldTicks) + " ticks...");
+
     this.world.resetState(gameState);
-    this.worldTicks = this.nextWorldTicks = gameState.worldTicks;
-    console.log("State has been authorized to " + this.worldTicks + "...");
 
     //CLIENT removes all INPUT_STATE older than CURRENT_GAME_STATE.
-    var is = null;
-    while(this.inputStates.length > 0 && this.worldTicks >= this.inputStates[0].worldTicks)
+    while(this.inputStates.length > 0 && this.world.ticks >= this.inputStates[0].worldTicks)
     {
-      console.log("Found old input state from " + this.inputStates[0].worldTicks);
-      is = this.inputStates.shift();
+      this.inputStates.shift();
     }
-
-    if (is != null) console.log("The last input state: " + is.worldTicks);
-
-    if (this.inputStates.length <= 0) console.log("no new inputs, this is awkward.");
-    else console.log("Found new input states from " + this.inputStates[0].worldTicks);
 
     //CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
     const targetEntity = this.playerController.getClientPlayer();
     for(const inputState of this.inputStates)
     {
       this.world.step(inputState.frame, inputState, targetEntity);
-      this.nextWorldTicks = inputState.worldTicks;
+      this.world.ticks = inputState.worldTicks;
     }
-
-    console.log("This is now the present predicted state at " + this.nextWorldTicks);
-    console.log("==END==");
-    console.log("");
   }
 
   getCurrentInputState(frame)
@@ -797,7 +779,7 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_1__integrated_Game_js__["a" /
     inputState.x = vec[0];
     inputState.y = vec[1];
     inputState.frame = new __WEBPACK_IMPORTED_MODULE_0__util_Frame_js__["a" /* default */]().set(frame);
-    inputState.worldTicks = this.nextWorldTicks + frame.delta;
+    inputState.worldTicks = this.world.ticks + frame.delta;
     return inputState;
   }
 
@@ -870,6 +852,7 @@ class World
   constructor(remote=true)
   {
     this.remote = remote;
+    this.ticks = 0;
     this.frame = new __WEBPACK_IMPORTED_MODULE_0__util_Frame_js__["a" /* default */]();
     this.predictiveFrame = new __WEBPACK_IMPORTED_MODULE_0__util_Frame_js__["a" /* default */]();
 
@@ -912,11 +895,13 @@ class World
       system.writeToGameState(this.entityManager, dst);
     }
     dst.frame = new __WEBPACK_IMPORTED_MODULE_0__util_Frame_js__["a" /* default */]().set(frame);
+    dst.ticks = this.ticks;
     return dst;
   }
 
   resetState(gameState)
   {
+    this.ticks = gameState.ticks;
     this.frame.set(gameState.frame);
     this.predictiveFrame.set(this.frame);
 
@@ -2433,6 +2418,8 @@ class NetworkHandler
         });
       });
     });
+
+    callback();
   }
 
   sendToServer(id, data)

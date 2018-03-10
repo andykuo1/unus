@@ -20,7 +20,6 @@ class ServerGame extends Game
     super(networkHandler);
 
     this.world = new World(false);
-    this.worldTicks = 0;
     this.inputStates = [];
 
     this.playerManager = new PlayerManager(this.world.entityManager);
@@ -52,8 +51,6 @@ class ServerGame extends Game
       //Send previous game state...
       const gameState = this.world.captureState(this.world.frame);
       data.gameState = gameState;
-
-      data.worldTicks = this.worldTicks;
 
       //Listening to the client...
       client.on('client.inputstate', (data) => {
@@ -109,7 +106,7 @@ class ServerGame extends Game
 
       //Update world to after this input state...
       this.world.step(nextFrame, inputState, targetEntity, true);
-      this.worldTicks += nextFrame.delta;
+      this.world.ticks += nextFrame.delta;
     }
 
     //SERVER sends CURRENT_GAME_STATE to all CLIENTS.
@@ -126,7 +123,6 @@ class ServerGame extends Game
   sendServerUpdate(frame)
   {
     const gameState = this.world.captureState(frame);
-    gameState.worldTicks = this.worldTicks;
     this.networkHandler.sendToAll('server.gamestate', gameState);
   }
 }

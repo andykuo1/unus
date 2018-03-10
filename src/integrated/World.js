@@ -13,6 +13,7 @@ class World
   constructor(remote=true)
   {
     this.remote = remote;
+    this.ticks = 0;
     this.frame = new Frame();
     this.predictiveFrame = new Frame();
 
@@ -55,11 +56,13 @@ class World
       system.writeToGameState(this.entityManager, dst);
     }
     dst.frame = new Frame().set(frame);
+    dst.ticks = this.ticks;
     return dst;
   }
 
   resetState(gameState)
   {
+    this.ticks = gameState.ticks;
     this.frame.set(gameState.frame);
     this.predictiveFrame.set(this.frame);
 
