@@ -430,7 +430,7 @@ var socket = io();
 var game;
 function start()
 {
-  game = new __WEBPACK_IMPORTED_MODULE_0__client_ClientGame_js__["a" /* default */](new __WEBPACK_IMPORTED_MODULE_1__integrated_NetworkHandler_js__["a" /* default */](socket, true));
+  game = new __WEBPACK_IMPORTED_MODULE_0__client_ClientGame_js__["a" /* default */](new __WEBPACK_IMPORTED_MODULE_1__integrated_NetworkHandler_js__["a" /* default */](socket, true), canvas);
 	onApplicationLoad(game);
 }
 
@@ -512,7 +512,7 @@ CLIENT sends CURRENT_INPUT_STATE.
 
 class ClientGame extends __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__["a" /* default */]
 {
-  constructor(networkHandler)
+  constructor(networkHandler, canvas)
   {
     super(networkHandler);
 
@@ -526,7 +526,7 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__["a" /
     this.renderer = new __WEBPACK_IMPORTED_MODULE_6__Renderer_js__["a" /* default */](canvas);
 
     this.input = new __WEBPACK_IMPORTED_MODULE_5__input_Mouse_js__["a" /* default */](document);
-    this.playerController = new __WEBPACK_IMPORTED_MODULE_4__PlayerController_js__["a" /* default */](this.world.entityManager);
+    this.playerController = new __WEBPACK_IMPORTED_MODULE_4__PlayerController_js__["a" /* default */](this.world.entityManager, this.renderer);
   }
 
   load(callback)
@@ -558,6 +558,7 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__["a" /
   update(frame)
   {
     this.onUpdate(frame);
+    this.playerController.onUpdate(frame);
   }
 
   /************* Game Implementation *************/
@@ -1423,9 +1424,10 @@ function Transform()
 "use strict";
 class PlayerController
 {
-  constructor(entityManager)
+  constructor(entityManager, renderer)
   {
     this.entityManager = entityManager;
+    this.renderer = renderer;
 
     this.clientPlayer = null;
   }
@@ -1433,6 +1435,20 @@ class PlayerController
   setClientPlayer(entity)
   {
     this.clientPlayer = entity;
+  }
+
+  onUpdate(frame)
+  {
+    //Smoothly follow the player
+    if (this.clientPlayer)
+    {
+      const playerTransform = this.clientPlayer.transform;
+      const cameraTransform = this.renderer.camera.transform;
+      const dx = playerTransform.x - cameraTransform.position[0];
+      const dy = playerTransform.y - cameraTransform.position[1];
+      cameraTransform.position[0] += dx * 0.3;
+      cameraTransform.position[1] += dy * 0.3;
+    }
   }
 
   getClientPlayer()
@@ -1683,7 +1699,7 @@ class Renderer
 
     //Setting up the Projection Matrix
     const projection = this.camera.projection;
-
+    
     //Setting up the View Matrix
     const view = this.camera.view;
 		const modelview = mat4.create();

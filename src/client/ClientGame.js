@@ -22,7 +22,7 @@ CLIENT sends CURRENT_INPUT_STATE.
 
 class ClientGame extends Game
 {
-  constructor(networkHandler)
+  constructor(networkHandler, canvas)
   {
     super(networkHandler);
 
@@ -36,7 +36,7 @@ class ClientGame extends Game
     this.renderer = new Renderer(canvas);
 
     this.input = new Mouse(document);
-    this.playerController = new PlayerController(this.world.entityManager);
+    this.playerController = new PlayerController(this.world.entityManager, this.renderer);
   }
 
   load(callback)
@@ -68,6 +68,7 @@ class ClientGame extends Game
   update(frame)
   {
     this.onUpdate(frame);
+    this.playerController.onUpdate(frame);
   }
 
   /************* Game Implementation *************/

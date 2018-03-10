@@ -17,7 +17,7 @@ var socket = io();
 var game;
 function start()
 {
-  game = new ClientGame(new NetworkHandler(socket, true));
+  game = new ClientGame(new NetworkHandler(socket, true), canvas);
 	onApplicationLoad(game);
 }
 

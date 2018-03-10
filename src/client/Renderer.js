@@ -66,7 +66,7 @@ class Renderer
 
     //Setting up the Projection Matrix
     const projection = this.camera.projection;
-
+    
     //Setting up the View Matrix
     const view = this.camera.view;
 		const modelview = mat4.create();

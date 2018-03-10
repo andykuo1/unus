@@ -67,6 +67,7 @@ class ServerGame extends Game
   update(frame)
   {
     this.onUpdate(frame);
+    this.playerManager.onUpdate(frame);
   }
 
   /************* Game Implementation *************/

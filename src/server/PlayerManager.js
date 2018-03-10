@@ -29,6 +29,11 @@ class PlayerManager
     this.entityManager.destroyEntity(entity);
   }
 
+  onUpdate(frame)
+  {
+    //Nothing here really...
+  }
+
   getPlayerByClientID(socketID)
   {
     return this.players.get(socketID);
