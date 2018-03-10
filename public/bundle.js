@@ -1391,7 +1391,7 @@ function Motion()
 {
   this.motionX = 0;
   this.motionY = 0;
-  this.friction = 0.4;
+  this.friction = 2;
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (Motion);

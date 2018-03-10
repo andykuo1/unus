@@ -8,7 +8,7 @@ import Frame from './util/Frame.js';
 
 const __dirname = path.resolve();
 const DEVMODE = process.argv.indexOf('--dev') != -1;
-const TIMESTEP = 1000/1;
+const TIMESTEP = 1000/10;
 const PORT = process.env.PORT || 8082;
 
 //Server Setup
