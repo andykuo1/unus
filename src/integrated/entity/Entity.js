@@ -33,6 +33,16 @@ class Entity
   {
     return this._manager.hasComponent(this, component);
   }
+
+  destroy()
+  {
+    this._manager.destroyEntity(this);
+  }
+
+  get id()
+  {
+    return this._id;
+  }
 }
 
 export default Entity;

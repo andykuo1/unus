@@ -1,7 +1,9 @@
 function Bullet()
 {
   this.owner = null;
-  this.life = 100;
+  this.life = 3;
+  this.speedx = 0;
+  this.speedy = 0;
 }
 
 export default Bullet;

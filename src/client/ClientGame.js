@@ -81,6 +81,9 @@ class ClientGame extends Game
     {
       //HACK: this should always be called, or else desync happens...
       this.inputStates.queue(currentInputState);
+
+      //CLIENT sends CURRENT_INPUT_STATE.
+      this.sendClientInput(currentInputState);
     }
     var targetEntity = currentInputState ? this.playerController.getClientPlayer() : null;
 
@@ -88,15 +91,10 @@ class ClientGame extends Game
     if (targetEntity) this.world.updateInput(currentInputState, targetEntity);
     this.world.step(frame);
     this.renderer.render(this.world);
+
     if (this.prevGameState != null)
     {
       this.renderer.renderGameState(this.prevGameState);
-    }
-
-    //CLIENT sends CURRENT_INPUT_STATE.
-    if (currentInputState != null)
-    {
-      this.sendClientInput(currentInputState);
     }
   }
 
@@ -135,6 +133,7 @@ class ClientGame extends Game
 
       //Update world to after this input state...
       this.world.updateInput(inputState, targetEntity);
+      inputState.worldTicks = this.world.ticks;
 
       oldInputStates.push(inputState);
     }

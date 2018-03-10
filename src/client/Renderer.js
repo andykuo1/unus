@@ -66,7 +66,7 @@ class Renderer
 
     //Setting up the Projection Matrix
     const projection = this.camera.projection;
-    
+
     //Setting up the View Matrix
     const view = this.camera.view;
 		const modelview = mat4.create();
@@ -81,7 +81,7 @@ class Renderer
         for(const entity of world.entities)
         {
           //Setting up the Model Matrix
-          mat4.fromTranslation(modelview, [entity.x, entity.y, 0]);
+          mat4.fromTranslation(modelview, [entity.transform.x, entity.transform.y, 0]);
           mat4.mul(modelview, modelview, view);
     			gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
 
