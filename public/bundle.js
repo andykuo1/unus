@@ -738,7 +738,6 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__["a" /
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
     if (targetEntity) this.world.updateInput(currentInputState, targetEntity);
     this.world.step(frame);
-    this.world.ticks += frame.delta;
     this.renderer.render(this.world);
     if (this.prevGameState != null)
     {
@@ -774,7 +773,6 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__["a" /
       const inputState = this.inputStates.dequeue();
       this.world.updateInput(inputState, targetEntity);
       this.world.step(inputState.frame);
-      this.world.ticks = inputState.worldTicks;
 
       oldInputStates.push(inputState);
     }
@@ -1004,6 +1002,7 @@ class World
   {
     if (!predictive) this.frame.set(frame);
     this.predictiveFrame.set(frame);
+    this.ticks += frame.delta;
 
     //Continue to update the world state
     for(const system of this.systems)

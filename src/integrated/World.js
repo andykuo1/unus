@@ -30,6 +30,7 @@ class World
   {
     if (!predictive) this.frame.set(frame);
     this.predictiveFrame.set(frame);
+    this.ticks += frame.delta;
 
     //Continue to update the world state
     for(const system of this.systems)

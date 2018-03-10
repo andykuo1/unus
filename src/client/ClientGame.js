@@ -30,11 +30,9 @@ class ClientGame extends Game
     this.inputStates = new PriorityQueue((a, b) => {
       return a.worldTicks - b.worldTicks;
     });
-    this.nextInputStates = [];
 
     this.prevGameState = null;
 
-    this.skippedFrames = 0;
     this.renderer = new Renderer(canvas);
 
     this.input = new Mouse(document);
@@ -80,22 +78,14 @@ class ClientGame extends Game
     var currentInputState = this.getCurrentInputState(frame);
     if (currentInputState != null)
     {
-      currentInputState.frame.delta += this.skippedFrames;
-      this.skippedFrames = 0;
-
       //HACK: this should always be called, or else desync happens...
       this.inputStates.queue(currentInputState);
-    }
-    else
-    {
-      this.skippedFrames += frame.delta;
     }
     var targetEntity = currentInputState ? this.playerController.getClientPlayer() : null;
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
     if (targetEntity) this.world.updateInput(currentInputState, targetEntity);
     this.world.step(frame);
-    this.world.ticks += frame.delta;
     this.renderer.render(this.world);
     if (this.prevGameState != null)
     {
@@ -131,7 +121,6 @@ class ClientGame extends Game
       const inputState = this.inputStates.dequeue();
       this.world.updateInput(inputState, targetEntity);
       this.world.step(inputState.frame);
-      this.world.ticks = inputState.worldTicks;
 
       oldInputStates.push(inputState);
     }

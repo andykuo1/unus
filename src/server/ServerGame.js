@@ -109,7 +109,6 @@ class ServerGame extends Game
       //Update world to after this input state...
       this.world.updateInput(inputState, targetEntity);
       this.world.step(nextFrame, true);
-      this.world.ticks += nextFrame.delta;
     }
 
     //SERVER sends CURRENT_GAME_STATE to all CLIENTS.
