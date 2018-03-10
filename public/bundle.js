@@ -670,14 +670,17 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__["a" /
     super(networkHandler);
 
     this.world = new __WEBPACK_IMPORTED_MODULE_3__integrated_World_js__["a" /* default */](true);
-    this.prevGameState = null;
-    this.input = new __WEBPACK_IMPORTED_MODULE_5__input_Mouse_js__["a" /* default */](document);
     this.inputStates = new __WEBPACK_IMPORTED_MODULE_1__util_PriorityQueue_js__["a" /* default */]((a, b) => {
       return a.worldTicks - b.worldTicks;
     });
+    this.nextInputStates = [];
+
+    this.prevGameState = null;
+
     this.skippedFrames = 0;
     this.renderer = new __WEBPACK_IMPORTED_MODULE_6__Renderer_js__["a" /* default */](canvas);
 
+    this.input = new __WEBPACK_IMPORTED_MODULE_5__input_Mouse_js__["a" /* default */](document);
     this.playerController = new __WEBPACK_IMPORTED_MODULE_4__PlayerController_js__["a" /* default */](this.world.entityManager);
   }
 
@@ -733,7 +736,8 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__["a" /
     var targetEntity = currentInputState ? this.playerController.getClientPlayer() : null;
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
-    this.world.step(frame, currentInputState, targetEntity);
+    if (targetEntity) this.world.updateInput(currentInputState, targetEntity);
+    this.world.step(frame);
     this.world.ticks += frame.delta;
     this.renderer.render(this.world);
     if (this.prevGameState != null)
@@ -768,7 +772,8 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__["a" /
     while(this.inputStates.length > 0)
     {
       const inputState = this.inputStates.dequeue();
-      this.world.step(inputState.frame, inputState, targetEntity);
+      this.world.updateInput(inputState, targetEntity);
+      this.world.step(inputState.frame);
       this.world.ticks = inputState.worldTicks;
 
       oldInputStates.push(inputState);
@@ -995,24 +1000,23 @@ class World
     this.systems.push(new __WEBPACK_IMPORTED_MODULE_5__world_TransformSystem_js__["a" /* default */]());
   }
 
-  step(frame, inputState, targetEntity, predictive=true)
+  step(frame, predictive=true)
   {
     if (!predictive) this.frame.set(frame);
     this.predictiveFrame.set(frame);
-
-    //Update target with inputState
-    if (targetEntity)
-    {
-      for(const system of this.systems)
-      {
-        system.onInputUpdate(targetEntity, inputState);
-      }
-    }
 
     //Continue to update the world state
     for(const system of this.systems)
     {
       system.onUpdate(this.entityManager, frame);
+    }
+  }
+
+  updateInput(inputState, targetEntity)
+  {
+    for(const system of this.systems)
+    {
+      system.onInputUpdate(targetEntity, inputState);
     }
   }
 

@@ -26,24 +26,23 @@ class World
     this.systems.push(new TransformSystem());
   }
 
-  step(frame, inputState, targetEntity, predictive=true)
+  step(frame, predictive=true)
   {
     if (!predictive) this.frame.set(frame);
     this.predictiveFrame.set(frame);
-
-    //Update target with inputState
-    if (targetEntity)
-    {
-      for(const system of this.systems)
-      {
-        system.onInputUpdate(targetEntity, inputState);
-      }
-    }
 
     //Continue to update the world state
     for(const system of this.systems)
     {
       system.onUpdate(this.entityManager, frame);
+    }
+  }
+
+  updateInput(inputState, targetEntity)
+  {
+    for(const system of this.systems)
+    {
+      system.onInputUpdate(targetEntity, inputState);
     }
   }
 
