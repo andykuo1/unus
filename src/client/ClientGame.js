@@ -1,4 +1,5 @@
 import Frame from '../util/Frame.js';
+import PriorityQueue from '../util/PriorityQueue.js';
 
 import Game from '../integrated/Game.js';
 import World from '../integrated/World.js';
@@ -26,12 +27,17 @@ class ClientGame extends Game
     super(networkHandler);
 
     this.world = new World(true);
+    this.inputStates = new PriorityQueue((a, b) => {
+      return a.worldTicks - b.worldTicks;
+    });
+    this.nextInputStates = [];
+
     this.prevGameState = null;
-    this.input = new Mouse(document);
-    this.inputStates = [];
+
     this.skippedFrames = 0;
     this.renderer = new Renderer(canvas);
 
+    this.input = new Mouse(document);
     this.playerController = new PlayerController(this.world.entityManager);
   }
 
@@ -78,7 +84,7 @@ class ClientGame extends Game
       this.skippedFrames = 0;
 
       //HACK: this should always be called, or else desync happens...
-      this.inputStates.push(currentInputState);
+      this.inputStates.queue(currentInputState);
     }
     else
     {
@@ -111,17 +117,25 @@ class ClientGame extends Game
     this.world.resetState(gameState);
 
     //CLIENT removes all INPUT_STATE older than CURRENT_GAME_STATE.
-    while(this.inputStates.length > 0 && this.world.ticks >= this.inputStates[0].worldTicks)
+    while(this.inputStates.length > 0 && this.world.ticks >= this.inputStates.peek().worldTicks)
     {
-      this.inputStates.shift();
+      this.inputStates.dequeue();
     }
 
     //CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
+    const oldInputStates = [];
     const targetEntity = this.playerController.getClientPlayer();
-    for(const inputState of this.inputStates)
+    while(this.inputStates.length > 0)
     {
+      const inputState = this.inputStates.dequeue();
       this.world.step(inputState.frame, inputState, targetEntity);
       this.world.ticks = inputState.worldTicks;
+
+      oldInputStates.push(inputState);
+    }
+    for(const state of oldInputStates)
+    {
+      this.inputStates.queue(state);
     }
   }
 

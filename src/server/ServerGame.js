@@ -20,7 +20,9 @@ class ServerGame extends Game
     super(networkHandler);
 
     this.world = new World(false);
-    this.inputStates = [];
+    this.inputStates = new PriorityQueue((a, b) => {
+      return a.worldTicks - b.worldTicks;
+    });
 
     this.playerManager = new PlayerManager(this.world.entityManager);
   }
@@ -91,7 +93,7 @@ class ServerGame extends Game
     while(this.inputStates.length > 0)
     {
       //Get oldest input state (ASSUMES INPUT STATES IS SORTED BY TIME!)
-      const inputState = this.inputStates.shift();
+      const inputState = this.inputStates.dequeue();
       const targetEntity = this.playerManager.getPlayerByClientID(inputState.target);
 
       var prevFrame = this.world.frame;
@@ -117,7 +119,7 @@ class ServerGame extends Game
   {
     //SERVER stores CURRENT_INPUT_STATE.
     inputState.target = client.id;
-    this.inputStates.push(inputState);
+    this.inputStates.queue(inputState);
   }
 
   sendServerUpdate(frame)
