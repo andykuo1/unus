@@ -63,8 +63,6 @@ class ServerGame extends Game
     this.networkHandler.onClientDisconnect = (client) => {
       this.playerManager.destroyPlayer(client.id);
     };
-
-    callback();
   }
 
   update(frame)

@@ -65,6 +65,8 @@ class NetworkHandler
         });
       });
     });
+
+    callback();
   }
 
   sendToServer(id, data)
