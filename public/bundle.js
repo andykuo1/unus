@@ -673,11 +673,9 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__["a" /
     this.inputStates = new __WEBPACK_IMPORTED_MODULE_1__util_PriorityQueue_js__["a" /* default */]((a, b) => {
       return a.worldTicks - b.worldTicks;
     });
-    this.nextInputStates = [];
 
     this.prevGameState = null;
 
-    this.skippedFrames = 0;
     this.renderer = new __WEBPACK_IMPORTED_MODULE_6__Renderer_js__["a" /* default */](canvas);
 
     this.input = new __WEBPACK_IMPORTED_MODULE_5__input_Mouse_js__["a" /* default */](document);
@@ -723,15 +721,8 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__["a" /
     var currentInputState = this.getCurrentInputState(frame);
     if (currentInputState != null)
     {
-      currentInputState.frame.delta += this.skippedFrames;
-      this.skippedFrames = 0;
-
       //HACK: this should always be called, or else desync happens...
       this.inputStates.queue(currentInputState);
-    }
-    else
-    {
-      this.skippedFrames += frame.delta;
     }
     var targetEntity = currentInputState ? this.playerController.getClientPlayer() : null;
 
@@ -767,13 +758,32 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__["a" /
 
     //CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
     const oldInputStates = [];
-    const targetEntity = this.playerController.getClientPlayer();
+    const dFrame = new __WEBPACK_IMPORTED_MODULE_0__util_Frame_js__["a" /* default */]();
+    var prevTicks = this.world.ticks;
+
     while(this.inputStates.length > 0)
     {
       const inputState = this.inputStates.dequeue();
+      const targetEntity = this.playerController.getClientPlayer();
+
+      var nextFrame = inputState.frame;
+      var nextTicks = inputState.worldTicks;
+
+      //Update world to just before input...
+      /*
+      const dt = nextTicks - prevTicks;
+      if (dt > 0)
+      {
+        dFrame.delta = dt;
+        this.world.step(dFrame);
+      }
+      */
+
+      //Update world to after this input state...
       this.world.updateInput(inputState, targetEntity);
       this.world.step(inputState.frame);
 
+      prevTicks = this.world.ticks;
       oldInputStates.push(inputState);
     }
     for(const state of oldInputStates)

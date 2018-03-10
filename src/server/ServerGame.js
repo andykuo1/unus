@@ -89,6 +89,7 @@ class ServerGame extends Game
   onUpdate(frame)
   {
     const dFrame = new Frame();
+    var prevTicks = this.world.ticks;
 
     //SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
     while(this.inputStates.length > 0)
@@ -98,6 +99,7 @@ class ServerGame extends Game
       const targetEntity = this.playerManager.getPlayerByClientID(inputState.target);
 
       var nextFrame = inputState.frame;
+      var nextTicks = inputState.worldTicks;
 
       //If the next state is over current timestep...
       if (nextFrame.then > frame.then)
@@ -106,9 +108,21 @@ class ServerGame extends Game
         nextFrame = inputState.frame = prevFrame;
       }
 
+      //Update world to just before input...
+      /*
+      const dt = nextTicks - prevTicks;
+      if (dt > 0)
+      {
+        dFrame.delta = dt;
+        this.world.step(dFrame, true);
+      }
+      */
+
       //Update world to after this input state...
       this.world.updateInput(inputState, targetEntity);
       this.world.step(nextFrame, true);
+
+      prevTicks = this.world.ticks;
     }
 
     //SERVER sends CURRENT_GAME_STATE to all CLIENTS.

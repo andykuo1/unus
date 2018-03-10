@@ -115,13 +115,32 @@ class ClientGame extends Game
 
     //CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
     const oldInputStates = [];
-    const targetEntity = this.playerController.getClientPlayer();
+    const dFrame = new Frame();
+    var prevTicks = this.world.ticks;
+
     while(this.inputStates.length > 0)
     {
       const inputState = this.inputStates.dequeue();
+      const targetEntity = this.playerController.getClientPlayer();
+
+      var nextFrame = inputState.frame;
+      var nextTicks = inputState.worldTicks;
+
+      //Update world to just before input...
+      /*
+      const dt = nextTicks - prevTicks;
+      if (dt > 0)
+      {
+        dFrame.delta = dt;
+        this.world.step(dFrame);
+      }
+      */
+
+      //Update world to after this input state...
       this.world.updateInput(inputState, targetEntity);
       this.world.step(inputState.frame);
 
+      prevTicks = this.world.ticks;
       oldInputStates.push(inputState);
     }
     for(const state of oldInputStates)
