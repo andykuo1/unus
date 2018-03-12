@@ -20,7 +20,6 @@ class PlayerSystem extends SynchronizedSystem
     //HACK: this will run once on server and client-side, needs a way to keep predicted alive
     if (inputState.click && (!inputState.predictive || inputState.predictiveFirst))
     {
-      console.log("FIRE!");
       const bulletSpeed = 10;
       const bulletEntity = entity._manager.createEntity()
         .addComponent(Transform)
