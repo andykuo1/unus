@@ -130,10 +130,14 @@ class EntityManager
 
   getNextAvailableEntityID()
   {
+    let iters = 1000;
     let id = UID();
     while (this.entities[id])
     {
       id = UID();
+      
+      if (--iters <= 0)
+        throw new Error("cannot find another unique entity id");
     }
     return id;
   }
