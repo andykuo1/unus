@@ -636,8 +636,8 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__["a" /
     var targetEntity = currentInputState ? this.playerController.getClientPlayer() : null;
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
-    if (targetEntity) this.world.updateInput(currentInputState, targetEntity);
-    this.world.step(frame);
+    if (targetEntity) this.world.updateInput(currentInputState, targetEntity, true);
+    this.world.step(frame, true);
     this.renderer.render(this.world);
   }
 
@@ -668,11 +668,11 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__["a" /
       if (dt > 0)
       {
         nextFrame.delta = dt;
-        this.world.step(nextFrame);
+        this.world.step(nextFrame, true);
       }
 
       //Update world to after this input state...
-      this.world.updateInput(inputState, targetEntity);
+      this.world.updateInput(inputState, targetEntity, true);
       inputState.worldTicks = this.world.ticks;
 
       oldInputStates.push(inputState);
@@ -688,7 +688,7 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__["a" /
     if (dt > 0)
     {
       nextFrame.delta = dt;
-      this.world.step(nextFrame);
+      this.world.step(nextFrame, true);
     }
   }
 
@@ -897,17 +897,17 @@ class World
     __WEBPACK_IMPORTED_MODULE_3__game_GameFactory_js__["a" /* default */].init(this);
   }
 
-  step(frame, predictive=true)
+  step(frame, predictive=false)
   {
     this.ticks += frame.delta;
 
     //Continue to update the world state
-    this.systemManager.update(this.entityManager, frame);
+    this.systemManager.update(this.entityManager, frame, predictive);
   }
 
-  updateInput(inputState, targetEntity)
+  updateInput(inputState, targetEntity, predictive=false)
   {
-    this.systemManager.updateInput(inputState, targetEntity);
+    this.systemManager.updateInput(inputState, targetEntity, predictive);
   }
 
   captureState()
@@ -1212,18 +1212,23 @@ class SystemManager
   constructor()
   {
     this.systems = [];
+    this.predictiveEntities = {};
   }
 
-  update(entityManager, frame)
+  update(entityManager, frame, predictive)
   {
+    this.makePredictiveState(frame, predictive);
+
     for(const system of this.systems)
     {
       system.onUpdate(entityManager, frame);
     }
   }
 
-  updateInput(inputState, targetEntity)
+  updateInput(inputState, targetEntity, predictive)
   {
+    this.makePredictiveState(inputState, predictive);
+
     for(const system of this.systems)
     {
       system.onInputUpdate(targetEntity, inputState);
@@ -1240,10 +1245,46 @@ class SystemManager
 
   resetSystemStates(entityManager, gameState)
   {
+    this.resetEntityList(entityManager, gameState);
+
     for(const system of this.systems)
     {
       system.readFromGameState(entityManager, gameState);
     }
+  }
+
+  resetEntityList(entityManager, gameState)
+  {
+    //HACK: This is to correct any dead / alive entities left...
+    const entities = gameState['entitylist'] || {};
+    for(const entity of entityManager.getEntities())
+    {
+      if (!entities[entity._id])
+      {
+        //Maybe missed destruction event from server...
+        entityManager.destroyEntity(entity);
+      }
+    }
+    for(const entityID in entities)
+    {
+      const entity = entityManager.getEntityByID(entityID);
+      if (!entity)
+      {
+        //Maybe missed creation event from server...
+        entityManager.createEntity(entityID);
+      }
+    }
+  }
+
+  makePredictiveState(state, predictive)
+  {
+    if (predictive || state.hasOwnProperty('predictive'))
+    {
+      state.predictiveFirst = (predictive && !state.predictive);
+      state.predictive = predictive;
+    }
+
+    return state;
   }
 }
 
@@ -1409,26 +1450,6 @@ class NetworkEntitySystem extends __WEBPACK_IMPORTED_MODULE_0__integrated_entity
       if (!entity) continue;
 
       entityManager.destroyEntity(entity);
-    }
-
-    //HACK: This is to correct any dead / alive entities left...
-    entities = gameState['entitylist'] || {};
-    for(const entity of entityManager.getEntities())
-    {
-      if (!entities[entity._id])
-      {
-        //Maybe missed destruction event from server...
-        entityManager.destroyEntity(entity);
-      }
-    }
-    for(const entityID in entities)
-    {
-      const entity = entityManager.getEntityByID(entityID);
-      if (!entity)
-      {
-        //Maybe missed creation event from server...
-        entityManager.createEntity(entityID);
-      }
     }
   }
 }

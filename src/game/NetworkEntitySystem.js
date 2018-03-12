@@ -80,26 +80,6 @@ class NetworkEntitySystem extends System
 
       entityManager.destroyEntity(entity);
     }
-
-    //HACK: This is to correct any dead / alive entities left...
-    entities = gameState['entitylist'] || {};
-    for(const entity of entityManager.getEntities())
-    {
-      if (!entities[entity._id])
-      {
-        //Maybe missed destruction event from server...
-        entityManager.destroyEntity(entity);
-      }
-    }
-    for(const entityID in entities)
-    {
-      const entity = entityManager.getEntityByID(entityID);
-      if (!entity)
-      {
-        //Maybe missed creation event from server...
-        entityManager.createEntity(entityID);
-      }
-    }
   }
 }
 
