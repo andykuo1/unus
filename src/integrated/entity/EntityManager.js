@@ -2,6 +2,7 @@ import Entity from './Entity.js';
 
 import Reflection from '../../util/Reflection.js';
 import ObjectPool from '../../util/ObjectPool.js';
+import UID from '../../util/uid.js';
 
 class EntityManager
 {
@@ -11,7 +12,7 @@ class EntityManager
     this.entityPool = new ObjectPool(E || Entity);
 
     this.components = new Map();
-    this.nextEntityID = 1;
+    this.nextEntityID = UID();
 
     this.onEntityCreate = (entity) => {};
     this.onEntityDestroy = (entity) => {};
@@ -129,7 +130,12 @@ class EntityManager
 
   getNextAvailableEntityID()
   {
-    return this.nextEntityID++;
+    let id = UID();
+    while (this.entities[id])
+    {
+      id = UID();
+    }
+    return id;
   }
 }
 
