@@ -5,16 +5,18 @@ class SystemManager
     this.systems = [];
   }
 
-  update(entityManager, frame)
+  update(entityManager, frame, predictive)
   {
+    if (predictive) frame.predictive = predictive;
     for(const system of this.systems)
     {
       system.onUpdate(entityManager, frame);
     }
   }
 
-  updateInput(inputState, targetEntity)
+  updateInput(inputState, targetEntity, predictive)
   {
+    if (predictive) inputState.predictive = predictive;
     for(const system of this.systems)
     {
       system.onInputUpdate(targetEntity, inputState);

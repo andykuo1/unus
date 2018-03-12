@@ -104,7 +104,7 @@ class ServerGame extends Game
       if (dt > 0)
       {
         nextFrame.delta = dt;
-        this.world.step(nextFrame, true);
+        this.world.step(nextFrame);
       }
 
       //Update world to after this input state...
@@ -116,7 +116,7 @@ class ServerGame extends Game
     if (dt > 0)
     {
       nextFrame.delta = dt;
-      this.world.step(nextFrame, true);
+      this.world.step(nextFrame);
     }
 
     //SERVER sends CURRENT_GAME_STATE to all CLIENTS.

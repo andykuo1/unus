@@ -86,8 +86,8 @@ class ClientGame extends Game
     var targetEntity = currentInputState ? this.playerController.getClientPlayer() : null;
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
-    if (targetEntity) this.world.updateInput(currentInputState, targetEntity);
-    this.world.step(frame);
+    if (targetEntity) this.world.updateInput(currentInputState, targetEntity, true);
+    this.world.step(frame, true);
     this.renderer.render(this.world);
   }
 
@@ -118,11 +118,11 @@ class ClientGame extends Game
       if (dt > 0)
       {
         nextFrame.delta = dt;
-        this.world.step(nextFrame);
+        this.world.step(nextFrame, true);
       }
 
       //Update world to after this input state...
-      this.world.updateInput(inputState, targetEntity);
+      this.world.updateInput(inputState, targetEntity, true);
       inputState.worldTicks = this.world.ticks;
 
       oldInputStates.push(inputState);
@@ -138,7 +138,7 @@ class ClientGame extends Game
     if (dt > 0)
     {
       nextFrame.delta = dt;
-      this.world.step(nextFrame);
+      this.world.step(nextFrame, true);
     }
   }
 

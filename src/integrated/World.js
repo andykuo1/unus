@@ -19,17 +19,17 @@ class World
     GameFactory.init(this);
   }
 
-  step(frame, predictive=true)
+  step(frame, predictive=false)
   {
     this.ticks += frame.delta;
 
     //Continue to update the world state
-    this.systemManager.update(this.entityManager, frame);
+    this.systemManager.update(this.entityManager, frame, predictive);
   }
 
-  updateInput(inputState, targetEntity)
+  updateInput(inputState, targetEntity, predictive=false)
   {
-    this.systemManager.updateInput(inputState, targetEntity);
+    this.systemManager.updateInput(inputState, targetEntity, predictive);
   }
 
   captureState()
