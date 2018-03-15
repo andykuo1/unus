@@ -17,17 +17,19 @@ class SynchronizedSystem extends System
 
   writeEntityToData(entity, dst)
   {
+    const componentData = dst[this.componentName];
     for(const [key, value] of Object.entries(entity[this.componentName]))
     {
-      dst[this.componentName][key] = value;
+      writeKeyValueToData(key, value, componentData);
     }
   }
 
   readEntityFromData(src, entity)
   {
+    const componentData = entity[this.componentName];
     for(const [key, value] of Object.entries(src[this.componentName]))
     {
-      entity[this.componentName][key] = value;
+      writeKeyValueToData(key, value, componentData);
     }
   }
 
@@ -74,6 +76,23 @@ class SynchronizedSystem extends System
         entity.removeComponent(this.component);
       }
     }
+  }
+}
+
+function writeKeyValueToData(key, value, dst)
+{
+  if (Array.isArray(value))
+  {
+    const array = [];
+    for(const i in value)
+    {
+      writeKeyValueToData(i, value[i], array);
+    }
+    dst[key] = array;
+  }
+  else
+  {
+    dst[key] = value;
   }
 }
 
