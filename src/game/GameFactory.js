@@ -23,7 +23,7 @@ class GameFactory
   {
     GameFactory.INSTANCE.entityManager = game.entityManager;
     game.systemManager.systems.push(new NetworkEntitySystem(game.entityManager));
-    game.systemManager.systems.push(new PlayerSystem());//WAIT, CAN YOU PUSH?
+    game.systemManager.systems.push(new PlayerSystem());
     game.systemManager.systems.push(new MotionSystem());
     game.systemManager.systems.push(new TransformSystem());
     game.systemManager.systems.push(new SynchronizedSystem(Renderable));
@@ -55,8 +55,8 @@ class GameFactory
 
     //populate with random
     const entity = GameFactory.createEntity('star');
-    //entity.transform.scale[0] = 0.1;
-    //entity.transform.scale[1] = 0.1;
+    entity.transform.scale[0] = 0.1;
+    entity.transform.scale[1] = 0.1;
     entity.renderable.color = 0xF2A900;
   }
 

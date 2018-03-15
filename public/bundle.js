@@ -296,7 +296,7 @@ class GameFactory
   {
     GameFactory.INSTANCE.entityManager = game.entityManager;
     game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_1__NetworkEntitySystem_js__["a" /* default */](game.entityManager));
-    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_2__PlayerSystem_js__["a" /* default */]());//WAIT, CAN YOU PUSH?
+    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_2__PlayerSystem_js__["a" /* default */]());
     game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_3__MotionSystem_js__["a" /* default */]());
     game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_4__TransformSystem_js__["a" /* default */]());
     game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_0__SynchronizedSystem_js__["a" /* default */](__WEBPACK_IMPORTED_MODULE_9__RenderableComponent_js__["a" /* default */]));
@@ -328,8 +328,8 @@ class GameFactory
 
     //populate with random
     const entity = GameFactory.createEntity('star');
-    //entity.transform.scale[0] = 0.1;
-    //entity.transform.scale[1] = 0.1;
+    entity.transform.scale[0] = 0.1;
+    entity.transform.scale[1] = 0.1;
     entity.renderable.color = 0xF2A900;
   }
 
@@ -1994,7 +1994,7 @@ class Renderer
               [0, 0, 0, 1],
               [serverEntity.transform.x, serverEntity.transform.y, 0],
               serverEntity.transform.scale);
-            mat4.mul(modelview, modelview, view);
+            mat4.mul(modelview, view, modelview);
       			__WEBPACK_IMPORTED_MODULE_6__mogli_gl_js__["a" /* default */].uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
 
             //Draw it!
@@ -2018,7 +2018,7 @@ class Renderer
             [0, 0, 0, 1],
             [entity.transform.x, entity.transform.y, 0],
             entity.transform.scale);
-          mat4.mul(modelview, modelview, view);
+          mat4.mul(modelview, view, modelview);
     			__WEBPACK_IMPORTED_MODULE_6__mogli_gl_js__["a" /* default */].uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
 
           //Draw it!

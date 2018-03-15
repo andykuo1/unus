@@ -89,7 +89,7 @@ class Renderer
               [0, 0, 0, 1],
               [serverEntity.transform.x, serverEntity.transform.y, 0],
               serverEntity.transform.scale);
-            mat4.mul(modelview, modelview, view);
+            mat4.mul(modelview, view, modelview);
       			gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
 
             //Draw it!
@@ -113,7 +113,7 @@ class Renderer
             [0, 0, 0, 1],
             [entity.transform.x, entity.transform.y, 0],
             entity.transform.scale);
-          mat4.mul(modelview, modelview, view);
+          mat4.mul(modelview, view, modelview);
     			gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
 
           //Draw it!
