@@ -11,7 +11,7 @@ class PlayerManager
 
   createPlayer(socketID)
   {
-    const entity = GameFactory.createEntity(this.entityManager, 'player');
+    const entity = GameFactory.createEntity('player');
     entity.player.socketID = socketID;
     this.players.set(socketID, entity);
     return entity;

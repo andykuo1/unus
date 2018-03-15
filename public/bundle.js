@@ -1514,9 +1514,9 @@ class PlayerSystem extends __WEBPACK_IMPORTED_MODULE_0__SynchronizedSystem_js__[
     entity.player.nextX = inputState.x;
     entity.player.nextY = inputState.y;
     entity.player.move = inputState.down;
+    //HACK: this will run once on server and client-side, needs a way to keep predicted alive
     if (inputState.click && (!inputState.predictive || inputState.predictiveFirst))
     {
-      console.log("FIRE!");
       const bulletSpeed = 10;
       const bulletEntity = entity._manager.createEntity()
         .addComponent(__WEBPACK_IMPORTED_MODULE_2__TransformComponent_js__["a" /* default */])

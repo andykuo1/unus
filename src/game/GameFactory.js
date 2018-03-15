@@ -16,10 +16,12 @@ class GameFactory
   constructor()
   {
     this.entityTypes = new Map();
+    this.entityManager = null;
   }
 
   static init(game)
   {
+    this.entityManager = game.entityManager;
     game.systemManager.systems.push(new NetworkEntitySystem(game.entityManager));
     game.systemManager.systems.push(new PlayerSystem());
     game.systemManager.systems.push(new MotionSystem());
@@ -40,10 +42,10 @@ class GameFactory
     });
   }
 
-  static createEntity(entityManager, entityType)
+  static createEntity(entityType)
   {
     const entityConstructor = GameFactory.INSTANCE.entityTypes.get(entityType);
-    const entity = entityManager.createEntity();
+    const entity = GameFactory.INSTANCE.entityManager.createEntity();
     entityConstructor(entity);
     return entity;
   }

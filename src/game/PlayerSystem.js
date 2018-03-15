@@ -4,6 +4,8 @@ import Transform from './TransformComponent.js';
 import Renderable from './RenderableComponent.js';
 import Bullet from './BulletComponent.js';
 
+import GameFactory from './GameFactory.js';
+
 class PlayerSystem extends SynchronizedSystem
 {
   constructor()
@@ -21,10 +23,7 @@ class PlayerSystem extends SynchronizedSystem
     if (inputState.click && (!inputState.predictive || inputState.predictiveFirst))
     {
       const bulletSpeed = 10;
-      const bulletEntity = entity._manager.createEntity()
-        .addComponent(Transform)
-        .addComponent(Renderable)
-        .addComponent(Bullet);
+      const bulletEntity = GameFactory.createEntity('bullet');
       const dx = entity.player.nextX - entity.transform.x;
       const dy = entity.player.nextY - entity.transform.y;
       const rot = -Math.atan2(-dy, dx);
