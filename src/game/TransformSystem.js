@@ -7,13 +7,6 @@ class TransformSystem extends SynchronizedSystem
   {
     super(Transform);
   }
-
-  onEntityUpdate(entity, frame)
-  {
-    //HACK: This is just what the renderer reads...
-    entity.x = entity.transform.x;
-    entity.y = entity.transform.y;
-  }
 }
 
 export default TransformSystem;

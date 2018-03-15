@@ -86,7 +86,7 @@ class Renderer
 
             //Setting up the Model Matrix
             mat4.fromRotationTranslationScale(modelview,
-              [0, 0, 0, 1],
+              serverEntity.transform.rotation,
               [serverEntity.transform.x, serverEntity.transform.y, 0],
               serverEntity.transform.scale);
             mat4.mul(modelview, view, modelview);
@@ -110,7 +110,7 @@ class Renderer
 
           //Setting up the Model Matrix
           mat4.fromRotationTranslationScale(modelview,
-            [0, 0, 0, 1],
+            entity.transform.rotation,
             [entity.transform.x, entity.transform.y, 0],
             entity.transform.scale);
           mat4.mul(modelview, view, modelview);

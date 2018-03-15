@@ -110,17 +110,19 @@ class SynchronizedSystem extends __WEBPACK_IMPORTED_MODULE_0__integrated_entity_
 
   writeEntityToData(entity, dst)
   {
+    const componentData = dst[this.componentName];
     for(const [key, value] of Object.entries(entity[this.componentName]))
     {
-      dst[this.componentName][key] = value;
+      writeKeyValueToData(key, value, componentData);
     }
   }
 
   readEntityFromData(src, entity)
   {
+    const componentData = entity[this.componentName];
     for(const [key, value] of Object.entries(src[this.componentName]))
     {
-      entity[this.componentName][key] = value;
+      writeKeyValueToData(key, value, componentData);
     }
   }
 
@@ -170,6 +172,23 @@ class SynchronizedSystem extends __WEBPACK_IMPORTED_MODULE_0__integrated_entity_
   }
 }
 
+function writeKeyValueToData(key, value, dst)
+{
+  if (Array.isArray(value))
+  {
+    const array = [];
+    for(const i in value)
+    {
+      writeKeyValueToData(i, value[i], array);
+    }
+    dst[key] = array;
+  }
+  else
+  {
+    dst[key] = value;
+  }
+}
+
 /* harmony default export */ __webpack_exports__["a"] = (SynchronizedSystem);
 
 
@@ -216,6 +235,7 @@ function Transform()
 {
   this.x = 0;
   this.y = 0;
+  this.rotation = [0, 0, 0, 1];
   this.scale = [1, 1, 1];
 }
 
@@ -1640,13 +1660,6 @@ class TransformSystem extends __WEBPACK_IMPORTED_MODULE_0__SynchronizedSystem_js
   {
     super(__WEBPACK_IMPORTED_MODULE_1__TransformComponent_js__["a" /* default */]);
   }
-
-  onEntityUpdate(entity, frame)
-  {
-    //HACK: This is just what the renderer reads...
-    entity.x = entity.transform.x;
-    entity.y = entity.transform.y;
-  }
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (TransformSystem);
@@ -1991,7 +2004,7 @@ class Renderer
 
             //Setting up the Model Matrix
             mat4.fromRotationTranslationScale(modelview,
-              [0, 0, 0, 1],
+              serverEntity.transform.rotation,
               [serverEntity.transform.x, serverEntity.transform.y, 0],
               serverEntity.transform.scale);
             mat4.mul(modelview, view, modelview);
@@ -2015,7 +2028,7 @@ class Renderer
 
           //Setting up the Model Matrix
           mat4.fromRotationTranslationScale(modelview,
-            [0, 0, 0, 1],
+            entity.transform.rotation,
             [entity.transform.x, entity.transform.y, 0],
             entity.transform.scale);
           mat4.mul(modelview, view, modelview);
