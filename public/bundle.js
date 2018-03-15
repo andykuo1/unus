@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 12);
+/******/ 	return __webpack_require__(__webpack_require__.s = 13);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -89,7 +89,7 @@ function init(canvas)
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__integrated_entity_System_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__integrated_entity_System_js__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_Reflection_js__ = __webpack_require__(5);
 
 
@@ -216,6 +216,7 @@ function Transform()
 {
   this.x = 0;
   this.y = 0;
+  this.scale = [1, 1, 1];
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (Transform);
@@ -259,6 +260,98 @@ class Reflection
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SynchronizedSystem_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__NetworkEntitySystem_js__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__PlayerSystem_js__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__MotionSystem_js__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__TransformSystem_js__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__BulletSystem_js__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__TransformComponent_js__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__MotionComponent_js__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__PlayerComponent_js__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__RenderableComponent_js__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__BulletComponent_js__ = __webpack_require__(4);
+
+
+
+
+
+
+
+
+
+
+
+
+
+class GameFactory
+{
+  constructor()
+  {
+    this.entityTypes = new Map();
+    this.entityManager = null;
+  }
+
+  static init(game)
+  {
+    GameFactory.INSTANCE.entityManager = game.entityManager;
+    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_1__NetworkEntitySystem_js__["a" /* default */](game.entityManager));
+    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_2__PlayerSystem_js__["a" /* default */]());//WAIT, CAN YOU PUSH?
+    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_3__MotionSystem_js__["a" /* default */]());
+    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_4__TransformSystem_js__["a" /* default */]());
+    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_0__SynchronizedSystem_js__["a" /* default */](__WEBPACK_IMPORTED_MODULE_9__RenderableComponent_js__["a" /* default */]));
+    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_5__BulletSystem_js__["a" /* default */]());
+
+    GameFactory.INSTANCE.entityTypes.set('player', (entity) => {
+      return entity
+        .addComponent(__WEBPACK_IMPORTED_MODULE_6__TransformComponent_js__["a" /* default */])
+        .addComponent(__WEBPACK_IMPORTED_MODULE_7__MotionComponent_js__["a" /* default */])
+        .addComponent(__WEBPACK_IMPORTED_MODULE_8__PlayerComponent_js__["a" /* default */])
+        .addComponent(__WEBPACK_IMPORTED_MODULE_9__RenderableComponent_js__["a" /* default */]);
+    });
+    GameFactory.INSTANCE.entityTypes.set('bullet', (entity) => {
+      return entity
+        .addComponent(__WEBPACK_IMPORTED_MODULE_6__TransformComponent_js__["a" /* default */])
+        .addComponent(__WEBPACK_IMPORTED_MODULE_10__BulletComponent_js__["a" /* default */])
+        .addComponent(__WEBPACK_IMPORTED_MODULE_9__RenderableComponent_js__["a" /* default */]);
+    });
+    GameFactory.INSTANCE.entityTypes.set('star', (entity) => {
+      return entity
+        .addComponent(__WEBPACK_IMPORTED_MODULE_6__TransformComponent_js__["a" /* default */])
+        .addComponent(__WEBPACK_IMPORTED_MODULE_9__RenderableComponent_js__["a" /* default */]);
+    });
+  }
+
+  static createWorld(game)
+  {
+    if (GameFactory.INSTANCE.entityManager == null) throw new Error('must init first');
+
+    //populate with random
+    const entity = GameFactory.createEntity('star');
+    //entity.transform.scale[0] = 0.1;
+    //entity.transform.scale[1] = 0.1;
+    entity.renderable.color = 0xF2A900;
+  }
+
+  static createEntity(entityType)
+  {
+    const entityConstructor = GameFactory.INSTANCE.entityTypes.get(entityType);
+    const entity = GameFactory.INSTANCE.entityManager.createEntity();
+    entityConstructor(entity);
+    return entity;
+  }
+}
+
+GameFactory.INSTANCE = new GameFactory();
+
+/* harmony default export */ __webpack_exports__["a"] = (GameFactory);
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 class System
 {
   constructor()
@@ -291,7 +384,7 @@ class System
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -307,7 +400,7 @@ function Player()
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -322,7 +415,7 @@ function Renderable()
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -337,7 +430,7 @@ function Motion()
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -412,7 +505,7 @@ function unproject(dst, invertedViewProjection, viewport, screenX, screenY, scre
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -463,12 +556,12 @@ class Shader
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__client_ClientGame_js__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__client_ClientGame_js__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__integrated_NetworkHandler_js__ = __webpack_require__(38);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__util_Frame_js__ = __webpack_require__(2);
 
@@ -536,18 +629,18 @@ function onApplicationUpdate(app, frame)
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_Frame_js__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_PriorityQueue_js__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__integrated_World_js__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_PriorityQueue_js__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__integrated_World_js__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__PlayerController_js__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__input_Mouse_js__ = __webpack_require__(29);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__Renderer_js__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__camera_ViewPort_js__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__camera_ViewPort_js__ = __webpack_require__(11);
 
 
 
@@ -719,7 +812,7 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_2__integrated_Game_js__["a" /
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -837,7 +930,7 @@ class PriorityQueue
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -868,14 +961,14 @@ class Game
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_Frame_js__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__entity_EntityManager_js__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__entity_SystemManager_js__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game_GameFactory_js__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__entity_EntityManager_js__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__entity_SystemManager_js__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game_GameFactory_js__ = __webpack_require__(6);
 
 
 
@@ -941,14 +1034,14 @@ class World
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Entity_js__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Entity_js__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_Reflection_js__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__util_ObjectPool_js__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__util_uid_js__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__util_ObjectPool_js__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__util_uid_js__ = __webpack_require__(21);
 
 
 
@@ -1098,7 +1191,7 @@ class EntityManager
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1153,7 +1246,7 @@ class Entity
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1214,7 +1307,7 @@ class ObjectPool
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1231,7 +1324,7 @@ function generate()
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1320,83 +1413,11 @@ class SystemManager
 
 
 /***/ }),
-/* 22 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SynchronizedSystem_js__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__NetworkEntitySystem_js__ = __webpack_require__(23);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__PlayerSystem_js__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__MotionSystem_js__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__TransformSystem_js__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__BulletSystem_js__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__TransformComponent_js__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__MotionComponent_js__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__PlayerComponent_js__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__RenderableComponent_js__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__BulletComponent_js__ = __webpack_require__(4);
-
-
-
-
-
-
-
-
-
-
-
-
-
-class GameFactory
-{
-  constructor()
-  {
-    this.entityTypes = new Map();
-  }
-
-  static init(game)
-  {
-    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_1__NetworkEntitySystem_js__["a" /* default */](game.entityManager));
-    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_2__PlayerSystem_js__["a" /* default */]());
-    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_3__MotionSystem_js__["a" /* default */]());
-    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_4__TransformSystem_js__["a" /* default */]());
-    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_0__SynchronizedSystem_js__["a" /* default */](__WEBPACK_IMPORTED_MODULE_9__RenderableComponent_js__["a" /* default */]));
-    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_5__BulletSystem_js__["a" /* default */]());
-
-    GameFactory.INSTANCE.entityTypes.set('player', (entity) => {
-      return entity.addComponent(__WEBPACK_IMPORTED_MODULE_6__TransformComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_7__MotionComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_8__PlayerComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_9__RenderableComponent_js__["a" /* default */]);
-    });
-    GameFactory.INSTANCE.entityTypes.set('bullet', (entity) => {
-      return entity.addComponent(__WEBPACK_IMPORTED_MODULE_6__TransformComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_10__BulletComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_9__RenderableComponent_js__["a" /* default */]);
-    });
-  }
-
-  static createEntity(entityManager, entityType)
-  {
-    const entityConstructor = GameFactory.INSTANCE.entityTypes.get(entityType);
-    const entity = entityManager.createEntity();
-    entityConstructor(entity);
-    return entity;
-  }
-}
-
-GameFactory.INSTANCE = new GameFactory();
-
-/* harmony default export */ __webpack_exports__["a"] = (GameFactory);
-
-
-/***/ }),
 /* 23 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__integrated_entity_System_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__integrated_entity_System_js__ = __webpack_require__(7);
 
 
 class NetworkEntitySystem extends __WEBPACK_IMPORTED_MODULE_0__integrated_entity_System_js__["a" /* default */]
@@ -1491,10 +1512,13 @@ class NetworkEntitySystem extends __WEBPACK_IMPORTED_MODULE_0__integrated_entity
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SynchronizedSystem_js__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__PlayerComponent_js__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__PlayerComponent_js__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__TransformComponent_js__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__RenderableComponent_js__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__RenderableComponent_js__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__BulletComponent_js__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__GameFactory_js__ = __webpack_require__(6);
+
+
 
 
 
@@ -1515,13 +1539,10 @@ class PlayerSystem extends __WEBPACK_IMPORTED_MODULE_0__SynchronizedSystem_js__[
     entity.player.nextY = inputState.y;
     entity.player.move = inputState.down;
     //HACK: this will run once on server and client-side, needs a way to keep predicted alive
-    if (inputState.click && (!inputState.predictive || inputState.predictiveFirst))
+    if (inputState.click && !inputState.predictive)
     {
       const bulletSpeed = 10;
-      const bulletEntity = entity._manager.createEntity()
-        .addComponent(__WEBPACK_IMPORTED_MODULE_2__TransformComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_3__RenderableComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_4__BulletComponent_js__["a" /* default */]);
+      const bulletEntity = __WEBPACK_IMPORTED_MODULE_5__GameFactory_js__["a" /* default */].createEntity('bullet');
       const dx = entity.player.nextX - entity.transform.x;
       const dy = entity.player.nextY - entity.transform.y;
       const rot = -Math.atan2(-dy, dx);
@@ -1579,7 +1600,7 @@ class PlayerSystem extends __WEBPACK_IMPORTED_MODULE_0__SynchronizedSystem_js__[
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SynchronizedSystem_js__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__MotionComponent_js__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__MotionComponent_js__ = __webpack_require__(10);
 
 
 
@@ -1876,9 +1897,9 @@ class Mouse
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__asset_AssetManager_js__ = __webpack_require__(31);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera_ViewPort_js__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera_ViewPort_js__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera_OrthographicCamera_js__ = __webpack_require__(32);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__mogli_Shader_js__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__mogli_Shader_js__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mogli_Program_js__ = __webpack_require__(35);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__mogli_Mesh_js__ = __webpack_require__(36);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__mogli_gl_js__ = __webpack_require__(0);
@@ -1969,7 +1990,10 @@ class Renderer
             if (!serverEntity.renderable || !serverEntity.renderable.visible) continue;
 
             //Setting up the Model Matrix
-            mat4.fromTranslation(modelview, [serverEntity.transform.x, serverEntity.transform.y, 0]);
+            mat4.fromRotationTranslationScale(modelview,
+              [0, 0, 0, 1],
+              [serverEntity.transform.x, serverEntity.transform.y, 0],
+              serverEntity.transform.scale);
             mat4.mul(modelview, modelview, view);
       			__WEBPACK_IMPORTED_MODULE_6__mogli_gl_js__["a" /* default */].uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
 
@@ -1990,7 +2014,10 @@ class Renderer
             ((renderable.color) & 0xFF) / 255.0]);
 
           //Setting up the Model Matrix
-          mat4.fromTranslation(modelview, [entity.transform.x, entity.transform.y, 0]);
+          mat4.fromRotationTranslationScale(modelview,
+            [0, 0, 0, 1],
+            [entity.transform.x, entity.transform.y, 0],
+            entity.transform.scale);
           mat4.mul(modelview, modelview, view);
     			__WEBPACK_IMPORTED_MODULE_6__mogli_gl_js__["a" /* default */].uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
 
@@ -2268,7 +2295,7 @@ class Transform
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_js__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Shader_js__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Shader_js__ = __webpack_require__(12);
 
 
 

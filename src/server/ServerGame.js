@@ -7,6 +7,8 @@ import PlayerManager from './PlayerManager.js';
 
 import Console from './console/Console.js';
 
+import GameFactory from '../game/GameFactory.js';
+
 /*
 SERVER stores CURRENT_INPUT_STATE.
 SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
@@ -85,6 +87,7 @@ class ServerGame extends Game
   onWorldSetup()
   {
     //TODO: ADD initial world state / loading
+    GameFactory.createWorld(this);
   }
 
   onUpdate(frame)

@@ -85,7 +85,10 @@ class Renderer
             if (!serverEntity.renderable || !serverEntity.renderable.visible) continue;
 
             //Setting up the Model Matrix
-            mat4.fromTranslation(modelview, [serverEntity.transform.x, serverEntity.transform.y, 0]);
+            mat4.fromRotationTranslationScale(modelview,
+              [0, 0, 0, 1],
+              [serverEntity.transform.x, serverEntity.transform.y, 0],
+              serverEntity.transform.scale);
             mat4.mul(modelview, modelview, view);
       			gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
 
@@ -106,7 +109,10 @@ class Renderer
             ((renderable.color) & 0xFF) / 255.0]);
 
           //Setting up the Model Matrix
-          mat4.fromTranslation(modelview, [entity.transform.x, entity.transform.y, 0]);
+          mat4.fromRotationTranslationScale(modelview,
+            [0, 0, 0, 1],
+            [entity.transform.x, entity.transform.y, 0],
+            entity.transform.scale);
           mat4.mul(modelview, modelview, view);
     			gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
 
