@@ -1,3 +1,5 @@
+import { quat } from 'gl-matrix';
+
 import SynchronizedSystem from 'game/SynchronizedSystem.js';
 import NetworkEntitySystem from 'game/NetworkEntitySystem.js';
 import PlayerSystem from 'game/PlayerSystem.js';
@@ -55,6 +57,7 @@ class GameFactory
 
   static createWorld(game)
   {
+    if (game.isRemote()) throw new Error('must be server-side');
     if (GameFactory.INSTANCE.entityManager == null) throw new Error('must init first');
 
     //populate with random
@@ -63,9 +66,12 @@ class GameFactory
       const entity = GameFactory.createEntity('star');
       entity.transform.x = Math.random() * 100 - 50;
       entity.transform.y = Math.random() * 100 - 50;
-      entity.transform.scale[0] = 0.1;
-      entity.transform.scale[1] = 0.1;
+      const scale = 0.2 + 0.1 * Math.random();
+      entity.transform.scale[0] = scale;
+      entity.transform.scale[1] = scale;
+      quat.rotateZ(entity.transform.rotation, entity.transform.rotation, Math.random() * Math.PI);
       entity.renderable.color = 0xF2A900;
+      entity.rotating.speed = Math.random() + 1;
     }
   }
 

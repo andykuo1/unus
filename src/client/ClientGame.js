@@ -1,10 +1,8 @@
 import { vec3 } from 'gl-matrix';
 
 import Frame from 'util/Frame.js';
-import PriorityQueue from 'util/PriorityQueue.js';
 
 import Game from 'integrated/Game.js';
-import World from 'integrated/World.js';
 import PlayerController from 'client/PlayerController.js';
 
 import Mouse from 'client/input/Mouse.js';
@@ -27,11 +25,6 @@ class ClientGame extends Game
   constructor(networkHandler, canvas)
   {
     super(networkHandler);
-
-    this.world = new World(true);
-    this.inputStates = new PriorityQueue((a, b) => {
-      return a.worldTicks - b.worldTicks;
-    });
 
     this.renderer = new Renderer(canvas);
 

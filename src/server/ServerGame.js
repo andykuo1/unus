@@ -1,8 +1,6 @@
 import Frame from 'util/Frame.js';
-import PriorityQueue from 'util/PriorityQueue.js';
 
 import Game from 'integrated/Game.js';
-import World from 'integrated/World.js';
 
 import PlayerManager from 'server/PlayerManager.js';
 import Console from 'server/console/Console.js';
@@ -20,11 +18,6 @@ class ServerGame extends Game
   constructor(networkHandler)
   {
     super(networkHandler);
-
-    this.world = new World(false);
-    this.inputStates = new PriorityQueue((a, b) => {
-      return a.worldTicks - b.worldTicks;
-    });
 
     this.playerManager = new PlayerManager(this.world.entityManager);
   }

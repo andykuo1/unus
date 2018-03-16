@@ -12,7 +12,7 @@ class RotatingSystem extends SynchronizedSystem
 
   onEntityUpdate(entity, frame)
   {
-    //quat.rotateX(entity.transform.rotation, entity.rotating.speed * frame.delta);
+    quat.rotateZ(entity.transform.rotation, entity.transform.rotation, entity.rotating.speed * frame.delta);
   }
 }
 
