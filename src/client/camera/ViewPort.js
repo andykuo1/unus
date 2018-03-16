@@ -1,5 +1,6 @@
 import { vec3, vec4, mat4 } from 'gl-matrix';
-import gl from '../mogli/gl.js';
+
+import gl from 'client/mogli/gl.js';
 
 class ViewPort
 {

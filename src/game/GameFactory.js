@@ -1,17 +1,17 @@
-import SynchronizedSystem from './SynchronizedSystem.js';
-import NetworkEntitySystem from './NetworkEntitySystem.js';
-import PlayerSystem from './PlayerSystem.js';
-import MotionSystem from './MotionSystem.js';
-import TransformSystem from './TransformSystem.js';
-import BulletSystem from './BulletSystem.js';
-import RotatingSystem from './RotatingSystem.js';
+import SynchronizedSystem from 'game/SynchronizedSystem.js';
+import NetworkEntitySystem from 'game/NetworkEntitySystem.js';
+import PlayerSystem from 'game/PlayerSystem.js';
+import MotionSystem from 'game/MotionSystem.js';
+import TransformSystem from 'game/TransformSystem.js';
+import BulletSystem from 'game/BulletSystem.js';
+import RotatingSystem from 'game/RotatingSystem.js';
 
-import Transform from './TransformComponent.js';
-import Motion from './MotionComponent.js';
-import Player from './PlayerComponent.js';
-import Renderable from './RenderableComponent.js';
-import Bullet from './BulletComponent.js';
-import Rotating from './RotatingComponent.js';
+import Transform from 'game/TransformComponent.js';
+import Motion from 'game/MotionComponent.js';
+import Player from 'game/PlayerComponent.js';
+import Renderable from 'game/RenderableComponent.js';
+import Bullet from 'game/BulletComponent.js';
+import Rotating from 'game/RotatingComponent.js';
 
 class GameFactory
 {

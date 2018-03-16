@@ -17,5 +17,11 @@ module.exports = {
     path: path.join(__dirname, '.'),
     filename: 'bundle-server.js',
   },
-  externals: nodeModules,
+  resolve: {
+    modules: [
+      path.resolve('./src'),
+      'node_modules'
+    ]
+  },
+  externals: nodeModules
 };

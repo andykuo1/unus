@@ -1,10 +1,10 @@
-import SynchronizedSystem from './SynchronizedSystem.js';
-import Player from './PlayerComponent.js';
-import Transform from './TransformComponent.js';
-import Renderable from './RenderableComponent.js';
-import Bullet from './BulletComponent.js';
+import SynchronizedSystem from 'game/SynchronizedSystem.js';
+import Player from 'game/PlayerComponent.js';
+import Transform from 'game/TransformComponent.js';
+import Renderable from 'game/RenderableComponent.js';
+import Bullet from 'game/BulletComponent.js';
 
-import GameFactory from './GameFactory.js';
+import GameFactory from 'game/GameFactory.js';
 
 class PlayerSystem extends SynchronizedSystem
 {

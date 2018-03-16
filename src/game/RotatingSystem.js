@@ -1,7 +1,7 @@
 import { quat } from 'gl-matrix';
 
-import SynchronizedSystem from './SynchronizedSystem.js';
-import Rotating from './RotatingComponent.js';
+import SynchronizedSystem from 'game/SynchronizedSystem.js';
+import Rotating from 'game/RotatingComponent.js';
 
 class RotatingSystem extends SynchronizedSystem
 {

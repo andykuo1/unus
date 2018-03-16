@@ -1,15 +1,15 @@
 import { vec3 } from 'gl-matrix';
 
-import Frame from '../util/Frame.js';
-import PriorityQueue from '../util/PriorityQueue.js';
+import Frame from 'util/Frame.js';
+import PriorityQueue from 'util/PriorityQueue.js';
 
-import Game from '../integrated/Game.js';
-import World from '../integrated/World.js';
-import PlayerController from './PlayerController.js';
+import Game from 'integrated/Game.js';
+import World from 'integrated/World.js';
+import PlayerController from 'client/PlayerController.js';
 
-import Mouse from './input/Mouse.js';
-import Renderer from './Renderer.js';
-import ViewPort from './camera/ViewPort.js';
+import Mouse from 'client/input/Mouse.js';
+import Renderer from 'client/Renderer.js';
+import ViewPort from 'client/camera/ViewPort.js';
 
 /*
 CLIENT gets CURRENT_GAME_STATE.

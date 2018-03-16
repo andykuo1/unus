@@ -1,8 +1,8 @@
 import Entity from './Entity.js';
 
-import Reflection from '../../util/Reflection.js';
-import ObjectPool from '../../util/ObjectPool.js';
-import UID from '../../util/uid.js';
+import Reflection from 'util/Reflection.js';
+import ObjectPool from 'util/ObjectPool.js';
+import UID from 'util/uid.js';
 
 class EntityManager
 {

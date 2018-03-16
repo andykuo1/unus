@@ -1,6 +1,6 @@
 import { mat4 } from 'gl-matrix';
 
-import Transform from '../../integrated/transform/Transform.js';
+import Transform from 'integrated/transform/Transform.js';
 
 class Camera
 {

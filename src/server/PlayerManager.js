@@ -1,4 +1,4 @@
-import GameFactory from '../game/GameFactory.js';
+import GameFactory from 'game/GameFactory.js';
 
 class PlayerManager
 {

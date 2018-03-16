@@ -2,9 +2,9 @@ import express from 'express';
 import path from 'path'
 import socketio from 'socket.io';
 
-import ServerGame from './server/ServerGame.js';
-import NetworkHandler from './integrated/NetworkHandler.js';
-import Frame from './util/Frame.js';
+import ServerGame from 'server/ServerGame.js';
+import NetworkHandler from 'integrated/NetworkHandler.js';
+import Frame from 'util/Frame.js';
 
 const __dirname = path.resolve();
 const DEVMODE = process.argv.indexOf('--dev') != -1;

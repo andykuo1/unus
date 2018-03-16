@@ -1,5 +1,5 @@
-import SynchronizedSystem from './SynchronizedSystem.js';
-import Transform from './TransformComponent.js';
+import SynchronizedSystem from 'game/SynchronizedSystem.js';
+import Transform from 'game/TransformComponent.js';
 
 class TransformSystem extends SynchronizedSystem
 {

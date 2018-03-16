@@ -1,13 +1,13 @@
-import Frame from '../util/Frame.js';
-import PriorityQueue from '../util/PriorityQueue.js';
+import Frame from 'util/Frame.js';
+import PriorityQueue from 'util/PriorityQueue.js';
 
-import Game from '../integrated/Game.js';
-import World from '../integrated/World.js';
-import PlayerManager from './PlayerManager.js';
+import Game from 'integrated/Game.js';
+import World from 'integrated/World.js';
 
-import Console from './console/Console.js';
+import PlayerManager from 'server/PlayerManager.js';
+import Console from 'server/console/Console.js';
 
-import GameFactory from '../game/GameFactory.js';
+import GameFactory from 'game/GameFactory.js';
 
 /*
 SERVER stores CURRENT_INPUT_STATE.

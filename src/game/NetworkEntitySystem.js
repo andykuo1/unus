@@ -1,4 +1,4 @@
-import System from '../integrated/entity/System.js';
+import System from 'integrated/entity/System.js';
 
 class NetworkEntitySystem extends System
 {

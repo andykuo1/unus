@@ -1,6 +1,6 @@
-import ClientGame from './client/ClientGame.js';
-import NetworkHandler from './integrated/NetworkHandler.js';
-import Frame from './util/Frame.js';
+import ClientGame from 'client/ClientGame.js';
+import NetworkHandler from 'integrated/NetworkHandler.js';
+import Frame from 'util/Frame.js';
 
 //Window Setup
 var canvas = document.getElementById('canvas');

@@ -5,5 +5,11 @@ module.exports = {
   output: {
     path: path.join(__dirname, 'public'),
     filename: 'bundle-client.js'
+  },
+  resolve: {
+    modules: [
+      path.resolve('./src'),
+      'node_modules'
+    ]
   }
 };

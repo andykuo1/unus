@@ -1,8 +1,9 @@
-import Frame from '../util/Frame.js';
-import EntityManager from './entity/EntityManager.js';
-import SystemManager from './entity/SystemManager.js';
+import Frame from 'util/Frame.js';
 
-import GameFactory from '../game/GameFactory.js';
+import EntityManager from 'integrated/entity/EntityManager.js';
+import SystemManager from 'integrated/entity/SystemManager.js';
+
+import GameFactory from 'game/GameFactory.js';
 
 class World
 {

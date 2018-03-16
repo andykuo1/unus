@@ -1,5 +1,5 @@
-import SynchronizedSystem from './SynchronizedSystem.js';
-import Motion from './MotionComponent.js';
+import SynchronizedSystem from 'game/SynchronizedSystem.js';
+import Motion from 'game/MotionComponent.js';
 
 class MotionSystem extends SynchronizedSystem
 {

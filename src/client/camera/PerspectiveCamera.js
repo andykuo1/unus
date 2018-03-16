@@ -1,6 +1,6 @@
 import { mat4 } from 'gl-matrix';
 
-import Camera from './Camera.js';
+import Camera from 'client/camera/Camera.js';
 
 class PerspectiveCamera extends Camera
 {

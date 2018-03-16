@@ -1,13 +1,13 @@
 import { mat4 } from 'gl-matrix';
-import gl from './mogli/gl.js';
+import gl from 'client/mogli/gl.js';
 
-import AssetManager from './asset/AssetManager.js';
-import ViewPort from './camera/ViewPort.js';
-import Camera from './camera/OrthographicCamera.js';
+import AssetManager from 'client/asset/AssetManager.js';
+import ViewPort from 'client/camera/ViewPort.js';
+import Camera from 'client/camera/OrthographicCamera.js';
 
-import Shader from './mogli/Shader.js';
-import Program from './mogli/Program.js';
-import Mesh from './mogli/Mesh.js';
+import Shader from 'client/mogli/Shader.js';
+import Program from 'client/mogli/Program.js';
+import Mesh from 'client/mogli/Mesh.js';
 
 class Renderer
 {

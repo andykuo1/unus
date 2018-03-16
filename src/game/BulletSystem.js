@@ -1,5 +1,5 @@
-import SynchronizedSystem from './SynchronizedSystem.js';
-import Bullet from './BulletComponent.js';
+import SynchronizedSystem from 'game/SynchronizedSystem.js';
+import Bullet from 'game/BulletComponent.js';
 
 class BulletSystem extends SynchronizedSystem
 {
