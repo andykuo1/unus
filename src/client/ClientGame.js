@@ -1,3 +1,5 @@
+import { vec3 } from 'gl-matrix';
+
 import Frame from '../util/Frame.js';
 import PriorityQueue from '../util/PriorityQueue.js';
 
@@ -148,7 +150,8 @@ class ClientGame extends Game
     //TODO: if (!this.input.isDirty()) return null;
     const inputState = this.input.poll();
 
-    const vec = ViewPort.getPointFromScreen(vec3.create(),
+    const vec = ViewPort.getPointFromScreen(
+      vec3.create(),
       this.renderer.camera, this.renderer.viewport,
       inputState.x, inputState.y);
     inputState.x = vec[0];

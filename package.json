@@ -2,10 +2,12 @@
   "name": "unus",
   "version": "1.0.0",
   "description": "An online browser game.",
-  "main": "./src/server.js",
+  "main": "./bundle-server.js",
   "scripts": {
-    "build": "webpack --config webpack.config.js",
-    "start": "npm run build && bash run.sh"
+    "start": "npm run build-all; bash run.sh",
+    "build-all": "npm run build-server; npm run build-client",
+    "build-server": "webpack --config webpack.server.config.js",
+    "build-client": "webpack --config webpack.client.config.js"
   },
   "repository": {
     "type": "git",
