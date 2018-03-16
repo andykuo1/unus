@@ -1,12 +1,14 @@
-import { mat4 } from 'gl-matrix';
-
-import Transform from 'integrated/transform/Transform.js';
+import { vec3, quat, mat4 } from 'gl-matrix';
 
 class Camera
 {
   constructor(viewport)
   {
-    this.transform = new Transform();
+    this.transform = {
+      position: vec3.create(),
+      rotation: quat.create(),
+      scale: vec3.fromValues(1, 1, 1)
+    };
 
     this.viewport = viewport;
     this._view = mat4.create();

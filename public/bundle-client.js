@@ -159,10 +159,10 @@ function equals(a, b) {
 /* unused harmony reexport mat2d */
 /* unused harmony reexport mat3 */
 /* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_4__gl_matrix_mat4__; });
-/* unused harmony reexport quat */
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_5__gl_matrix_quat__; });
 /* unused harmony reexport vec2 */
-/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_7__gl_matrix_vec3__; });
-/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_8__gl_matrix_vec4__; });
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_7__gl_matrix_vec3__; });
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "d", function() { return __WEBPACK_IMPORTED_MODULE_8__gl_matrix_vec4__; });
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -2964,8 +2964,8 @@ class ViewPort
     let y = viewport.height - screenY;
 
     //TODO: The depth should be 0 if perspective...
-    let near = unproject(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* vec3 */].create(), invViewProj, viewport, x, y, -1.0);
-    let far = unproject(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* vec3 */].create(), invViewProj, viewport, x, y, 1.0);
+    let near = unproject(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create(), invViewProj, viewport, x, y, -1.0);
+    let far = unproject(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create(), invViewProj, viewport, x, y, 1.0);
 
     let f = (0 - near[2]) / (far[2] - near[2]);
     dst[0] = (near[0] + f * (far[0] - near[0]));
@@ -2984,13 +2984,13 @@ function getInvertedViewProjection(dst, camera)
 
 function unproject(dst, invertedViewProjection, viewport, screenX, screenY, screenZ)
 {
-  let normalizedDeviceCoords = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec4 */].create();
+  let normalizedDeviceCoords = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec4 */].create();
   normalizedDeviceCoords[0] = screenX / viewport.width * 2.0 - 1.0;
   normalizedDeviceCoords[1] = screenY / viewport.height * 2.0 - 1.0;
   normalizedDeviceCoords[2] = screenZ * 2.0 - 1.0;
   normalizedDeviceCoords[3] = 1.0;
 
-  let objectCoords = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec4 */].transformMat4(normalizedDeviceCoords, normalizedDeviceCoords, invertedViewProjection);
+  let objectCoords = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec4 */].transformMat4(normalizedDeviceCoords, normalizedDeviceCoords, invertedViewProjection);
   if (objectCoords[3] != 0) objectCoords[3] = 1.0 / objectCoords[3];
   dst[0] = objectCoords[0] * objectCoords[3];
   dst[1] = objectCoords[1] * objectCoords[3];
@@ -3059,7 +3059,7 @@ class Shader
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_client_ClientGame_js__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_integrated_NetworkHandler_js__ = __webpack_require__(50);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_integrated_NetworkHandler_js__ = __webpack_require__(49);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_Frame_js__ = __webpack_require__(4);
 
 
@@ -3292,7 +3292,7 @@ class ClientGame extends __WEBPACK_IMPORTED_MODULE_3_integrated_Game_js__["a" /*
     const inputState = this.input.poll();
 
     const vec = __WEBPACK_IMPORTED_MODULE_8_client_camera_ViewPort_js__["a" /* default */].getPointFromScreen(
-      __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* vec3 */].create(),
+      __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create(),
       this.renderer.camera, this.renderer.viewport,
       inputState.x, inputState.y);
     inputState.x = vec[0];
@@ -6025,21 +6025,22 @@ const sub = subtract;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* unused harmony export create */
-/* unused harmony export identity */
-/* unused harmony export setAxisAngle */
-/* unused harmony export getAxisAngle */
-/* unused harmony export multiply */
-/* unused harmony export rotateX */
-/* unused harmony export rotateY */
-/* unused harmony export rotateZ */
-/* unused harmony export calculateW */
-/* unused harmony export slerp */
-/* unused harmony export invert */
-/* unused harmony export conjugate */
-/* unused harmony export fromMat3 */
-/* unused harmony export fromEuler */
-/* unused harmony export str */
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony export (immutable) */ __webpack_exports__["create"] = create;
+/* harmony export (immutable) */ __webpack_exports__["identity"] = identity;
+/* harmony export (immutable) */ __webpack_exports__["setAxisAngle"] = setAxisAngle;
+/* harmony export (immutable) */ __webpack_exports__["getAxisAngle"] = getAxisAngle;
+/* harmony export (immutable) */ __webpack_exports__["multiply"] = multiply;
+/* harmony export (immutable) */ __webpack_exports__["rotateX"] = rotateX;
+/* harmony export (immutable) */ __webpack_exports__["rotateY"] = rotateY;
+/* harmony export (immutable) */ __webpack_exports__["rotateZ"] = rotateZ;
+/* harmony export (immutable) */ __webpack_exports__["calculateW"] = calculateW;
+/* harmony export (immutable) */ __webpack_exports__["slerp"] = slerp;
+/* harmony export (immutable) */ __webpack_exports__["invert"] = invert;
+/* harmony export (immutable) */ __webpack_exports__["conjugate"] = conjugate;
+/* harmony export (immutable) */ __webpack_exports__["fromMat3"] = fromMat3;
+/* harmony export (immutable) */ __webpack_exports__["fromEuler"] = fromEuler;
+/* harmony export (immutable) */ __webpack_exports__["str"] = str;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__common__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__mat3__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__vec3__ = __webpack_require__(8);
@@ -6432,7 +6433,7 @@ function str(a) {
  * @function
  */
 const clone = __WEBPACK_IMPORTED_MODULE_3__vec4__["clone"];
-/* unused harmony export clone */
+/* harmony export (immutable) */ __webpack_exports__["clone"] = clone;
 
 
 /**
@@ -6446,7 +6447,7 @@ const clone = __WEBPACK_IMPORTED_MODULE_3__vec4__["clone"];
  * @function
  */
 const fromValues = __WEBPACK_IMPORTED_MODULE_3__vec4__["fromValues"];
-/* unused harmony export fromValues */
+/* harmony export (immutable) */ __webpack_exports__["fromValues"] = fromValues;
 
 
 /**
@@ -6458,7 +6459,7 @@ const fromValues = __WEBPACK_IMPORTED_MODULE_3__vec4__["fromValues"];
  * @function
  */
 const copy = __WEBPACK_IMPORTED_MODULE_3__vec4__["copy"];
-/* unused harmony export copy */
+/* harmony export (immutable) */ __webpack_exports__["copy"] = copy;
 
 
 /**
@@ -6473,7 +6474,7 @@ const copy = __WEBPACK_IMPORTED_MODULE_3__vec4__["copy"];
  * @function
  */
 const set = __WEBPACK_IMPORTED_MODULE_3__vec4__["set"];
-/* unused harmony export set */
+/* harmony export (immutable) */ __webpack_exports__["set"] = set;
 
 
 /**
@@ -6486,7 +6487,7 @@ const set = __WEBPACK_IMPORTED_MODULE_3__vec4__["set"];
  * @function
  */
 const add = __WEBPACK_IMPORTED_MODULE_3__vec4__["add"];
-/* unused harmony export add */
+/* harmony export (immutable) */ __webpack_exports__["add"] = add;
 
 
 /**
@@ -6494,7 +6495,7 @@ const add = __WEBPACK_IMPORTED_MODULE_3__vec4__["add"];
  * @function
  */
 const mul = multiply;
-/* unused harmony export mul */
+/* harmony export (immutable) */ __webpack_exports__["mul"] = mul;
 
 
 /**
@@ -6507,7 +6508,7 @@ const mul = multiply;
  * @function
  */
 const scale = __WEBPACK_IMPORTED_MODULE_3__vec4__["scale"];
-/* unused harmony export scale */
+/* harmony export (immutable) */ __webpack_exports__["scale"] = scale;
 
 
 /**
@@ -6519,7 +6520,7 @@ const scale = __WEBPACK_IMPORTED_MODULE_3__vec4__["scale"];
  * @function
  */
 const dot = __WEBPACK_IMPORTED_MODULE_3__vec4__["dot"];
-/* unused harmony export dot */
+/* harmony export (immutable) */ __webpack_exports__["dot"] = dot;
 
 
 /**
@@ -6533,7 +6534,7 @@ const dot = __WEBPACK_IMPORTED_MODULE_3__vec4__["dot"];
  * @function
  */
 const lerp = __WEBPACK_IMPORTED_MODULE_3__vec4__["lerp"];
-/* unused harmony export lerp */
+/* harmony export (immutable) */ __webpack_exports__["lerp"] = lerp;
 
 
 /**
@@ -6543,7 +6544,7 @@ const lerp = __WEBPACK_IMPORTED_MODULE_3__vec4__["lerp"];
  * @returns {Number} length of a
  */
 const length = __WEBPACK_IMPORTED_MODULE_3__vec4__["length"];
-/* unused harmony export length */
+/* harmony export (immutable) */ __webpack_exports__["length"] = length;
 
 
 /**
@@ -6551,7 +6552,7 @@ const length = __WEBPACK_IMPORTED_MODULE_3__vec4__["length"];
  * @function
  */
 const len = length;
-/* unused harmony export len */
+/* harmony export (immutable) */ __webpack_exports__["len"] = len;
 
 
 /**
@@ -6562,7 +6563,7 @@ const len = length;
  * @function
  */
 const squaredLength = __WEBPACK_IMPORTED_MODULE_3__vec4__["squaredLength"];
-/* unused harmony export squaredLength */
+/* harmony export (immutable) */ __webpack_exports__["squaredLength"] = squaredLength;
 
 
 /**
@@ -6570,7 +6571,7 @@ const squaredLength = __WEBPACK_IMPORTED_MODULE_3__vec4__["squaredLength"];
  * @function
  */
 const sqrLen = squaredLength;
-/* unused harmony export sqrLen */
+/* harmony export (immutable) */ __webpack_exports__["sqrLen"] = sqrLen;
 
 
 /**
@@ -6582,7 +6583,7 @@ const sqrLen = squaredLength;
  * @function
  */
 const normalize = __WEBPACK_IMPORTED_MODULE_3__vec4__["normalize"];
-/* unused harmony export normalize */
+/* harmony export (immutable) */ __webpack_exports__["normalize"] = normalize;
 
 
 /**
@@ -6593,7 +6594,7 @@ const normalize = __WEBPACK_IMPORTED_MODULE_3__vec4__["normalize"];
  * @returns {Boolean} True if the vectors are equal, false otherwise.
  */
 const exactEquals = __WEBPACK_IMPORTED_MODULE_3__vec4__["exactEquals"];
-/* unused harmony export exactEquals */
+/* harmony export (immutable) */ __webpack_exports__["exactEquals"] = exactEquals;
 
 
 /**
@@ -6604,7 +6605,7 @@ const exactEquals = __WEBPACK_IMPORTED_MODULE_3__vec4__["exactEquals"];
  * @returns {Boolean} True if the vectors are equal, false otherwise.
  */
 const equals = __WEBPACK_IMPORTED_MODULE_3__vec4__["equals"];
-/* unused harmony export equals */
+/* harmony export (immutable) */ __webpack_exports__["equals"] = equals;
 
 
 /**
@@ -6648,7 +6649,7 @@ const rotationTo = (function() {
     }
   };
 })();
-/* unused harmony export rotationTo */
+/* harmony export (immutable) */ __webpack_exports__["rotationTo"] = rotationTo;
 
 
 /**
@@ -6674,7 +6675,7 @@ const sqlerp = (function () {
     return out;
   };
 }());
-/* unused harmony export sqlerp */
+/* harmony export (immutable) */ __webpack_exports__["sqlerp"] = sqlerp;
 
 
 /**
@@ -6706,7 +6707,7 @@ const setAxes = (function() {
     return normalize(out, fromMat3(out, matr));
   };
 })();
-/* unused harmony export setAxes */
+/* harmony export (immutable) */ __webpack_exports__["setAxes"] = setAxes;
 
 
 
@@ -8466,8 +8467,8 @@ class Mouse
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_client_camera_ViewPort_js__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_client_camera_OrthographicCamera_js__ = __webpack_require__(44);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_client_mogli_Shader_js__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_client_mogli_Program_js__ = __webpack_require__(47);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_client_mogli_Mesh_js__ = __webpack_require__(48);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_client_mogli_Program_js__ = __webpack_require__(46);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_client_mogli_Mesh_js__ = __webpack_require__(47);
 
 
 
@@ -8795,16 +8796,17 @@ class OrthographicCamera extends __WEBPACK_IMPORTED_MODULE_1_client_camera_Camer
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_integrated_transform_Transform_js__ = __webpack_require__(46);
-
-
 
 
 class Camera
 {
   constructor(viewport)
   {
-    this.transform = new __WEBPACK_IMPORTED_MODULE_1_integrated_transform_Transform_js__["a" /* default */]();
+    this.transform = {
+      position: __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create(),
+      rotation: __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].create(),
+      scale: __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(1, 1, 1)
+    };
 
     this.viewport = viewport;
     this._view = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
@@ -8836,42 +8838,6 @@ class Camera
 
 /***/ }),
 /* 46 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
-
-
-class Transform
-{
-  constructor(x = 0, y = 0, z = 0)
-  {
-    this.position = [x, y, z];
-    this.rotation = [0, 0, 0, 1];
-    this.scale = [1, 1, 1];
-
-    /*
-    this.position = vec3.create();
-    vec3.set(this.position, x, y, z);
-
-    this.rotation = quat.create();
-    this.scale = vec3.create();
-    vec3.set(this.scale, 1, 1, 1);
-    */
-  }
-
-  getTransformation(dst)
-  {
-    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromRotationTranslationScale(dst, this.rotation, this.position, this.scale);
-    return dst;
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Transform);
-
-
-/***/ }),
-/* 47 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -9032,12 +8998,12 @@ class Program
 
 
 /***/ }),
-/* 48 */
+/* 47 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_js__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__VBO_js__ = __webpack_require__(49);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__VBO_js__ = __webpack_require__(48);
 
 
 
@@ -9223,7 +9189,7 @@ class Mesh
 
 
 /***/ }),
-/* 49 */
+/* 48 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -9320,7 +9286,7 @@ class VBO
 
 
 /***/ }),
-/* 50 */
+/* 49 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
