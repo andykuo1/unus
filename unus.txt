@@ -36,7 +36,67 @@ Dynamic
 - radius (onCreate)
 
 
+IDEAL:
+  Gather everyone's input.
+  Then calculate output.
+  Then send everyone the result.
 
+Complication:
+  Calculating output has to be done server side.
+  There is a difference in time between when gathering and sending reaches destination
+
+  Gather everyone's input. (CLIENT)
+    They each arrive at a different time
+  Then calculate output. (SERVER)
+    Low tickrate
+    They each arrive at a different time
+  Then send everyone the result. (CLIENT)
+    High tickrate
+
+They will react to past information...
+
+
+
+
+
+
+
+
+
+
+
+
+
+Interpolation:
+  Retrieve CURRENT_GAME_STATE from SERVER
+  Set CLIENT_GAME_STATE to PREVIOUS_GAME_STATE
+
+  In GameLoop:
+    Step FRAME between PREVIOUS and CURRENT.
+
+  When PREVIOUS == CURRENT: (duration is the time between both)
+    Extrapolate new CLIENT_GAME_STATE
+    Interpolate between CURRENT_GAME_STATE and EXTRAPOLATED_GAME_STATE
+
+
+
+
+INTERPOLATION-EXTRAPOLATION
+CLIENT stores CURRENT_GAME_STATE.
+CLIENT sets CLIENT_GAME_STATE to PREVIOUS_GAME_STATE
+Interpolate to CURRENT_GAME_STATE over time. (time is expected latency)
+. . .
+Reset PLAYER_STATE to match CURRENT_GAME_STATE
+CLIENT removes all INPUT_STATE older than PLAYER_STATE.
+CLIENT updates PLAYER_STATE with all remaining INPUT_STATE.
+. . .
+CLIENT stores CURRENT_INPUT_STATE.
+CLIENT updates CLIENT_PLAYER_STATE with CURRENT_INPUT_STATE.
+CLIENT sends CURRENT_INPUT_STATE.
+=-=-=
+SERVER stores CURRENT_INPUT_STATE.
+SERVER updates CURRENT_PLAYER_STATE with all gathered CURRENT_INPUT_STATE.
+SERVER sends CURRENT_GAME_STATE to all CLIENTS.
 
 
 

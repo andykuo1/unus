@@ -16,6 +16,7 @@ class Application
 
     this._now = 0;
     this._then = 0;
+    this._delta = 0;
     this._frames = 0;
 
     //Display frames per second
@@ -33,12 +34,17 @@ class Application
   {
     this._then = this._now;
     this._now = Date.now() - this._startTime;
-    const delta = this._now - this._then;
+    this._delta = (this._now - this._then) * 0.001;
     this._frames++;
 
     this._frame.next(this._now);
 
-    this._game.update(this._frame);
+    this._game.update(this._delta);
+  }
+
+  getFrameTime()
+  {
+    return this._delta;
   }
 
   getApplicationTime()
