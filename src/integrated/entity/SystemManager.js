@@ -12,7 +12,7 @@ class SystemManager
 
     for(const system of this.systems)
     {
-      system.onUpdate(entityManager, frame);
+      system.onUpdate(entityManager, frame.delta);
     }
   }
 

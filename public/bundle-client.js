@@ -441,7 +441,7 @@ class SynchronizedSystem extends __WEBPACK_IMPORTED_MODULE_0_integrated_entity_S
     this.componentName = __WEBPACK_IMPORTED_MODULE_1_util_Reflection_js__["a" /* default */].getClassVarName(this.component);
   }
 
-  onEntityUpdate(entity, frame)
+  onEntityUpdate(entity, delta)
   {
 
   }
@@ -464,12 +464,12 @@ class SynchronizedSystem extends __WEBPACK_IMPORTED_MODULE_0_integrated_entity_S
     }
   }
 
-  onUpdate(entityManager, frame)
+  onUpdate(entityManager, delta)
   {
     const entities = entityManager.getEntitiesByComponent(this.component);
     for(const entity of entities)
     {
-      this.onEntityUpdate(entity, frame);
+      this.onEntityUpdate(entity, delta);
     }
   }
 
@@ -10943,6 +10943,7 @@ class Application
 
     this._now = 0;
     this._then = 0;
+    this._delta = 0;
     this._frames = 0;
 
     //Display frames per second
@@ -10960,12 +10961,17 @@ class Application
   {
     this._then = this._now;
     this._now = Date.now() - this._startTime;
-    const delta = this._now - this._then;
+    this._delta = (this._now - this._then) * 0.001;
     this._frames++;
 
     this._frame.next(this._now);
 
     this._game.update(this._frame);
+  }
+
+  getFrameTime()
+  {
+    return this._delta;
   }
 
   getApplicationTime()
@@ -18620,7 +18626,7 @@ class SystemManager
 
     for(const system of this.systems)
     {
-      system.onUpdate(entityManager, frame);
+      system.onUpdate(entityManager, frame.delta);
     }
   }
 
@@ -18724,9 +18730,9 @@ class NetworkEntitySystem extends __WEBPACK_IMPORTED_MODULE_0_integrated_entity_
     };
   }
 
-  onUpdate(entityManager, frame)
+  onUpdate(entityManager, delta)
   {
-    super.onUpdate(entityManager, frame);
+    super.onUpdate(entityManager, delta);
   }
 
   onInputUpdate(entity, inputState)
@@ -18840,7 +18846,7 @@ class PlayerSystem extends __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_j
     }
   }
 
-  onEntityUpdate(entity, frame)
+  onEntityUpdate(entity, delta)
   {
     if (entity.player.move)
     {
@@ -18849,8 +18855,8 @@ class PlayerSystem extends __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_j
       const rot = -Math.atan2(-dy, dx);
 
       const speed = 15.0;
-      entity.motion.motionX += Math.cos(rot) * speed * frame.delta;
-      entity.motion.motionY += Math.sin(rot) * speed * frame.delta;
+      entity.motion.motionX += Math.cos(rot) * speed * delta;
+      entity.motion.motionY += Math.sin(rot) * speed * delta;
     }
   }
 
@@ -18889,13 +18895,13 @@ class MotionSystem extends __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_j
     super(__WEBPACK_IMPORTED_MODULE_1_game_MotionComponent_js__["a" /* default */]);
   }
 
-  onEntityUpdate(entity, frame)
+  onEntityUpdate(entity, delta)
   {
-    const fricRatio = 1.0 / (1.0 + (frame.delta * entity.motion.friction));
+    const fricRatio = 1.0 / (1.0 + (delta * entity.motion.friction));
     entity.motion.motionX *= fricRatio;
     entity.motion.motionY *= fricRatio;
-    entity.transform.x += entity.motion.motionX * frame.delta;
-    entity.transform.y += entity.motion.motionY * frame.delta;
+    entity.transform.x += entity.motion.motionX * delta;
+    entity.transform.y += entity.motion.motionY * delta;
   }
 }
 
@@ -18940,18 +18946,18 @@ class BulletSystem extends __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_j
     super(__WEBPACK_IMPORTED_MODULE_1_game_BulletComponent_js__["a" /* default */]);
   }
 
-  onEntityUpdate(entity, frame)
+  onEntityUpdate(entity, delta)
   {
     //TODO: this would be a problem when calculating collision...
-    entity.life -= frame.delta;
+    entity.life -= delta;
     if (entity.life < 0)
     {
       entity.destroy();
     }
     else
     {
-      entity.transform.x += entity.bullet.speedx * frame.delta;
-      entity.transform.y += entity.bullet.speedy * frame.delta;
+      entity.transform.x += entity.bullet.speedx * delta;
+      entity.transform.y += entity.bullet.speedy * delta;
     }
   }
 }
@@ -18979,9 +18985,9 @@ class RotatingSystem extends __WEBPACK_IMPORTED_MODULE_1_game_SynchronizedSystem
     super(__WEBPACK_IMPORTED_MODULE_2_game_RotatingComponent_js__["a" /* default */]);
   }
 
-  onEntityUpdate(entity, frame)
+  onEntityUpdate(entity, delta)
   {
-    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].rotateZ(entity.transform.rotation, entity.transform.rotation, entity.rotating.speed * frame.delta);
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].rotateZ(entity.transform.rotation, entity.transform.rotation, entity.rotating.speed * delta);
   }
 }
 
@@ -19005,7 +19011,7 @@ class FollowSystem extends __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_j
     super(__WEBPACK_IMPORTED_MODULE_1_game_FollowComponent_js__["a" /* default */]);
   }
 
-  onEntityUpdate(entity, frame)
+  onEntityUpdate(entity, delta)
   {
     if (entity.follow.target != null)
     {
@@ -19016,8 +19022,8 @@ class FollowSystem extends __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_j
       if (distSqu > entity.follow.targetDistance * entity.follow.targetDistance)
       {
         const dist = Math.sqrt(distSqu);
-        entity.motion.motionX += (dx / dist) * frame.delta;
-        entity.motion.motionY += (dy / dist) * frame.delta;
+        entity.motion.motionX += (dx / dist) * delta;
+        entity.motion.motionY += (dy / dist) * delta;
       }
     }
   }

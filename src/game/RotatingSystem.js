@@ -10,9 +10,9 @@ class RotatingSystem extends SynchronizedSystem
     super(Rotating);
   }
 
-  onEntityUpdate(entity, frame)
+  onEntityUpdate(entity, delta)
   {
-    quat.rotateZ(entity.transform.rotation, entity.transform.rotation, entity.rotating.speed * frame.delta);
+    quat.rotateZ(entity.transform.rotation, entity.transform.rotation, entity.rotating.speed * delta);
   }
 }
 

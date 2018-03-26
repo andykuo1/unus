@@ -26,9 +26,9 @@ class NetworkEntitySystem extends System
     };
   }
 
-  onUpdate(entityManager, frame)
+  onUpdate(entityManager, delta)
   {
-    super.onUpdate(entityManager, frame);
+    super.onUpdate(entityManager, delta);
   }
 
   onInputUpdate(entity, inputState)

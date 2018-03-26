@@ -10,7 +10,7 @@ class SynchronizedSystem extends System
     this.componentName = Reflection.getClassVarName(this.component);
   }
 
-  onEntityUpdate(entity, frame)
+  onEntityUpdate(entity, delta)
   {
 
   }
@@ -33,12 +33,12 @@ class SynchronizedSystem extends System
     }
   }
 
-  onUpdate(entityManager, frame)
+  onUpdate(entityManager, delta)
   {
     const entities = entityManager.getEntitiesByComponent(this.component);
     for(const entity of entities)
     {
-      this.onEntityUpdate(entity, frame);
+      this.onEntityUpdate(entity, delta);
     }
   }
 

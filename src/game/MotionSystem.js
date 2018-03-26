@@ -8,13 +8,13 @@ class MotionSystem extends SynchronizedSystem
     super(Motion);
   }
 
-  onEntityUpdate(entity, frame)
+  onEntityUpdate(entity, delta)
   {
-    const fricRatio = 1.0 / (1.0 + (frame.delta * entity.motion.friction));
+    const fricRatio = 1.0 / (1.0 + (delta * entity.motion.friction));
     entity.motion.motionX *= fricRatio;
     entity.motion.motionY *= fricRatio;
-    entity.transform.x += entity.motion.motionX * frame.delta;
-    entity.transform.y += entity.motion.motionY * frame.delta;
+    entity.transform.x += entity.motion.motionX * delta;
+    entity.transform.y += entity.motion.motionY * delta;
   }
 }
 

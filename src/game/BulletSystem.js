@@ -8,18 +8,18 @@ class BulletSystem extends SynchronizedSystem
     super(Bullet);
   }
 
-  onEntityUpdate(entity, frame)
+  onEntityUpdate(entity, delta)
   {
     //TODO: this would be a problem when calculating collision...
-    entity.life -= frame.delta;
+    entity.life -= delta;
     if (entity.life < 0)
     {
       entity.destroy();
     }
     else
     {
-      entity.transform.x += entity.bullet.speedx * frame.delta;
-      entity.transform.y += entity.bullet.speedy * frame.delta;
+      entity.transform.x += entity.bullet.speedx * delta;
+      entity.transform.y += entity.bullet.speedy * delta;
     }
   }
 }

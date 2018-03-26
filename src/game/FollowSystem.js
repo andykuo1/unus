@@ -8,7 +8,7 @@ class FollowSystem extends SynchronizedSystem
     super(Follow);
   }
 
-  onEntityUpdate(entity, frame)
+  onEntityUpdate(entity, delta)
   {
     if (entity.follow.target != null)
     {
@@ -19,8 +19,8 @@ class FollowSystem extends SynchronizedSystem
       if (distSqu > entity.follow.targetDistance * entity.follow.targetDistance)
       {
         const dist = Math.sqrt(distSqu);
-        entity.motion.motionX += (dx / dist) * frame.delta;
-        entity.motion.motionY += (dy / dist) * frame.delta;
+        entity.motion.motionX += (dx / dist) * delta;
+        entity.motion.motionY += (dy / dist) * delta;
       }
     }
   }
