@@ -39,7 +39,7 @@ class Application
 
     this._frame.next(this._now);
 
-    this._game.update(this._delta);
+    this._game.update(this._frame);
   }
 
   getFrameTime()
