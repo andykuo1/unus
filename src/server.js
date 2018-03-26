@@ -1,6 +1,6 @@
-import express from 'express';
-import path from 'path'
 import socketio from 'socket.io';
+import express from 'express';
+import path from 'path';
 
 import ServerGame from 'server/ServerGame.js';
 import NetworkHandler from 'integrated/NetworkHandler.js';

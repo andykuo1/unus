@@ -1,3 +1,5 @@
+import socketio from 'socket.io-client';
+
 import ClientGame from 'client/ClientGame.js';
 import NetworkHandler from 'integrated/NetworkHandler.js';
 import Frame from 'util/Frame.js';
@@ -13,7 +15,7 @@ window.addEventListener('resize', function() {
 window.onload = start;
 
 //Application setup
-var socket = io();
+var socket = socketio();
 var game;
 function start()
 {

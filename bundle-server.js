@@ -498,12 +498,12 @@ function Follow()
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_express__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_express___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_express__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_path__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_path___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_path__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_socket_io__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_socket_io___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_socket_io__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_socket_io__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_socket_io___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_socket_io__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_express__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_express___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_express__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_path__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_path___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_path__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_server_ServerGame_js__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_integrated_NetworkHandler_js__ = __webpack_require__(37);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_util_Frame_js__ = __webpack_require__(2);
@@ -515,20 +515,20 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 
-const __dirname = __WEBPACK_IMPORTED_MODULE_1_path___default.a.resolve();
+const __dirname = __WEBPACK_IMPORTED_MODULE_2_path___default.a.resolve();
 const DEVMODE = process.argv.indexOf('--dev') != -1;
 const TIMESTEP = 1000/10;
 const PORT = process.env.PORT || 8082;
 
 //Server Setup
-var app = __WEBPACK_IMPORTED_MODULE_0_express___default()();
+var app = __WEBPACK_IMPORTED_MODULE_1_express___default()();
 app.set('port', PORT);
-app.use('/', __WEBPACK_IMPORTED_MODULE_0_express___default.a.static(__dirname + '/public'));
+app.use('/', __WEBPACK_IMPORTED_MODULE_1_express___default.a.static(__dirname + '/public'));
 app.get('/', function(request, response) {
-  response.sendFile(__WEBPACK_IMPORTED_MODULE_1_path___default.a.join(__dirname, 'index.html'));
+  response.sendFile(__WEBPACK_IMPORTED_MODULE_2_path___default.a.join(__dirname, 'index.html'));
 });
 app.get('/gl-matrix/gl-matrix.js', function(request, response) {
-  response.sendFile(__WEBPACK_IMPORTED_MODULE_1_path___default.a.join(__dirname, 'node_modules/gl-matrix/dist/gl-matrix.js'));
+  response.sendFile(__WEBPACK_IMPORTED_MODULE_2_path___default.a.join(__dirname, 'node_modules/gl-matrix/dist/gl-matrix.js'));
 });
 var server = app.listen(PORT, function() {
   let port = server.address().port;
@@ -536,7 +536,7 @@ var server = app.listen(PORT, function() {
 });
 
 //Application setup
-var io = __WEBPACK_IMPORTED_MODULE_2_socket_io___default()(server);
+var io = __WEBPACK_IMPORTED_MODULE_0_socket_io___default()(server);
 var game;
 function start()
 {
@@ -589,19 +589,19 @@ function onApplicationUpdate(app, frame)
 /* 14 */
 /***/ (function(module, exports) {
 
-module.exports = require("express");
+module.exports = require("socket.io");
 
 /***/ }),
 /* 15 */
 /***/ (function(module, exports) {
 
-module.exports = require("path");
+module.exports = require("express");
 
 /***/ }),
 /* 16 */
 /***/ (function(module, exports) {
 
-module.exports = require("socket.io");
+module.exports = require("path");
 
 /***/ }),
 /* 17 */
