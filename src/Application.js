@@ -24,10 +24,6 @@ class Application
       console.log("FPS " + this._frames);
       this._frames = 0;
     }, 1000);
-
-    return new Promise(function(resolve, reject) {
-      resolve();
-    });
   }
 
   update()

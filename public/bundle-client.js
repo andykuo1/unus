@@ -7602,10 +7602,10 @@ function start()
 	const socket = __WEBPACK_IMPORTED_MODULE_0_socket_io_client___default()();
 	const network = new __WEBPACK_IMPORTED_MODULE_2_integrated_NetworkHandler_js__["a" /* default */](socket, true);
 	const game = new __WEBPACK_IMPORTED_MODULE_3_client_ClientGame_js__["a" /* default */](network, canvas);
-	__WEBPACK_IMPORTED_MODULE_1__Application_js__["a" /* default */].init(network, game)
-		.then(() => { return game.load(); })
-		.then(() => { return game.connect(); })
-		.then(() => { requestAnimationFrame(onRequestAnimationFrame); });
+	__WEBPACK_IMPORTED_MODULE_1__Application_js__["a" /* default */].init(network, game);
+	game.load()
+		.then(() => game.connect())
+		.then(() => requestAnimationFrame(onRequestAnimationFrame));
 }
 
 function onRequestAnimationFrame()
@@ -10951,10 +10951,6 @@ class Application
       console.log("FPS " + this._frames);
       this._frames = 0;
     }, 1000);
-
-    return new Promise(function(resolve, reject) {
-      resolve();
-    });
   }
 
   update()
@@ -18489,8 +18485,6 @@ class Entity
   __init()
   {
     this._id = 0;
-    this.x = 0;
-    this.y = 0;
   }
 
   addComponent(component)

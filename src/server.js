@@ -32,10 +32,10 @@ function start()
 	const socket = socketio(server);
 	const network = new NetworkHandler(socket, false);
 	const game = new ServerGame(network);
-	Application.init(network, game)
-    .then(() => { return game.load(); })
-    .then(() => { return game.connect(); })
-    .then(() => { setInterval(onInterval, TIMESTEP); });
+	Application.init(network, game);
+	game.load()
+		.then(() => game.connect())
+		.then(() => setInterval(onInterval, TIMESTEP));
 }
 
 function onInterval()
