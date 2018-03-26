@@ -2,9 +2,9 @@ import socketio from 'socket.io';
 import express from 'express';
 import path from 'path';
 
-import ServerGame from 'server/ServerGame.js';
+import Application from './Application.js';
 import NetworkHandler from 'integrated/NetworkHandler.js';
-import Frame from 'util/Frame.js';
+import ServerGame from 'server/ServerGame.js';
 
 const __dirname = path.resolve();
 const DEVMODE = process.argv.indexOf('--dev') != -1;
@@ -12,7 +12,7 @@ const TIMESTEP = 1000/10;
 const PORT = process.env.PORT || 8082;
 
 //Server Setup
-var app = express();
+const app = express();
 app.set('port', PORT);
 app.use('/', express.static(__dirname + '/public'));
 app.get('/', function(request, response) {
@@ -21,56 +21,32 @@ app.get('/', function(request, response) {
 app.get('/gl-matrix/gl-matrix.js', function(request, response) {
   response.sendFile(path.join(__dirname, 'node_modules/gl-matrix/dist/gl-matrix.js'));
 });
-var server = app.listen(PORT, function() {
-  let port = server.address().port;
+const server = app.listen(PORT, function() {
+  const port = server.address().port;
   console.log("Server is listening on port " + port + "...");
 });
 
-//Application setup
-var io = socketio(server);
-var game;
+//Application Setup
 function start()
 {
-  game = new ServerGame(new NetworkHandler(io, false));
-  onApplicationLoad(game);
+	const socket = socketio(server);
+	const network = new NetworkHandler(socket, false);
+	const game = new ServerGame(network);
+	Application.init(network, game).then(
+    () => {
+    	game.load(() => {
+    		game.connect(() => {
+          setInterval(onInterval, TIMESTEP);
+    		});
+    	});
+    }
+  );
 }
 
-//Update the application
-const frame = new Frame();
-function update(now = 0)
+function onInterval()
 {
-  frame.next(now);
-  game.update(frame);
-  onApplicationUpdate(game, frame);
-
-  //Already registered to be called again...
+  Application.update();
 }
 
 //Start the server...
 start();
-
-/******************************************************************************/
-
-/**
- * Called when game is loaded, but before the game loop
- */
-function onApplicationLoad(app)
-{
-  app.load(() => {
-    app.connect(() => {
-      update();
-      const startTime = Date.now();
-      setInterval(() => {
-        update(Date.now() - startTime);
-      }, TIMESTEP);
-    });
-  });
-}
-
-/**
- * Called every tick by the game loop
- */
-function onApplicationUpdate(app, frame)
-{
-
-}

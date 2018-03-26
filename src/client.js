@@ -1,64 +1,40 @@
 import socketio from 'socket.io-client';
 
-import ClientGame from 'client/ClientGame.js';
+import Application from './Application.js';
 import NetworkHandler from 'integrated/NetworkHandler.js';
-import Frame from 'util/Frame.js';
+import ClientGame from 'client/ClientGame.js';
 
 //Window Setup
-var canvas = document.getElementById('canvas');
+const canvas = document.getElementById('canvas');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 window.addEventListener('resize', function() {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 }, true);
-window.onload = start;
 
-//Application setup
-var socket = socketio();
-var game;
+//Application Setup
 function start()
 {
-  game = new ClientGame(new NetworkHandler(socket, true), canvas);
-	onApplicationLoad(game);
+	const socket = socketio();
+	const network = new NetworkHandler(socket, true);
+	const game = new ClientGame(network, canvas);
+	Application.init(network, game).then(
+		() => {
+			game.load(() => {
+				game.connect(() => {
+					requestAnimationFrame(onRequestAnimationFrame);
+				});
+			});
+		}
+	);
 }
 
-//Update the application
-const frame = new Frame();
-function update(now = 0)
+function onRequestAnimationFrame()
 {
-	frame.next(now);
-  game.update(frame);
-	onApplicationUpdate(game, frame);
-
-  //Call again...
-	requestAnimationFrame(update);
+	Application.update();
+	requestAnimationFrame(onRequestAnimationFrame);
 }
 
-//Display frames per second
-setInterval(function(){
-	console.log("FPS: " + frame.count);
-	frame.count = 0;
-}, 1000);
-
-/******************************************************************************/
-
-/**
- * Called when game is loaded, but before the game loop
- */
-function onApplicationLoad(app)
-{
-	app.load(() => {
-		app.connect(() => {
-			update();
-		});
-	});
-}
-
-/**
- * Called every tick by the game loop
- */
-function onApplicationUpdate(app, frame)
-{
-
-}
+//Start the client...
+window.onload = start;
