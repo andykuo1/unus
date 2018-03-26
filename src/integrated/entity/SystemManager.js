@@ -50,7 +50,7 @@ class SystemManager
     const entities = gameState['entitylist'] || {};
     for(const entity of entityManager.getEntities())
     {
-      if (!entities[entity._id])
+      if (!entities[entity._id] && !entity.tracker)
       {
         //Maybe missed destruction event from server...
         entityManager.destroyEntity(entity);

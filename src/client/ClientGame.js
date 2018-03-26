@@ -9,6 +9,8 @@ import Mouse from 'client/input/Mouse.js';
 import Renderer from 'client/Renderer.js';
 import ViewPort from 'client/camera/ViewPort.js';
 
+import GameFactory from 'game/GameFactory.js';
+
 /*
 CLIENT gets CURRENT_GAME_STATE.
 CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
@@ -81,7 +83,9 @@ class ClientGame extends Game
     var targetEntity = currentInputState ? this.playerController.getClientPlayer() : null;
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
+    GameFactory.GAMESTATE = currentInputState;
     if (targetEntity) this.world.updateInput(currentInputState, targetEntity, true);
+    GameFactory.GAMESTATE = null;
     this.world.step(frame, true);
     this.renderer.render(this.world);
   }
@@ -117,7 +121,9 @@ class ClientGame extends Game
       }
 
       //Update world to after this input state...
+      GameFactory.GAMESTATE = inputState;
       this.world.updateInput(inputState, targetEntity, true);
+      GameFactory.GAMESTATE = null;
       inputState.worldTicks = this.world.ticks;
 
       oldInputStates.push(inputState);
@@ -156,8 +162,8 @@ class ClientGame extends Game
   sendClientInput(inputState)
   {
     //FIXME: Force 200ms lag...
-    setTimeout(() => this.networkHandler.sendToServer('client.inputstate', inputState), 200);
-    //this.networkHandler.sendToServer('client.inputstate', inputState);
+    //setTimeout(() => this.networkHandler.sendToServer('client.inputstate', inputState), 200);
+    this.networkHandler.sendToServer('client.inputstate', inputState);
   }
 }
 

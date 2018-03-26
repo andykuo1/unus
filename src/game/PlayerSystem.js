@@ -20,7 +20,7 @@ class PlayerSystem extends SynchronizedSystem
     entity.player.nextY = inputState.y;
     entity.player.move = inputState.down;
     //HACK: this will run once on server and client-side, needs a way to keep predicted alive
-    if (inputState.click && !inputState.predictive)
+    if (inputState.click)// && !inputState.predictive)
     {
       const bulletSpeed = 10;
       const bulletEntity = GameFactory.createEntity('bullet');

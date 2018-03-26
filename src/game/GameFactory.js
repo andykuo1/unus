@@ -7,6 +7,7 @@ import MotionSystem from 'game/MotionSystem.js';
 import TransformSystem from 'game/TransformSystem.js';
 import BulletSystem from 'game/BulletSystem.js';
 import RotatingSystem from 'game/RotatingSystem.js';
+import FollowSystem from 'game/FollowSystem.js';
 
 import Transform from 'game/TransformComponent.js';
 import Motion from 'game/MotionComponent.js';
@@ -14,6 +15,7 @@ import Player from 'game/PlayerComponent.js';
 import Renderable from 'game/RenderableComponent.js';
 import Bullet from 'game/BulletComponent.js';
 import Rotating from 'game/RotatingComponent.js';
+import Follow from 'game/FollowComponent.js';
 
 class GameFactory
 {
@@ -33,25 +35,32 @@ class GameFactory
     game.systemManager.systems.push(new SynchronizedSystem(Renderable));
     game.systemManager.systems.push(new BulletSystem());
     game.systemManager.systems.push(new RotatingSystem());
+    game.systemManager.systems.push(new FollowSystem());
 
     GameFactory.INSTANCE.entityTypes.set('player', (entity) => {
       return entity
         .addComponent(Transform)
+        .addComponent(Renderable)
         .addComponent(Motion)
-        .addComponent(Player)
-        .addComponent(Renderable);
+        .addComponent(Player);
     });
     GameFactory.INSTANCE.entityTypes.set('bullet', (entity) => {
       return entity
         .addComponent(Transform)
-        .addComponent(Bullet)
-        .addComponent(Renderable);
+        .addComponent(Renderable)
+        .addComponent(Bullet);
     });
     GameFactory.INSTANCE.entityTypes.set('star', (entity) => {
       return entity
         .addComponent(Transform)
         .addComponent(Renderable)
         .addComponent(Rotating);
+    });
+    GameFactory.INSTANCE.entityTypes.set('cart', (entity) => {
+      return entity
+        .addComponent(Transform)
+        .addComponent(Renderable)
+        .addComponent(Follow);
     });
   }
 
@@ -77,8 +86,8 @@ class GameFactory
 
   static createEntity(entityType)
   {
+    const entity = GameFactory.INSTANCE.entityManager.createEntity(null, 2);
     const entityConstructor = GameFactory.INSTANCE.entityTypes.get(entityType);
-    const entity = GameFactory.INSTANCE.entityManager.createEntity();
     entityConstructor(entity);
     return entity;
   }

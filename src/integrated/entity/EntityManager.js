@@ -1,3 +1,4 @@
+import StackTrace from 'stacktrace-js';
 import Entity from './Entity.js';
 
 import Reflection from 'util/Reflection.js';
@@ -16,13 +17,16 @@ class EntityManager
 
     this.onEntityCreate = (entity) => {};
     this.onEntityDestroy = (entity) => {};
+
+    this._timestamp = null;
   }
 
-  createEntity(id)
+  createEntity(id, depth=1)
   {
     const entity = this.entityPool.obtain();
     entity._manager = this;
     entity._id = id || this.getNextAvailableEntityID();
+    entity._trace = getEntityFingerprint(this._timestamp, depth);
     this.entities.push(entity);
 
     this.onEntityCreate(entity);
@@ -141,6 +145,12 @@ class EntityManager
     }
     return id;
   }
+}
+
+function getEntityFingerprint(timestamp, depth)
+{
+  const stackTrace = StackTrace.getSync()[1 + depth];
+  return timestamp + "@" + stackTrace.lineNumber + "," + stackTrace.columnNumber + ":" + stackTrace.functionName;
 }
 
 export default EntityManager;
