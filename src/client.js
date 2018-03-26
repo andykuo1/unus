@@ -19,15 +19,10 @@ function start()
 	const socket = socketio();
 	const network = new NetworkHandler(socket, true);
 	const game = new ClientGame(network, canvas);
-	Application.init(network, game).then(
-		() => {
-			game.load(() => {
-				game.connect(() => {
-					requestAnimationFrame(onRequestAnimationFrame);
-				});
-			});
-		}
-	);
+	Application.init(network, game)
+		.then(() => { return game.load(); })
+		.then(() => { return game.connect(); })
+		.then(() => { requestAnimationFrame(onRequestAnimationFrame); });
 }
 
 function onRequestAnimationFrame()

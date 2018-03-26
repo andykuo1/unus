@@ -22,18 +22,16 @@ class Renderer
     this.camera.transform.position[2] = 1.0;
   }
 
-  load(callback)
+  async load()
   {
     this.assets.register('shader', 'vdef', './res/def.vsh');
     this.assets.register('shader', 'fdef', './res/def.fsh');
 
-    this.assets.flush(() => {
-      this._prepareAssets();
-      callback();
-    });
+    await this.assets.fetchAssets();
+    await this._prepareAssets();
   }
 
-  _prepareAssets(callback)
+  async _prepareAssets()
   {
 		//Load resources
 		const vsrc = this.assets.getAsset('shader', 'vdef');

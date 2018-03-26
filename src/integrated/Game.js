@@ -13,14 +13,12 @@ class Game
     });
   }
 
-  load(callback)
+  async load()
   {
-    throw new Error("must be overriden");
   }
 
-  connect(callback)
+  async connect()
   {
-    throw new Error("must be overriden");
   }
 
   update(frame)

@@ -22,7 +22,7 @@ class ServerGame extends Game
     this.playerManager = new PlayerManager(this.world.entityManager);
   }
 
-  load(callback)
+  async load()
   {
     console.log("Loading server...");
 
@@ -31,15 +31,12 @@ class ServerGame extends Game
 
     //Setup world...
     this.onWorldSetup();
-
-    callback();
   }
 
-  connect(callback)
+  async connect()
   {
     console.log("Connecting server...");
 
-    this.networkHandler.initServer(callback);
     this.networkHandler.onClientConnect = (client, data) => {
       //Insert new player...
       const clientEntity = this.playerManager.createPlayer(client.id);
@@ -57,6 +54,8 @@ class ServerGame extends Game
     this.networkHandler.onClientDisconnect = (client) => {
       this.playerManager.destroyPlayer(client.id);
     };
+
+    await this.networkHandler.initServer();
   }
 
   update(frame)

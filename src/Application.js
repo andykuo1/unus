@@ -24,8 +24,7 @@ class Application
       this._frames = 0;
     }, 1000);
 
-    return new Promise(function(resolve, reject)
-    {
+    return new Promise(function(resolve, reject) {
       resolve();
     });
   }

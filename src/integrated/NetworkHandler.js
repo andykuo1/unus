@@ -21,20 +21,9 @@ class NetworkHandler
     }
   }
 
-  initClient(callback)
+  async initClient()
   {
     if (!this.remote) throw new Error("Initializing wrong network side");
-
-    this.socket.emit('client-handshake');
-
-    this.socket.on('server-handshake', (data) => {
-      console.log("Connected to server...");
-      this.socketID = data.socketID;
-      this.onServerConnect(this.socket, data);
-
-      //Start game...
-      callback();
-    });
 
     this.socket.on('disconnect', () => {
       console.log("Disconnected from server...");
@@ -43,9 +32,21 @@ class NetworkHandler
 
       window.close();
     });
+
+    return new Promise((resolve, reject) => {
+      this.socket.emit('client-handshake');
+      this.socket.on('server-handshake', (data) => {
+        console.log("Connected to server...");
+        this.socketID = data.socketID;
+        this.onServerConnect(this.socket, data);
+
+        //Start game...
+        resolve();
+      });
+    });
   }
 
-  initServer(callback)
+  async initServer()
   {
     if (this.remote) throw new Error("Initializing wrong network side");
 
@@ -66,7 +67,9 @@ class NetworkHandler
       });
     });
 
-    callback();
+    return new Promise((resolve, reject) => {
+      resolve();
+    });
   }
 
   sendToServer(id, data)

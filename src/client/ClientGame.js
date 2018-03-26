@@ -34,16 +34,15 @@ class ClientGame extends Game
     this.playerController = new PlayerController(this.world.entityManager, this.renderer);
   }
 
-  load(callback)
+  async load()
   {
     console.log("Loading client...");
-    this.renderer.load(callback);
+    return this.renderer.load();
   }
 
-  connect(callback)
+  async connect()
   {
     console.log("Connecting client...");
-    this.networkHandler.initClient(callback);
     this.networkHandler.onServerConnect = (server, data) => {
       //Setup the world from state...
       this.world.resetState(data['gameState']);
@@ -58,6 +57,8 @@ class ClientGame extends Game
         this.onServerUpdate(server, data);
       });
     };
+
+    await this.networkHandler.initClient();
   }
 
   update(frame)
