@@ -35,8 +35,8 @@ class Application
     this._delta = (this._now - this._then) * 0.001;
     this._frames++;
 
+    //TODO: slowly get rid of frame and use this._delta
     this._frame.next(this._now);
-
     this._game.update(this._frame);
   }
 
