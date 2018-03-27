@@ -32,9 +32,7 @@ function start()
 	const socket = socketio(server);
 	const network = new NetworkHandler(socket, false);
 	const game = new ServerGame(network);
-	Application.init(network, game);
-	game.load()
-		.then(() => game.connect())
+	Application.init(network, game)
 		.then(() => setInterval(onInterval, TIMESTEP));
 }
 

@@ -37,13 +37,14 @@ class ClientGame extends Game
   async load()
   {
     console.log("Loading client...");
-    return this.renderer.load();
+    await this.renderer.load();
+    await this.connect();
   }
 
   async connect()
   {
     console.log("Connecting client...");
-    this.networkHandler.onServerConnect = (server, data) => {
+    this.networkHandler.events.on('serverConnect', (server, data) => {
       //Setup the world from state...
       this.world.resetState(data['gameState']);
 
@@ -56,7 +57,7 @@ class ClientGame extends Game
       server.on('server.gamestate', (data) => {
         this.onServerUpdate(server, data);
       });
-    };
+    });
 
     await this.networkHandler.initClient();
   }

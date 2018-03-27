@@ -19,9 +19,7 @@ function start()
 	const socket = socketio();
 	const network = new NetworkHandler(socket, true);
 	const game = new ClientGame(network, canvas);
-	Application.init(network, game);
-	game.load()
-		.then(() => game.connect())
+	Application.init(network, game)
 		.then(() => requestAnimationFrame(onRequestAnimationFrame));
 }
 

@@ -1,7 +1,10 @@
+import EventHandler from 'util/EventHandler.js';
+
 class NetworkHandler
 {
   constructor(socket, remote=true)
   {
+    this.events = new EventHandler();
     this.socket = socket;
     this.remote = remote;
 
@@ -9,15 +12,11 @@ class NetworkHandler
     {
       //Server-side init
       this.clients = new Map();
-      this.onClientConnect = (client, data) => {};
-      this.onClientDisconnect = (client) => {};
     }
     else
     {
       //Client-side init
       this.socketID = -1;
-      this.onServerConnect = (server, data) => {};
-      this.onServerDisconnect = (server) => {};
     }
   }
 
@@ -28,7 +27,7 @@ class NetworkHandler
     this.socket.on('disconnect', () => {
       console.log("Disconnected from server...");
       this.socketID = -1;
-      this.onServerDisconnect(this.socket);
+      this.events.emit('serverDisconnect', this.socket);
 
       window.close();
     });
@@ -38,7 +37,7 @@ class NetworkHandler
       this.socket.on('server-handshake', (data) => {
         console.log("Connected to server...");
         this.socketID = data.socketID;
-        this.onServerConnect(this.socket, data);
+        this.events.emit('serverConnect', this.socket, data);
 
         //Start game...
         resolve();
@@ -55,33 +54,29 @@ class NetworkHandler
         console.log("Added client: " + socket.id);
         this.clients.set(socket.id, socket);
         const data = { socketID: socket.id };
-        this.onClientConnect(socket, data);
+        this.events.emit('clientConnect', socket, data);
 
         socket.emit('server-handshake', data);
 
         socket.on('disconnect', () => {
-          this.onClientDisconnect(socket);
+          this.events.emit('clientDisconnect', socket);
           console.log("Removed client: " + socket.id);
           this.clients.delete(socket.id);
         });
       });
     });
+  }
 
-    return new Promise((resolve, reject) => {
-      resolve();
-    });
+  sendTo(id, data, dst)
+  {
+    dst.emit(id, data);
   }
 
   sendToServer(id, data)
   {
     if (!this.remote) throw new Error("Unable to send packet to self");
 
-    this.socket.emit(id, data);
-  }
-
-  sendTo(id, data, dst)
-  {
-    dst.emit(id, data);
+    this.sendTo(id, data, this.socket);
   }
 
   sendToAll(id, data)

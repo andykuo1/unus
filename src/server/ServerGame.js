@@ -31,13 +31,15 @@ class ServerGame extends Game
 
     //Setup world...
     this.onWorldSetup();
+
+    await this.connect();
   }
 
   async connect()
   {
     console.log("Connecting server...");
 
-    this.networkHandler.onClientConnect = (client, data) => {
+    this.networkHandler.events.on('clientConnect', (client, data) => {
       //Insert new player...
       const clientEntity = this.playerManager.createPlayer(client.id);
       data.entityID = clientEntity._id;
@@ -50,10 +52,10 @@ class ServerGame extends Game
       client.on('client.inputstate', (data) => {
         this.onClientUpdate(client, data);
       });
-    };
-    this.networkHandler.onClientDisconnect = (client) => {
+    });
+    this.networkHandler.events.on('clientDisconnect', (client) => {
       this.playerManager.destroyPlayer(client.id);
-    };
+    });
 
     await this.networkHandler.initServer();
   }

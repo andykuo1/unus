@@ -7,7 +7,7 @@ class Application
     this._frame = new Frame();
   }
 
-  init(network, game)
+  async init(network, game)
   {
     this._network = network;
     this._game = game;
@@ -24,6 +24,8 @@ class Application
       console.log("FPS " + this._frames);
       this._frames = 0;
     }, 1000);
+
+    await this._game.load();
   }
 
   update()
@@ -48,11 +50,14 @@ class Application
     return this._now;
   }
 
+  isRemote()
+  {
+    return this._network.remote;
+  }
+
   get network() { return this._network; }
 
   get game() { return this._game; }
-
-  get remote() { return this._network.remote; }
 }
 
 export default new Application();
