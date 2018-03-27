@@ -1,5 +1,7 @@
 import { quat } from 'gl-matrix';
 
+import Application from 'Application.js';
+
 import SynchronizedSystem from 'game/SynchronizedSystem.js';
 import NetworkEntitySystem from 'game/NetworkEntitySystem.js';
 import PlayerSystem from 'game/PlayerSystem.js';
@@ -66,7 +68,7 @@ class GameFactory
 
   static createWorld(game)
   {
-    if (game.isRemote()) throw new Error('must be server-side');
+    if (Application.isRemote()) throw new Error('must be server-side');
     if (GameFactory.INSTANCE.entityManager == null) throw new Error('must init first');
 
     //populate with random

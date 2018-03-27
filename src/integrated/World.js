@@ -7,9 +7,8 @@ import GameFactory from 'game/GameFactory.js';
 
 class World
 {
-  constructor(remote=true)
+  constructor()
   {
-    this.remote = remote;
     this.ticks = 0;
 
     this.serverState = null;

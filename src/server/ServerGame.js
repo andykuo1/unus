@@ -1,6 +1,9 @@
 import Frame from 'util/Frame.js';
 
-import Game from 'integrated/Game.js';
+import Application from 'Application.js';
+
+import World from 'integrated/World.js';
+import PriorityQueue from 'util/PriorityQueue.js';
 
 import PlayerManager from 'server/PlayerManager.js';
 import Console from 'server/console/Console.js';
@@ -13,11 +16,14 @@ SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
 SERVER sends CURRENT_GAME_STATE to all CLIENTS.
 */
 
-class ServerGame extends Game
+class ServerGame
 {
-  constructor(networkHandler)
+  constructor()
   {
-    super(networkHandler);
+    this.world = new World();
+    this.inputStates = new PriorityQueue((a, b) => {
+      return a.worldTicks - b.worldTicks;
+    });
 
     this.playerManager = new PlayerManager(this.world.entityManager);
   }
@@ -39,7 +45,7 @@ class ServerGame extends Game
   {
     console.log("Connecting server...");
 
-    this.networkHandler.events.on('clientConnect', (client, data) => {
+    Application.network.events.on('clientConnect', (client, data) => {
       //Insert new player...
       const clientEntity = this.playerManager.createPlayer(client.id);
       data.entityID = clientEntity._id;
@@ -53,11 +59,11 @@ class ServerGame extends Game
         this.onClientUpdate(client, data);
       });
     });
-    this.networkHandler.events.on('clientDisconnect', (client) => {
+    Application.network.events.on('clientDisconnect', (client) => {
       this.playerManager.destroyPlayer(client.id);
     });
 
-    await this.networkHandler.initServer();
+    await Application.network.initServer();
   }
 
   update(frame)
@@ -130,7 +136,7 @@ class ServerGame extends Game
   sendServerUpdate()
   {
     const gameState = this.world.captureState();
-    this.networkHandler.sendToAll('server.gamestate', gameState);
+    Application.network.sendToAll('server.gamestate', gameState);
   }
 }
 

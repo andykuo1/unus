@@ -1,8 +1,11 @@
 import { vec3 } from 'gl-matrix';
 
+import Application from 'Application.js';
 import Frame from 'util/Frame.js';
 
-import Game from 'integrated/Game.js';
+import World from 'integrated/World.js';
+import PriorityQueue from 'util/PriorityQueue.js';
+
 import PlayerController from 'client/PlayerController.js';
 
 import Mouse from 'client/input/Mouse.js';
@@ -22,11 +25,14 @@ CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
 CLIENT sends CURRENT_INPUT_STATE.
 */
 
-class ClientGame extends Game
+class ClientGame
 {
-  constructor(networkHandler, canvas)
+  constructor(canvas)
   {
-    super(networkHandler);
+    this.world = new World();
+    this.inputStates = new PriorityQueue((a, b) => {
+      return a.worldTicks - b.worldTicks;
+    });
 
     this.renderer = new Renderer(canvas);
 
@@ -44,7 +50,7 @@ class ClientGame extends Game
   async connect()
   {
     console.log("Connecting client...");
-    this.networkHandler.events.on('serverConnect', (server, data) => {
+    Application.network.events.on('serverConnect', (server, data) => {
       //Setup the world from state...
       this.world.resetState(data['gameState']);
 
@@ -59,7 +65,7 @@ class ClientGame extends Game
       });
     });
 
-    await this.networkHandler.initClient();
+    await Application.network.initClient();
   }
 
   update(frame)
@@ -165,7 +171,7 @@ class ClientGame extends Game
   {
     //FIXME: Force 200ms lag...
     //setTimeout(() => this.networkHandler.sendToServer('client.inputstate', inputState), 200);
-    this.networkHandler.sendToServer('client.inputstate', inputState);
+    Application.network.sendToServer('client.inputstate', inputState);
   }
 }
 
