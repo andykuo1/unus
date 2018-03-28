@@ -94,7 +94,10 @@ class ServerGame
       //Update world to just before input...
       const dt = inputState.ticks - this.world.ticks;
       player.onInputUpdate(inputState);
-      player.onUpdate(delta);
+      //if (dt > 0)
+      {
+        player.onUpdate(delta);
+      }
     }
 
     //SERVER sends CURRENT_GAME_STATE to all CLIENTS.

@@ -98,13 +98,13 @@ class ClientGame
 
       //Update world to just before input...
       const dt = inputState.ticks - this.world.ticks;
-      if (dt > 0)
+      this.thePlayer.onInputUpdate(inputState);
+      //if (dt > 0)
       {
         this.thePlayer.onUpdate(dt);
       }
 
       //Update world to after this input state...
-      this.thePlayer.onInputUpdate(inputState);
       oldInputStates.push(inputState);
     }
     //Re-add all future inputs...

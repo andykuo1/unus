@@ -103,17 +103,16 @@ class World
 
     for(const event of gameState.events)
     {
-      if (event.name === 'entityCreate')
+      if (event.name == 'entityCreate')
       {
         console.log("Created entity \'" + event.targetName + "\'...");
         if (this.entityManager.getEntityByID(event.target)) continue;
         const entity = this.entityManager.spawnEntity(event.targetName);
         entity._id = event.target;
       }
-      else if (event.name === 'entityDestroy')
+      else if (event.name == 'entityDestroy')
       {
-        console.log("Destroyed entity...");
-        if (!this.entityManager.entities[event.target]) continue;
+        console.log("Destroyed entity \'" + event.target + "\'...");
         const entity = this.entityManager.getEntityByID(event.target);
         if (!entity) throw new Error("Cannot find entity by id \'" + event.taraget + "\' for removal");
         this.entityManager.destroyEntity(entity);
