@@ -4,7 +4,7 @@ import path from 'path';
 
 import Application from './Application.js';
 import NetworkHandler from 'integrated/NetworkHandler.js';
-import ServerGame from 'server/ServerGame.js';
+import ServerGame from 'test/ServerGame.js';
 
 const __dirname = path.resolve();
 const DEVMODE = process.argv.indexOf('--dev') != -1;
@@ -31,7 +31,7 @@ function start()
 {
 	const socket = socketio(server);
 	const network = new NetworkHandler(socket, false);
-	const game = new ServerGame(network);
+	const game = new ServerGame();
 	Application.init(network, game)
 		.then(() => setInterval(onInterval, TIMESTEP));
 }

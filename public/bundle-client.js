@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 47);
+/******/ 	return __webpack_require__(__webpack_require__.s = 40);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -100,7 +100,7 @@ module.exports = g;
  * Expose `debug()` as the module.
  */
 
-exports = module.exports = __webpack_require__(51);
+exports = module.exports = __webpack_require__(44);
 exports.log = log;
 exports.formatArgs = formatArgs;
 exports.save = save;
@@ -280,7 +280,7 @@ function localstorage() {
   } catch (e) {}
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(50)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(43)))
 
 /***/ }),
 /* 2 */
@@ -361,177 +361,6 @@ function equals(a, b) {
 
 /***/ }),
 /* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_matrix_common__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__gl_matrix_mat2__ = __webpack_require__(73);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__gl_matrix_mat2d__ = __webpack_require__(74);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__gl_matrix_mat3__ = __webpack_require__(32);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__gl_matrix_mat4__ = __webpack_require__(75);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__gl_matrix_quat__ = __webpack_require__(76);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__gl_matrix_vec2__ = __webpack_require__(77);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__gl_matrix_vec3__ = __webpack_require__(33);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__gl_matrix_vec4__ = __webpack_require__(34);
-/* unused harmony reexport glMatrix */
-/* unused harmony reexport mat2 */
-/* unused harmony reexport mat2d */
-/* unused harmony reexport mat3 */
-/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_4__gl_matrix_mat4__; });
-/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_5__gl_matrix_quat__; });
-/* unused harmony reexport vec2 */
-/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_7__gl_matrix_vec3__; });
-/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "d", function() { return __WEBPACK_IMPORTED_MODULE_8__gl_matrix_vec4__; });
-/**
- * @fileoverview gl-matrix - High performance matrix and vector operations
- * @author Brandon Jones
- * @author Colin MacKenzie IV
- * @version 2.4.0
- */
-
-/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE. */
-// END HEADER
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_integrated_entity_System_js__ = __webpack_require__(39);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_Reflection_js__ = __webpack_require__(38);
-
-
-
-class SynchronizedSystem extends __WEBPACK_IMPORTED_MODULE_0_integrated_entity_System_js__["a" /* default */]
-{
-  constructor(component)
-  {
-    super();
-    this.component = component;
-    this.componentName = __WEBPACK_IMPORTED_MODULE_1_util_Reflection_js__["a" /* default */].getClassVarName(this.component);
-  }
-
-  onEntityUpdate(entity, delta)
-  {
-
-  }
-
-  writeEntityToData(entity, dst)
-  {
-    const componentData = dst[this.componentName];
-    for(const [key, value] of Object.entries(entity[this.componentName]))
-    {
-      writeKeyValueToData(key, value, componentData);
-    }
-  }
-
-  readEntityFromData(src, entity)
-  {
-    const componentData = entity[this.componentName];
-    for(const [key, value] of Object.entries(src[this.componentName]))
-    {
-      writeKeyValueToData(key, value, componentData);
-    }
-  }
-
-  onUpdate(entityManager, delta)
-  {
-    const entities = entityManager.getEntitiesByComponent(this.component);
-    for(const entity of entities)
-    {
-      this.onEntityUpdate(entity, delta);
-    }
-  }
-
-  writeToGameState(entityManager, gameState)
-  {
-    let dst = gameState['entitylist'];
-    if (!dst) dst = gameState['entitylist'] = {};
-    const entities = entityManager.getEntitiesByComponent(this.component);
-    for(const entity of entities)
-    {
-      let entityData = dst[entity._id];
-      if (!entityData) entityData = dst[entity._id] = {};
-      if (!entityData[this.componentName]) entityData[this.componentName] = {};
-      this.writeEntityToData(entity, entityData);
-    }
-  }
-
-  readFromGameState(entityManager, gameState)
-  {
-    let src = gameState['entitylist'] || {};
-    for(const entityID in src)
-    {
-      let entity = entityManager.getEntityByID(entityID);
-      if (!entity) throw new Error("Cannot find entity with id \'" + entityID + "\'");
-
-      let entityData = src[entityID];
-
-      if (entityData[this.componentName])
-      {
-        if (!entity[this.componentName]) entity.addComponent(this.component);
-        this.readEntityFromData(entityData, entity);
-      }
-      else if (entity[this.componentName])
-      {
-        entity.removeComponent(this.component);
-      }
-    }
-  }
-}
-
-function writeKeyValueToData(key, value, dst)
-{
-  if (Array.isArray(value))
-  {
-    const array = [];
-    for(const i in value)
-    {
-      writeKeyValueToData(i, value[i], array);
-    }
-    dst[key] = array;
-  }
-  else
-  {
-    dst[key] = value;
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (SynchronizedSystem);
-
-
-/***/ }),
-/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -700,22 +529,22 @@ Emitter.prototype.hasListeners = function(event){
 
 
 /***/ }),
-/* 6 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/**
  * Module dependencies.
  */
 
-var keys = __webpack_require__(58);
-var hasBinary = __webpack_require__(21);
-var sliceBuffer = __webpack_require__(59);
-var after = __webpack_require__(60);
-var utf8 = __webpack_require__(61);
+var keys = __webpack_require__(51);
+var hasBinary = __webpack_require__(16);
+var sliceBuffer = __webpack_require__(52);
+var after = __webpack_require__(53);
+var utf8 = __webpack_require__(54);
 
 var base64encoder;
 if (global && global.ArrayBuffer) {
-  base64encoder = __webpack_require__(63);
+  base64encoder = __webpack_require__(56);
 }
 
 /**
@@ -773,7 +602,7 @@ var err = { type: 'error', data: 'parser error' };
  * Create a blob api even for blob builder when vendor prefixes exist
  */
 
-var Blob = __webpack_require__(64);
+var Blob = __webpack_require__(57);
 
 /**
  * Encodes a packet.
@@ -1313,7 +1142,7 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 7 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1334,7 +1163,70 @@ function init(canvas)
 
 
 /***/ }),
-/* 8 */
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_matrix_common__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__gl_matrix_mat2__ = __webpack_require__(66);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__gl_matrix_mat2d__ = __webpack_require__(67);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__gl_matrix_mat3__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__gl_matrix_mat4__ = __webpack_require__(68);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__gl_matrix_quat__ = __webpack_require__(69);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__gl_matrix_vec2__ = __webpack_require__(70);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__gl_matrix_vec3__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__gl_matrix_vec4__ = __webpack_require__(30);
+/* unused harmony reexport glMatrix */
+/* unused harmony reexport mat2 */
+/* unused harmony reexport mat2d */
+/* unused harmony reexport mat3 */
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_4__gl_matrix_mat4__; });
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_5__gl_matrix_quat__; });
+/* unused harmony reexport vec2 */
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_7__gl_matrix_vec3__; });
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "d", function() { return __WEBPACK_IMPORTED_MODULE_8__gl_matrix_vec4__; });
+/**
+ * @fileoverview gl-matrix - High performance matrix and vector operations
+ * @author Brandon Jones
+ * @author Colin MacKenzie IV
+ * @version 2.4.0
+ */
+
+/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE. */
+// END HEADER
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***/ }),
+/* 7 */
 /***/ (function(module, exports) {
 
 /* -*- Mode: js; js-indent-level: 2; -*- */
@@ -1757,7 +1649,7 @@ exports.compareByGeneratedPositionsInflated = compareByGeneratedPositionsInflate
 
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports) {
 
 /**
@@ -1800,7 +1692,7 @@ exports.decode = function(qs){
 
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports) {
 
 
@@ -1812,6 +1704,77 @@ module.exports = function(a, b){
 };
 
 /***/ }),
+/* 10 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Frame_js__ = __webpack_require__(63);
+
+
+class Application
+{
+  constructor()
+  {
+    this._frame = new __WEBPACK_IMPORTED_MODULE_0_util_Frame_js__["a" /* default */]();
+  }
+
+  async init(network, game)
+  {
+    this._network = network;
+    this._game = game;
+
+    this._startTime = Date.now();
+
+    this._now = 0;
+    this._then = 0;
+    this._delta = 0;
+    this._frames = 0;
+
+    //Display frames per second
+    setInterval(() => {
+      console.log("FPS " + this._frames);
+      this._frames = 0;
+    }, 1000);
+
+    await this._game.load();
+  }
+
+  update()
+  {
+    this._then = this._now;
+    this._now = Date.now() - this._startTime;
+    this._delta = (this._now - this._then) * 0.001;
+    this._frames++;
+
+    //TODO: slowly get rid of frame and use this._delta
+    //this._frame.next(this._now);
+    this._game.update(this._delta);
+  }
+
+  getFrameTime()
+  {
+    return this._delta;
+  }
+
+  getApplicationTime()
+  {
+    return this._now;
+  }
+
+  isRemote()
+  {
+    return this._network.remote;
+  }
+
+  get network() { return this._network; }
+
+  get game() { return this._game; }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (new Application());
+
+
+/***/ }),
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1821,10 +1784,10 @@ module.exports = function(a, b){
  */
 
 var debug = __webpack_require__(1)('socket.io-parser');
-var Emitter = __webpack_require__(5);
-var hasBin = __webpack_require__(21);
-var binary = __webpack_require__(53);
-var isBuf = __webpack_require__(23);
+var Emitter = __webpack_require__(3);
+var hasBin = __webpack_require__(16);
+var binary = __webpack_require__(46);
+var isBuf = __webpack_require__(18);
 
 /**
  * Protocol version.
@@ -2223,7 +2186,7 @@ function error() {
 
 /* WEBPACK VAR INJECTION */(function(global) {// browser shim for xmlhttprequest module
 
-var hasCORS = __webpack_require__(56);
+var hasCORS = __webpack_require__(49);
 
 module.exports = function (opts) {
   var xdomain = opts.xdomain;
@@ -2269,8 +2232,8 @@ module.exports = function (opts) {
  * Module dependencies.
  */
 
-var parser = __webpack_require__(6);
-var Emitter = __webpack_require__(5);
+var parser = __webpack_require__(4);
+var Emitter = __webpack_require__(3);
 
 /**
  * Module exports.
@@ -2426,111 +2389,6 @@ Transport.prototype.onClose = function () {
 
 /***/ }),
 /* 14 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Frame_js__ = __webpack_require__(15);
-
-
-class Application
-{
-  constructor()
-  {
-    this._frame = new __WEBPACK_IMPORTED_MODULE_0_util_Frame_js__["a" /* default */]();
-  }
-
-  async init(network, game)
-  {
-    this._network = network;
-    this._game = game;
-
-    this._startTime = Date.now();
-
-    this._now = 0;
-    this._then = 0;
-    this._delta = 0;
-    this._frames = 0;
-
-    //Display frames per second
-    setInterval(() => {
-      console.log("FPS " + this._frames);
-      this._frames = 0;
-    }, 1000);
-
-    await this._game.load();
-  }
-
-  update()
-  {
-    this._then = this._now;
-    this._now = Date.now() - this._startTime;
-    this._delta = (this._now - this._then) * 0.001;
-    this._frames++;
-
-    //TODO: slowly get rid of frame and use this._delta
-    this._frame.next(this._now);
-    this._game.update(this._frame);
-  }
-
-  getFrameTime()
-  {
-    return this._delta;
-  }
-
-  getApplicationTime()
-  {
-    return this._now;
-  }
-
-  isRemote()
-  {
-    return this._network.remote;
-  }
-
-  get network() { return this._network; }
-
-  get game() { return this._game; }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (new Application());
-
-
-/***/ }),
-/* 15 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class Frame
-{
-  constructor(delta=0, then=0, count=0)
-  {
-    this.delta = 0;
-    this.then = 0;
-    this.count = 0;
-  }
-
-  set(frame)
-  {
-    this.delta = frame.delta;
-    this.then = frame.then;
-    this.count = frame.count;
-    return this;
-  }
-
-  next(now)
-  {
-  	now *= 0.001;
-  	this.delta = now - this.then;
-  	this.then = now;
-  	++this.count;
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Frame);
-
-
-/***/ }),
-/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function(root, factory) {
@@ -2650,164 +2508,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 
 /***/ }),
-/* 17 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_Application_js__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_game_SynchronizedSystem_js__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_game_NetworkEntitySystem_js__ = __webpack_require__(95);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_game_PlayerSystem_js__ = __webpack_require__(96);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_game_MotionSystem_js__ = __webpack_require__(97);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_game_TransformSystem_js__ = __webpack_require__(98);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_game_BulletSystem_js__ = __webpack_require__(99);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_game_RotatingSystem_js__ = __webpack_require__(100);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_game_FollowSystem_js__ = __webpack_require__(101);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_game_TransformComponent_js__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_game_MotionComponent_js__ = __webpack_require__(42);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_game_PlayerComponent_js__ = __webpack_require__(40);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_game_RenderableComponent_js__ = __webpack_require__(41);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_game_BulletComponent_js__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_game_RotatingComponent_js__ = __webpack_require__(43);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_game_FollowComponent_js__ = __webpack_require__(44);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class GameFactory
-{
-  constructor()
-  {
-    this.entityTypes = new Map();
-    this.entityManager = null;
-  }
-
-  static init(game)
-  {
-    GameFactory.INSTANCE.entityManager = game.entityManager;
-    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_3_game_NetworkEntitySystem_js__["a" /* default */](game.entityManager));
-    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_4_game_PlayerSystem_js__["a" /* default */]());
-    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_5_game_MotionSystem_js__["a" /* default */]());
-    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_6_game_TransformSystem_js__["a" /* default */]());
-    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_2_game_SynchronizedSystem_js__["a" /* default */](__WEBPACK_IMPORTED_MODULE_13_game_RenderableComponent_js__["a" /* default */]));
-    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_7_game_BulletSystem_js__["a" /* default */]());
-    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_8_game_RotatingSystem_js__["a" /* default */]());
-    game.systemManager.systems.push(new __WEBPACK_IMPORTED_MODULE_9_game_FollowSystem_js__["a" /* default */]());
-
-    GameFactory.INSTANCE.entityTypes.set('player', (entity) => {
-      return entity
-        .addComponent(__WEBPACK_IMPORTED_MODULE_10_game_TransformComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_13_game_RenderableComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_11_game_MotionComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_12_game_PlayerComponent_js__["a" /* default */]);
-    });
-    GameFactory.INSTANCE.entityTypes.set('bullet', (entity) => {
-      return entity
-        .addComponent(__WEBPACK_IMPORTED_MODULE_10_game_TransformComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_13_game_RenderableComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_14_game_BulletComponent_js__["a" /* default */]);
-    });
-    GameFactory.INSTANCE.entityTypes.set('star', (entity) => {
-      return entity
-        .addComponent(__WEBPACK_IMPORTED_MODULE_10_game_TransformComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_13_game_RenderableComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_15_game_RotatingComponent_js__["a" /* default */]);
-    });
-    GameFactory.INSTANCE.entityTypes.set('cart', (entity) => {
-      return entity
-        .addComponent(__WEBPACK_IMPORTED_MODULE_10_game_TransformComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_13_game_RenderableComponent_js__["a" /* default */])
-        .addComponent(__WEBPACK_IMPORTED_MODULE_16_game_FollowComponent_js__["a" /* default */]);
-    });
-  }
-
-  static createWorld(game)
-  {
-    if (__WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].isRemote()) throw new Error('must be server-side');
-    if (GameFactory.INSTANCE.entityManager == null) throw new Error('must init first');
-
-    //populate with random
-    for(let i = 0; i < 100; ++i)
-    {
-      const entity = GameFactory.createEntity('star');
-      entity.transform.x = Math.random() * 100 - 50;
-      entity.transform.y = Math.random() * 100 - 50;
-      const scale = 0.2 + 0.1 * Math.random();
-      entity.transform.scale[0] = scale;
-      entity.transform.scale[1] = scale;
-      __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].rotateZ(entity.transform.rotation, entity.transform.rotation, Math.random() * Math.PI);
-      entity.renderable.color = 0xF2A900;
-      entity.rotating.speed = Math.random() + 1;
-    }
-  }
-
-  static createEntity(entityType)
-  {
-    const entity = GameFactory.INSTANCE.entityManager.createEntity(null, 2);
-    const entityConstructor = GameFactory.INSTANCE.entityTypes.get(entityType);
-    entityConstructor(entity);
-    return entity;
-  }
-}
-
-GameFactory.INSTANCE = new GameFactory();
-
-/* harmony default export */ __webpack_exports__["a"] = (GameFactory);
-
-
-/***/ }),
-/* 18 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-function Transform()
-{
-  this.x = 0;
-  this.y = 0;
-  this.position = [0, 0, 0];
-  this.rotation = [0, 0, 0, 1];
-  this.scale = [1, 1, 1];
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Transform);
-
-
-/***/ }),
-/* 19 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-function Bullet()
-{
-  this.owner = null;
-  this.life = 3;
-  this.speedx = 0;
-  this.speedy = 0;
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Bullet);
-
-
-/***/ }),
-/* 20 */
+/* 15 */
 /***/ (function(module, exports) {
 
 /**
@@ -2852,7 +2553,7 @@ module.exports = function parseuri(str) {
 
 
 /***/ }),
-/* 21 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/* global Blob File */
@@ -2861,7 +2562,7 @@ module.exports = function parseuri(str) {
  * Module requirements.
  */
 
-var isArray = __webpack_require__(22);
+var isArray = __webpack_require__(17);
 
 var toString = Object.prototype.toString;
 var withNativeBlob = typeof global.Blob === 'function' || toString.call(global.Blob) === '[object BlobConstructor]';
@@ -2921,7 +2622,7 @@ function hasBinary (obj) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 22 */
+/* 17 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -2932,7 +2633,7 @@ module.exports = Array.isArray || function (arr) {
 
 
 /***/ }),
-/* 23 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {
@@ -2952,7 +2653,7 @@ function isBuf(obj) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 24 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -2960,15 +2661,15 @@ function isBuf(obj) {
  * Module dependencies.
  */
 
-var eio = __webpack_require__(54);
-var Socket = __webpack_require__(29);
-var Emitter = __webpack_require__(5);
+var eio = __webpack_require__(47);
+var Socket = __webpack_require__(24);
+var Emitter = __webpack_require__(3);
 var parser = __webpack_require__(11);
-var on = __webpack_require__(30);
-var bind = __webpack_require__(31);
+var on = __webpack_require__(25);
+var bind = __webpack_require__(26);
 var debug = __webpack_require__(1)('socket.io-client:manager');
-var indexOf = __webpack_require__(28);
-var Backoff = __webpack_require__(69);
+var indexOf = __webpack_require__(23);
+var Backoff = __webpack_require__(62);
 
 /**
  * IE6+ hasOwnProperty
@@ -3531,7 +3232,7 @@ Manager.prototype.onreconnect = function () {
 
 
 /***/ }),
-/* 25 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/**
@@ -3539,9 +3240,9 @@ Manager.prototype.onreconnect = function () {
  */
 
 var XMLHttpRequest = __webpack_require__(12);
-var XHR = __webpack_require__(57);
-var JSONP = __webpack_require__(65);
-var websocket = __webpack_require__(66);
+var XHR = __webpack_require__(50);
+var JSONP = __webpack_require__(58);
+var websocket = __webpack_require__(59);
 
 /**
  * Export transports.
@@ -3591,7 +3292,7 @@ function polling (opts) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 26 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -3599,10 +3300,10 @@ function polling (opts) {
  */
 
 var Transport = __webpack_require__(13);
-var parseqs = __webpack_require__(9);
-var parser = __webpack_require__(6);
-var inherit = __webpack_require__(10);
-var yeast = __webpack_require__(27);
+var parseqs = __webpack_require__(8);
+var parser = __webpack_require__(4);
+var inherit = __webpack_require__(9);
+var yeast = __webpack_require__(22);
 var debug = __webpack_require__(1)('engine.io-client:polling');
 
 /**
@@ -3842,7 +3543,7 @@ Polling.prototype.uri = function () {
 
 
 /***/ }),
-/* 27 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3917,7 +3618,7 @@ module.exports = yeast;
 
 
 /***/ }),
-/* 28 */
+/* 23 */
 /***/ (function(module, exports) {
 
 
@@ -3932,7 +3633,7 @@ module.exports = function(arr, obj){
 };
 
 /***/ }),
-/* 29 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -3941,12 +3642,12 @@ module.exports = function(arr, obj){
  */
 
 var parser = __webpack_require__(11);
-var Emitter = __webpack_require__(5);
-var toArray = __webpack_require__(68);
-var on = __webpack_require__(30);
-var bind = __webpack_require__(31);
+var Emitter = __webpack_require__(3);
+var toArray = __webpack_require__(61);
+var on = __webpack_require__(25);
+var bind = __webpack_require__(26);
 var debug = __webpack_require__(1)('socket.io-client:socket');
-var parseqs = __webpack_require__(9);
+var parseqs = __webpack_require__(8);
 
 /**
  * Module exports.
@@ -4356,7 +4057,7 @@ Socket.prototype.compress = function (compress) {
 
 
 /***/ }),
-/* 30 */
+/* 25 */
 /***/ (function(module, exports) {
 
 
@@ -4386,7 +4087,7 @@ function on (obj, ev, fn) {
 
 
 /***/ }),
-/* 31 */
+/* 26 */
 /***/ (function(module, exports) {
 
 /**
@@ -4415,7 +4116,95 @@ module.exports = function(obj, fn){
 
 
 /***/ }),
-/* 32 */
+/* 27 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class EventHandler
+{
+  constructor()
+  {
+    this.eventMap = new Map();
+  }
+
+  addListener(eventName, listener)
+  {
+    if (!this.eventMap.has(eventName)) this.eventMap.set(eventName, []);
+
+    const listeners = this.eventMap.get(eventName);
+    listeners.push(listener);
+  }
+
+  removeListener(eventName, listener)
+  {
+    if (!this.eventMap.has(eventName)) return;
+
+    const listeners = this.eventMap.get(eventName);
+    listeners.splice(listeners.indexOf(listener), 1);
+  }
+
+  clearListeners(eventName)
+  {
+    if (!this.eventMap.has(eventName)) return;
+
+    const listeners = this.eventMap.get(eventName);
+    listeners.length = 0;
+  }
+
+  countListeners(eventName)
+  {
+    return this.eventMap.has(eventName) ? this.eventMap.get(eventName).length : 0;
+  }
+
+  getListeners(eventName)
+  {
+    return this.eventMap.get(eventName);
+  }
+
+  emit(eventName)
+  {
+    if (!this.eventMap.has(eventName)) return;
+
+    //Can pass additional args to listeners here...
+    const args = Array.prototype.splice.call(arguments, 1);
+    const listeners = this.eventMap.get(eventName);
+    const length = listeners.length;
+    let i = 0;
+    while(i < length)
+    {
+      const listener = listeners[i];
+      const result = listener.apply(null, args);
+      if (result)
+      {
+        listeners.splice(i, 1);
+        --i;
+      }
+      else
+      {
+        ++i;
+      }
+    }
+  }
+
+  on(eventName, listener)
+  {
+    this.addListener(eventName, listener);
+  }
+
+  once(eventName, listener)
+  {
+    this.addListener(eventName, () => {
+      listener();
+      return true;
+    });
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (EventHandler);
+
+
+/***/ }),
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5222,7 +5011,7 @@ const sub = subtract;
 
 
 /***/ }),
-/* 33 */
+/* 29 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6062,7 +5851,7 @@ const forEach = (function() {
 
 
 /***/ }),
-/* 34 */
+/* 30 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6724,7 +6513,150 @@ const forEach = (function() {
 
 
 /***/ }),
-/* 35 */
+/* 31 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__ = __webpack_require__(5);
+
+
+
+
+class ViewPort
+{
+  constructor(canvas)
+  {
+    this.canvas = canvas;
+  }
+
+  update()
+  {
+    __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].clear(__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].COLOR_BUFFER_BIT | __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].DEPTH_BUFFER_BIT);
+    __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].viewport(0, 0, this.width, this.height);
+  }
+
+  get width()
+  {
+    return this.canvas.clientWidth;
+  }
+
+  get height()
+  {
+    return this.canvas.clientHeight;
+  }
+
+  static getPointFromScreen(dst, camera, viewport, screenX, screenY)
+  {
+    let invViewProj = getInvertedViewProjection(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create(), camera);
+    let x = screenX;
+    let y = viewport.height - screenY;
+
+    //TODO: The depth should be 0 if perspective...
+    let near = unproject(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create(), invViewProj, viewport, x, y, -1.0);
+    let far = unproject(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create(), invViewProj, viewport, x, y, 1.0);
+
+    let f = (0 - near[2]) / (far[2] - near[2]);
+    dst[0] = (near[0] + f * (far[0] - near[0]));
+    dst[1] = (near[1] + f * (far[1] - near[1]));
+    dst[2] = 0;
+    return dst;
+  }
+}
+
+function getInvertedViewProjection(dst, camera)
+{
+  __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].mul(dst, camera.projection, camera.view);
+  __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].invert(dst, dst);
+  return dst;
+}
+
+function unproject(dst, invertedViewProjection, viewport, screenX, screenY, screenZ)
+{
+  let normalizedDeviceCoords = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec4 */].create();
+  normalizedDeviceCoords[0] = screenX / viewport.width * 2.0 - 1.0;
+  normalizedDeviceCoords[1] = screenY / viewport.height * 2.0 - 1.0;
+  normalizedDeviceCoords[2] = screenZ * 2.0 - 1.0;
+  normalizedDeviceCoords[3] = 1.0;
+
+  let objectCoords = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec4 */].transformMat4(normalizedDeviceCoords, normalizedDeviceCoords, invertedViewProjection);
+  if (objectCoords[3] != 0) objectCoords[3] = 1.0 / objectCoords[3];
+  dst[0] = objectCoords[0] * objectCoords[3];
+  dst[1] = objectCoords[1] * objectCoords[3];
+  dst[2] = objectCoords[2] * objectCoords[3];
+  return dst;
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (ViewPort);
+
+
+/***/ }),
+/* 32 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_js__ = __webpack_require__(5);
+
+
+/**
+ * Shader - A GLSL shader representation
+ */
+class Shader
+{
+  /**
+   * constructor - Shader definition
+   *
+   * @param {String} src The shader source
+   * @param {Number} type The shader type
+   */
+  constructor(src, type)
+  {
+    this.type = type;
+
+    //Create shader
+    this.handle = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].createShader(this.type);
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].shaderSource(this.handle, src);
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].compileShader(this.handle);
+
+    //Validate shader
+    if (!__WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getShaderParameter(this.handle, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].COMPILE_STATUS))
+    {
+      let info = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getShaderInfoLog(this.handle);
+      __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].deleteShader(this.handle);
+      this.handle = null;
+      throw new Error("Unable to compile shaders: " + info);
+    }
+  }
+
+  /**
+   * close - Destroys the shader object
+   */
+  close()
+  {
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].deleteShader(this.handle);
+    this.handle = null;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Shader);
+
+
+/***/ }),
+/* 33 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+function Transform()
+{
+  this.x = 0;
+  this.y = 0;
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Transform);
+
+
+/***/ }),
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* -*- Mode: js; js-indent-level: 2; -*- */
@@ -6734,10 +6666,10 @@ const forEach = (function() {
  * http://opensource.org/licenses/BSD-3-Clause
  */
 
-var base64VLQ = __webpack_require__(36);
-var util = __webpack_require__(8);
-var ArraySet = __webpack_require__(37).ArraySet;
-var MappingList = __webpack_require__(86).MappingList;
+var base64VLQ = __webpack_require__(35);
+var util = __webpack_require__(7);
+var ArraySet = __webpack_require__(36).ArraySet;
+var MappingList = __webpack_require__(92).MappingList;
 
 /**
  * An instance of the SourceMapGenerator represents a source map which is
@@ -7134,7 +7066,7 @@ exports.SourceMapGenerator = SourceMapGenerator;
 
 
 /***/ }),
-/* 36 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* -*- Mode: js; js-indent-level: 2; -*- */
@@ -7174,7 +7106,7 @@ exports.SourceMapGenerator = SourceMapGenerator;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-var base64 = __webpack_require__(85);
+var base64 = __webpack_require__(91);
 
 // A single base 64 digit can contain 6 bits of data. For the base 64 variable
 // length quantities we use in the source map spec, the first bit is the sign,
@@ -7280,7 +7212,7 @@ exports.decode = function base64VLQ_decode(aStr, aIndex, aOutParam) {
 
 
 /***/ }),
-/* 37 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* -*- Mode: js; js-indent-level: 2; -*- */
@@ -7290,7 +7222,7 @@ exports.decode = function base64VLQ_decode(aStr, aIndex, aOutParam) {
  * http://opensource.org/licenses/BSD-3-Clause
  */
 
-var util = __webpack_require__(8);
+var util = __webpack_require__(7);
 var has = Object.prototype.hasOwnProperty;
 
 /**
@@ -7390,20 +7322,116 @@ exports.ArraySet = ArraySet;
 
 
 /***/ }),
+/* 37 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Entity
+{
+  constructor()
+  {
+    this._manager = null;
+    this.__init();
+  }
+
+  __init()
+  {
+    this._id = 0;
+    this._name = null;
+  }
+
+  addComponent(component)
+  {
+    this._manager.addComponentToEntity(this, component);
+    return this;
+  }
+
+  removeComponent(component)
+  {
+    this._manager.removeComponentFromEntity(this, component);
+    return this;
+  }
+
+  clearComponents()
+  {
+    this._manager.clearComponentsFromEntity(this);
+  }
+
+  hasComponent(component)
+  {
+    return this._manager.hasComponentByEntity(this, component);
+  }
+
+  destroy()
+  {
+    this._manager.destroyEntity(this);
+  }
+
+  get id() { return this._id; }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Entity);
+
+
+/***/ }),
 /* 38 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-class Reflection
+class ObjectPool
 {
-  static getClassVarName(T)
+  constructor(T)
   {
-    const name = T.name;
-    return name.charAt(0).toLowerCase() + name.slice(1);
+    this._freeList = [];
+    this.size = 0;
+    this.T = T;
+  }
+
+  obtain()
+  {
+    if (this._freeList.length <= 0)
+    {
+      this.expand(Math.round(this.size * 0.2) + 1);
+    }
+
+    var item = this._freeList.pop();
+    if (item.__init)
+    {
+      item.__init();
+    }
+    else
+    {
+      this.T.call(item);
+    }
+    return item;
+  }
+
+  release(item)
+  {
+    this._freeList.push(item);
+  }
+
+  expand(count)
+  {
+    for(let i = 0; i < count; ++i)
+    {
+      this._freeList.push(new this.T());
+    }
+    this.size += count;
+  }
+
+  getTotalObjectsFree()
+  {
+    return this._freeList.length;
+  }
+
+  getTotalObjectsUsed()
+  {
+    return this._count - this._freeList.length;
   }
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (Reflection);
+/* harmony default export */ __webpack_exports__["a"] = (ObjectPool);
 
 
 /***/ }),
@@ -7411,35 +7439,16 @@ class Reflection
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-class System
+function generate()
 {
-  constructor()
-  {
-
-  }
-
-  onUpdate(entityManager, frame)
-  {
-
-  }
-
-  onInputUpdate(targetEntity, inputState)
-  {
-
-  }
-
-  writeToGameState(entityManager, gameState)
-  {
-
-  }
-
-  readFromGameState(entityManager, gameState)
-  {
-
-  }
+  let fst = (Math.random() * 46656) | 0;
+  let snd = (Math.random() * 46656) | 0;
+  fst = ("000" + fst.toString(36)).slice(-3);
+  snd = ("000" + snd.toString(36)).slice(-3);
+  return fst + snd;
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (System);
+/* harmony default export */ __webpack_exports__["a"] = (generate);
 
 
 /***/ }),
@@ -7447,214 +7456,12 @@ class System
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-function Player()
-{
-  this.socketID = -1;
-  this.nextX = 0;
-  this.nextY = 0;
-  this.move = false;
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Player);
-
-
-/***/ }),
-/* 41 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-function Renderable()
-{
-  this.model = 'square';
-  this.color = 0xFFFFFF;
-  this.visible = true;
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Renderable);
-
-
-/***/ }),
-/* 42 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-function Motion()
-{
-  this.motionX = 0;
-  this.motionY = 0;
-  this.friction = 2;
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Motion);
-
-
-/***/ }),
-/* 43 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-function Rotating()
-{
-  this.speed = 0.1;
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Rotating);
-
-
-/***/ }),
-/* 44 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-function Follow()
-{
-  this.target = null;
-  this.targetDistance = 2;
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Follow);
-
-
-/***/ }),
-/* 45 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__ = __webpack_require__(7);
-
-
-
-
-class ViewPort
-{
-  constructor(canvas)
-  {
-    this.canvas = canvas;
-  }
-
-  update()
-  {
-    __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].clear(__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].COLOR_BUFFER_BIT | __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].DEPTH_BUFFER_BIT);
-    __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].viewport(0, 0, this.width, this.height);
-  }
-
-  get width()
-  {
-    return this.canvas.clientWidth;
-  }
-
-  get height()
-  {
-    return this.canvas.clientHeight;
-  }
-
-  static getPointFromScreen(dst, camera, viewport, screenX, screenY)
-  {
-    let invViewProj = getInvertedViewProjection(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create(), camera);
-    let x = screenX;
-    let y = viewport.height - screenY;
-
-    //TODO: The depth should be 0 if perspective...
-    let near = unproject(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create(), invViewProj, viewport, x, y, -1.0);
-    let far = unproject(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create(), invViewProj, viewport, x, y, 1.0);
-
-    let f = (0 - near[2]) / (far[2] - near[2]);
-    dst[0] = (near[0] + f * (far[0] - near[0]));
-    dst[1] = (near[1] + f * (far[1] - near[1]));
-    dst[2] = 0;
-    return dst;
-  }
-}
-
-function getInvertedViewProjection(dst, camera)
-{
-  __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].mul(dst, camera.projection, camera.view);
-  __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].invert(dst, dst);
-  return dst;
-}
-
-function unproject(dst, invertedViewProjection, viewport, screenX, screenY, screenZ)
-{
-  let normalizedDeviceCoords = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec4 */].create();
-  normalizedDeviceCoords[0] = screenX / viewport.width * 2.0 - 1.0;
-  normalizedDeviceCoords[1] = screenY / viewport.height * 2.0 - 1.0;
-  normalizedDeviceCoords[2] = screenZ * 2.0 - 1.0;
-  normalizedDeviceCoords[3] = 1.0;
-
-  let objectCoords = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec4 */].transformMat4(normalizedDeviceCoords, normalizedDeviceCoords, invertedViewProjection);
-  if (objectCoords[3] != 0) objectCoords[3] = 1.0 / objectCoords[3];
-  dst[0] = objectCoords[0] * objectCoords[3];
-  dst[1] = objectCoords[1] * objectCoords[3];
-  dst[2] = objectCoords[2] * objectCoords[3];
-  return dst;
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (ViewPort);
-
-
-/***/ }),
-/* 46 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_js__ = __webpack_require__(7);
-
-
-/**
- * Shader - A GLSL shader representation
- */
-class Shader
-{
-  /**
-   * constructor - Shader definition
-   *
-   * @param {String} src The shader source
-   * @param {Number} type The shader type
-   */
-  constructor(src, type)
-  {
-    this.type = type;
-
-    //Create shader
-    this.handle = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].createShader(this.type);
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].shaderSource(this.handle, src);
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].compileShader(this.handle);
-
-    //Validate shader
-    if (!__WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getShaderParameter(this.handle, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].COMPILE_STATUS))
-    {
-      let info = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getShaderInfoLog(this.handle);
-      __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].deleteShader(this.handle);
-      this.handle = null;
-      throw new Error("Unable to compile shaders: " + info);
-    }
-  }
-
-  /**
-   * close - Destroys the shader object
-   */
-  close()
-  {
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].deleteShader(this.handle);
-    this.handle = null;
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Shader);
-
-
-/***/ }),
-/* 47 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_socket_io_client__ = __webpack_require__(48);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_socket_io_client__ = __webpack_require__(41);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_socket_io_client___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_socket_io_client__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Application_js__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_integrated_NetworkHandler_js__ = __webpack_require__(70);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_client_ClientGame_js__ = __webpack_require__(72);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Application_js__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_integrated_NetworkHandler_js__ = __webpack_require__(64);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_test_ClientGame_js__ = __webpack_require__(65);
 
 
 
@@ -7675,7 +7482,7 @@ function start()
 {
 	const socket = __WEBPACK_IMPORTED_MODULE_0_socket_io_client___default()();
 	const network = new __WEBPACK_IMPORTED_MODULE_2_integrated_NetworkHandler_js__["a" /* default */](socket, true);
-	const game = new __WEBPACK_IMPORTED_MODULE_3_client_ClientGame_js__["a" /* default */](canvas);
+	const game = new __WEBPACK_IMPORTED_MODULE_3_test_ClientGame_js__["a" /* default */](canvas);
 	__WEBPACK_IMPORTED_MODULE_1__Application_js__["a" /* default */].init(network, game)
 		.then(() => requestAnimationFrame(onRequestAnimationFrame));
 }
@@ -7691,7 +7498,7 @@ window.onload = start;
 
 
 /***/ }),
-/* 48 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -7699,9 +7506,9 @@ window.onload = start;
  * Module dependencies.
  */
 
-var url = __webpack_require__(49);
+var url = __webpack_require__(42);
 var parser = __webpack_require__(11);
-var Manager = __webpack_require__(24);
+var Manager = __webpack_require__(19);
 var debug = __webpack_require__(1)('socket.io-client');
 
 /**
@@ -7786,12 +7593,12 @@ exports.connect = lookup;
  * @api public
  */
 
-exports.Manager = __webpack_require__(24);
-exports.Socket = __webpack_require__(29);
+exports.Manager = __webpack_require__(19);
+exports.Socket = __webpack_require__(24);
 
 
 /***/ }),
-/* 49 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {
@@ -7799,7 +7606,7 @@ exports.Socket = __webpack_require__(29);
  * Module dependencies.
  */
 
-var parseuri = __webpack_require__(20);
+var parseuri = __webpack_require__(15);
 var debug = __webpack_require__(1)('socket.io-client:url');
 
 /**
@@ -7873,7 +7680,7 @@ function url (uri, loc) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 50 */
+/* 43 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -8063,7 +7870,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 51 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -8079,7 +7886,7 @@ exports.coerce = coerce;
 exports.disable = disable;
 exports.enable = enable;
 exports.enabled = enabled;
-exports.humanize = __webpack_require__(52);
+exports.humanize = __webpack_require__(45);
 
 /**
  * The currently active debug mode names, and names to skip.
@@ -8271,7 +8078,7 @@ function coerce(val) {
 
 
 /***/ }),
-/* 52 */
+/* 45 */
 /***/ (function(module, exports) {
 
 /**
@@ -8429,7 +8236,7 @@ function plural(ms, n, name) {
 
 
 /***/ }),
-/* 53 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/*global Blob,File*/
@@ -8438,8 +8245,8 @@ function plural(ms, n, name) {
  * Module requirements
  */
 
-var isArray = __webpack_require__(22);
-var isBuf = __webpack_require__(23);
+var isArray = __webpack_require__(17);
+var isBuf = __webpack_require__(18);
 var toString = Object.prototype.toString;
 var withNativeBlob = typeof global.Blob === 'function' || toString.call(global.Blob) === '[object BlobConstructor]';
 var withNativeFile = typeof global.File === 'function' || toString.call(global.File) === '[object FileConstructor]';
@@ -8577,11 +8384,11 @@ exports.removeBlobs = function(data, callback) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 54 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
-module.exports = __webpack_require__(55);
+module.exports = __webpack_require__(48);
 
 /**
  * Exports parser
@@ -8589,24 +8396,24 @@ module.exports = __webpack_require__(55);
  * @api public
  *
  */
-module.exports.parser = __webpack_require__(6);
+module.exports.parser = __webpack_require__(4);
 
 
 /***/ }),
-/* 55 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/**
  * Module dependencies.
  */
 
-var transports = __webpack_require__(25);
-var Emitter = __webpack_require__(5);
+var transports = __webpack_require__(20);
+var Emitter = __webpack_require__(3);
 var debug = __webpack_require__(1)('engine.io-client:socket');
-var index = __webpack_require__(28);
-var parser = __webpack_require__(6);
-var parseuri = __webpack_require__(20);
-var parseqs = __webpack_require__(9);
+var index = __webpack_require__(23);
+var parser = __webpack_require__(4);
+var parseuri = __webpack_require__(15);
+var parseqs = __webpack_require__(8);
 
 /**
  * Module exports.
@@ -8740,8 +8547,8 @@ Socket.protocol = parser.protocol; // this is an int
 
 Socket.Socket = Socket;
 Socket.Transport = __webpack_require__(13);
-Socket.transports = __webpack_require__(25);
-Socket.parser = __webpack_require__(6);
+Socket.transports = __webpack_require__(20);
+Socket.parser = __webpack_require__(4);
 
 /**
  * Creates transport of the given type.
@@ -9343,7 +9150,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 56 */
+/* 49 */
 /***/ (function(module, exports) {
 
 
@@ -9366,7 +9173,7 @@ try {
 
 
 /***/ }),
-/* 57 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/**
@@ -9374,9 +9181,9 @@ try {
  */
 
 var XMLHttpRequest = __webpack_require__(12);
-var Polling = __webpack_require__(26);
-var Emitter = __webpack_require__(5);
-var inherit = __webpack_require__(10);
+var Polling = __webpack_require__(21);
+var Emitter = __webpack_require__(3);
+var inherit = __webpack_require__(9);
 var debug = __webpack_require__(1)('engine.io-client:polling-xhr');
 
 /**
@@ -9786,7 +9593,7 @@ function unloadHandler () {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 58 */
+/* 51 */
 /***/ (function(module, exports) {
 
 
@@ -9811,7 +9618,7 @@ module.exports = Object.keys || function keys (obj){
 
 
 /***/ }),
-/* 59 */
+/* 52 */
 /***/ (function(module, exports) {
 
 /**
@@ -9846,7 +9653,7 @@ module.exports = function(arraybuffer, start, end) {
 
 
 /***/ }),
-/* 60 */
+/* 53 */
 /***/ (function(module, exports) {
 
 module.exports = after
@@ -9880,7 +9687,7 @@ function noop() {}
 
 
 /***/ }),
-/* 61 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module, global) {var __WEBPACK_AMD_DEFINE_RESULT__;/*! https://mths.be/utf8js v2.1.2 by @mathias */
@@ -10138,10 +9945,10 @@ function noop() {}
 
 }(this));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(62)(module), __webpack_require__(0)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(55)(module), __webpack_require__(0)))
 
 /***/ }),
-/* 62 */
+/* 55 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -10169,7 +9976,7 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 63 */
+/* 56 */
 /***/ (function(module, exports) {
 
 /*
@@ -10242,7 +10049,7 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 64 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/**
@@ -10345,7 +10152,7 @@ module.exports = (function() {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 65 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {
@@ -10353,8 +10160,8 @@ module.exports = (function() {
  * Module requirements.
  */
 
-var Polling = __webpack_require__(26);
-var inherit = __webpack_require__(10);
+var Polling = __webpack_require__(21);
+var inherit = __webpack_require__(9);
 
 /**
  * Module exports.
@@ -10583,7 +10390,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 66 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/**
@@ -10591,16 +10398,16 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
  */
 
 var Transport = __webpack_require__(13);
-var parser = __webpack_require__(6);
-var parseqs = __webpack_require__(9);
-var inherit = __webpack_require__(10);
-var yeast = __webpack_require__(27);
+var parser = __webpack_require__(4);
+var parseqs = __webpack_require__(8);
+var inherit = __webpack_require__(9);
+var yeast = __webpack_require__(22);
 var debug = __webpack_require__(1)('engine.io-client:websocket');
 var BrowserWebSocket = global.WebSocket || global.MozWebSocket;
 var NodeWebSocket;
 if (typeof window === 'undefined') {
   try {
-    NodeWebSocket = __webpack_require__(67);
+    NodeWebSocket = __webpack_require__(60);
   } catch (e) { }
 }
 
@@ -10876,13 +10683,13 @@ WS.prototype.check = function () {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 67 */
+/* 60 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 68 */
+/* 61 */
 /***/ (function(module, exports) {
 
 module.exports = toArray
@@ -10901,7 +10708,7 @@ function toArray(list, index) {
 
 
 /***/ }),
-/* 69 */
+/* 62 */
 /***/ (function(module, exports) {
 
 
@@ -10992,11 +10799,45 @@ Backoff.prototype.setJitter = function(jitter){
 
 
 /***/ }),
-/* 70 */
+/* 63 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_EventHandler_js__ = __webpack_require__(71);
+class Frame
+{
+  constructor(delta=0, then=0, count=0)
+  {
+    this.delta = 0;
+    this.then = 0;
+    this.count = 0;
+  }
+
+  set(frame)
+  {
+    this.delta = frame.delta;
+    this.then = frame.then;
+    this.count = frame.count;
+    return this;
+  }
+
+  next(now)
+  {
+  	now *= 0.001;
+  	this.delta = now - this.then;
+  	this.then = now;
+  	++this.count;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Frame);
+
+
+/***/ }),
+/* 64 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_EventHandler_js__ = __webpack_require__(27);
 
 
 class NetworkHandler
@@ -11092,108 +10933,19 @@ class NetworkHandler
 
 
 /***/ }),
-/* 71 */
+/* 65 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-class EventHandler
-{
-  constructor()
-  {
-    this.eventMap = new Map();
-  }
-
-  addListener(eventName, listener)
-  {
-    if (!this.eventMap.has(eventName)) this.eventMap.set(eventName, []);
-
-    const listeners = this.eventMap.get(eventName);
-    listeners.push(listener);
-  }
-
-  removeListener(eventName, listener)
-  {
-    if (!this.eventMap.has(eventName)) return;
-
-    const listeners = this.eventMap.get(eventName);
-    listeners.splice(listeners.indexOf(listener), 1);
-  }
-
-  clearListeners(eventName)
-  {
-    if (!this.eventMap.has(eventName)) return;
-
-    const listeners = this.eventMap.get(eventName);
-    listeners.length = 0;
-  }
-
-  countListeners(eventName)
-  {
-    return this.eventMap.has(eventName) ? this.eventMap.get(eventName).length : 0;
-  }
-
-  getListeners(eventName)
-  {
-    return this.eventMap.get(eventName);
-  }
-
-  emit(eventName)
-  {
-    if (!this.eventMap.has(eventName)) return;
-
-    //Can pass additional args to listeners here...
-    const args = Array.prototype.splice.call(arguments, 1);
-    const listeners = this.eventMap.get(eventName);
-    const length = listeners.length;
-    let i = 0;
-    while(i < length)
-    {
-      const listener = listeners[i];
-      const result = listener.apply(null, args);
-      if (result)
-      {
-        listeners.splice(i, 1);
-        --i;
-      }
-      else
-      {
-        ++i;
-      }
-    }
-  }
-
-  on(eventName, listener)
-  {
-    this.addListener(eventName, listener);
-  }
-
-  once(eventName, listener)
-  {
-    this.addListener(eventName, () => {
-      listener();
-      return true;
-    });
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (EventHandler);
-
-
-/***/ }),
-/* 72 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_Application_js__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_Frame_js__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_integrated_World_js__ = __webpack_require__(78);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_util_PriorityQueue_js__ = __webpack_require__(102);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_client_PlayerController_js__ = __webpack_require__(103);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_client_input_Mouse_js__ = __webpack_require__(104);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_client_Renderer_js__ = __webpack_require__(105);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_client_camera_ViewPort_js__ = __webpack_require__(45);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_game_GameFactory_js__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_PriorityQueue_js__ = __webpack_require__(71);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_client_input_Mouse_js__ = __webpack_require__(72);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_client_Renderer_js__ = __webpack_require__(73);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_client_camera_ViewPort_js__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_Application_js__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_test_GameWorld_js__ = __webpack_require__(80);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_test_World_js__ = __webpack_require__(84);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_test_LocalPlayer_js__ = __webpack_require__(99);
 
 
 
@@ -11205,55 +10957,44 @@ class EventHandler
 
 
 
-
-
-
-
-
-/*
-CLIENT gets CURRENT_GAME_STATE.
-CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
-CLIENT removes all INPUT_STATE older than CURRENT_GAME_STATE.
-CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
-. . .
-CLIENT stores CURRENT_INPUT_STATE.
-CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
-CLIENT sends CURRENT_INPUT_STATE.
-*/
 
 class ClientGame
 {
   constructor(canvas)
   {
-    this.world = new __WEBPACK_IMPORTED_MODULE_3_integrated_World_js__["a" /* default */]();
-    this.inputStates = new __WEBPACK_IMPORTED_MODULE_4_util_PriorityQueue_js__["a" /* default */]((a, b) => {
-      return a.worldTicks - b.worldTicks;
+    this.world = new __WEBPACK_IMPORTED_MODULE_7_test_World_js__["a" /* default */]();
+    this.inputStates = new __WEBPACK_IMPORTED_MODULE_1_util_PriorityQueue_js__["a" /* default */]((a, b) => {
+      return a.ticks - b.ticks;
     });
 
-    this.renderer = new __WEBPACK_IMPORTED_MODULE_7_client_Renderer_js__["a" /* default */](canvas);
+    this.renderer = new __WEBPACK_IMPORTED_MODULE_3_client_Renderer_js__["a" /* default */](canvas);
+    this.input = new __WEBPACK_IMPORTED_MODULE_2_client_input_Mouse_js__["a" /* default */](document);
 
-    this.input = new __WEBPACK_IMPORTED_MODULE_6_client_input_Mouse_js__["a" /* default */](document);
-    this.playerController = new __WEBPACK_IMPORTED_MODULE_5_client_PlayerController_js__["a" /* default */](this.world.entityManager, this.renderer);
+    this.thePlayer = null;
   }
 
   async load()
   {
     console.log("Loading client...");
     await this.renderer.load();
+    __WEBPACK_IMPORTED_MODULE_6_test_GameWorld_js__["a" /* default */].init(this);
+
     await this.connect();
   }
 
   async connect()
   {
     console.log("Connecting client...");
-    __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].network.events.on('serverConnect', (server, data) => {
+    __WEBPACK_IMPORTED_MODULE_5_Application_js__["a" /* default */].network.events.on('serverConnect', (server, data) => {
       //Setup the world from state...
-      this.world.resetState(data['gameState']);
+      const gameState = data['initialState'];
+      this.world.loadState(gameState);
 
       //Get this client player...
-      const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
-      if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
-      this.playerController.setClientPlayer(clientEntity);
+      const playerEntity = this.world.entityManager.getEntityByID(data.playerID);
+      if (playerEntity == null) throw new Error("cannot find player with id \'" + data.playerID + "\'");
+      this.thePlayer = new __WEBPACK_IMPORTED_MODULE_8_test_LocalPlayer_js__["a" /* default */](playerEntity, data.clientID, this.renderer.camera);
+      //TODO: this.thePlayer.loadFromGameState(gameState);
 
       //Listening to the server...
       server.on('server.gamestate', (data) => {
@@ -11261,75 +11002,57 @@ class ClientGame
       });
     });
 
-    await __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].network.initClient();
+    await __WEBPACK_IMPORTED_MODULE_5_Application_js__["a" /* default */].network.initClient();
   }
 
-  update(frame)
-  {
-    this.onUpdate(frame);
-    this.playerController.onUpdate(frame);
-  }
-
-  /************* Game Implementation *************/
-
-  onUpdate(frame)
+  update(delta)
   {
     //CLIENT stores CURRENT_INPUT_STATE.
-    var currentInputState = this.getCurrentInputState();
+    const currentInputState = this.getCurrentInputState();
     if (currentInputState != null)
     {
-      //HACK: this should always be called, or else desync happens...
       this.inputStates.queue(currentInputState);
-
       //CLIENT sends CURRENT_INPUT_STATE.
       this.sendClientInput(currentInputState);
+
+      this.thePlayer.onInputUpdate(currentInputState);
     }
-    var targetEntity = currentInputState ? this.playerController.getClientPlayer() : null;
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
-    __WEBPACK_IMPORTED_MODULE_9_game_GameFactory_js__["a" /* default */].GAMESTATE = currentInputState;
-    if (targetEntity) this.world.updateInput(currentInputState, targetEntity, true);
-    __WEBPACK_IMPORTED_MODULE_9_game_GameFactory_js__["a" /* default */].GAMESTATE = null;
-    this.world.step(frame, true);
+    this.thePlayer.onUpdate(delta);
+    this.world.update(delta);
     this.renderer.render(this.world);
   }
 
   onServerUpdate(server, gameState)
   {
     //CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
-    const currentTicks = this.world.ticks;
     this.world.resetState(gameState);
+    this.thePlayer.readFromGameState(gameState);
 
     //CLIENT removes all INPUT_STATE older than CURRENT_GAME_STATE.
-    while(this.inputStates.length > 0 && this.world.ticks >= this.inputStates.peek().worldTicks)
+    while(this.inputStates.length > 0 && this.world.ticks >= this.inputStates.peek().ticks)
     {
       this.inputStates.dequeue();
     }
 
     const oldInputStates = [];
-    const nextFrame = new __WEBPACK_IMPORTED_MODULE_2_util_Frame_js__["a" /* default */]();
 
     //CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
     while(this.inputStates.length > 0)
     {
       //Get oldest input state (ASSUMES INPUT STATES IS SORTED BY TIME!)
       const inputState = this.inputStates.dequeue();
-      const targetEntity = this.playerController.getClientPlayer();
 
       //Update world to just before input...
-      const dt = inputState.worldTicks - this.world.ticks;
+      const dt = inputState.ticks - this.world.ticks;
       if (dt > 0)
       {
-        nextFrame.delta = dt;
-        this.world.step(nextFrame, true);
+        this.thePlayer.onUpdate(dt);
       }
 
       //Update world to after this input state...
-      __WEBPACK_IMPORTED_MODULE_9_game_GameFactory_js__["a" /* default */].GAMESTATE = inputState;
-      this.world.updateInput(inputState, targetEntity, true);
-      __WEBPACK_IMPORTED_MODULE_9_game_GameFactory_js__["a" /* default */].GAMESTATE = null;
-      inputState.worldTicks = this.world.ticks;
-
+      this.thePlayer.onInputUpdate(inputState);
       oldInputStates.push(inputState);
     }
     //Re-add all future inputs...
@@ -11337,37 +11060,28 @@ class ClientGame
     {
       this.inputStates.queue(state);
     }
-
-    //Update world to current tick...
-    const dt = currentTicks - this.world.ticks;
-    if (dt > 0)
-    {
-      nextFrame.delta = dt;
-      this.world.step(nextFrame, true);
-    }
   }
 
   getCurrentInputState()
   {
-    //TODO: need to adjust the frame delta to match if skipped input frames
-    //TODO: if (!this.input.isDirty()) return null;
+    if (!this.input.isDirty()) return null;
     const inputState = this.input.poll();
 
-    const vec = __WEBPACK_IMPORTED_MODULE_8_client_camera_ViewPort_js__["a" /* default */].getPointFromScreen(
+    const vec = __WEBPACK_IMPORTED_MODULE_4_client_camera_ViewPort_js__["a" /* default */].getPointFromScreen(
       __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create(),
       this.renderer.camera, this.renderer.viewport,
       inputState.x, inputState.y);
     inputState.x = vec[0];
     inputState.y = vec[1];
-    inputState.worldTicks = this.world.ticks;
+    inputState.ticks = this.world.ticks;
     return inputState;
   }
 
   sendClientInput(inputState)
   {
     //FIXME: Force 200ms lag...
-    //setTimeout(() => this.networkHandler.sendToServer('client.inputstate', inputState), 200);
-    __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].network.sendToServer('client.inputstate', inputState);
+    setTimeout(() => __WEBPACK_IMPORTED_MODULE_5_Application_js__["a" /* default */].network.sendToServer('client.inputstate', inputState), 200);
+    //Application.network.sendToServer('client.inputstate', inputState);
   }
 }
 
@@ -11375,7 +11089,7 @@ class ClientGame
 
 
 /***/ }),
-/* 73 */
+/* 66 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11844,7 +11558,7 @@ const sub = subtract;
 
 
 /***/ }),
-/* 74 */
+/* 67 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12345,7 +12059,7 @@ const sub = subtract;
 
 
 /***/ }),
-/* 75 */
+/* 68 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -14083,7 +13797,7 @@ const sub = subtract;
 
 
 /***/ }),
-/* 76 */
+/* 69 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -14104,9 +13818,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony export (immutable) */ __webpack_exports__["fromEuler"] = fromEuler;
 /* harmony export (immutable) */ __webpack_exports__["str"] = str;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__common__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__mat3__ = __webpack_require__(32);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__vec3__ = __webpack_require__(33);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__vec4__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__mat3__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__vec3__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__vec4__ = __webpack_require__(30);
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -14774,7 +14488,7 @@ const setAxes = (function() {
 
 
 /***/ }),
-/* 77 */
+/* 70 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15416,17 +15130,1302 @@ const forEach = (function() {
 
 
 /***/ }),
+/* 71 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class PriorityQueue
+{
+  constructor(comparator)
+  {
+    this.comparator = comparator || ((a, b) => {
+      return (a || 0) - (b || 0);
+    });
+    this.length = 0;
+    this.data = [];
+    this._heapify();
+  }
+
+  queue(value)
+  {
+    this.length++;
+    this.data.push(value);
+    this._bubbleUp(this.data.length - 1);
+  }
+
+  dequeue()
+  {
+    if (!this.length) throw new Error("empty queue");
+    this.length--;
+    var last, ret;
+    ret = this.data[0];
+    last = this.data.pop();
+    if (this.data.length > 0)
+    {
+      this.data[0] = last;
+      this._bubbleDown(0);
+    }
+    return ret;
+  }
+
+  peek()
+  {
+    if (!this.length) throw new Error("empty queue");
+    return this.data[0];
+  }
+
+  clear()
+  {
+    this.length = 0;
+    this.data.length = 0;
+  }
+
+  _heapify()
+  {
+    var i, j, ref;
+    if (this.data.length > 0)
+    {
+      for (i = j = 1, ref = this.data.length; 1 <= ref ? j < ref : j > ref; i = 1 <= ref ? ++j : --j)
+      {
+        this._bubbleUp(i);
+      }
+    }
+  }
+
+  _bubbleUp(pos)
+  {
+    var parent, x;
+    while (pos > 0)
+    {
+      parent = (pos - 1) >>> 1;
+      if (this.comparator(this.data[pos], this.data[parent]) < 0)
+      {
+        x = this.data[parent];
+        this.data[parent] = this.data[pos];
+        this.data[pos] = x;
+        pos = parent;
+      }
+      else
+      {
+        break;
+      }
+    }
+  }
+
+  _bubbleDown(pos)
+  {
+    var last, left, minIndex, right, x;
+    last = this.data.length - 1;
+    while (true)
+    {
+      left = (pos << 1) + 1;
+      right = left + 1;
+      minIndex = pos;
+      if (left <= last && this.comparator(this.data[left], this.data[minIndex]) < 0)
+      {
+        minIndex = left;
+      }
+      if (right <= last && this.comparator(this.data[right], this.data[minIndex]) < 0)
+      {
+        minIndex = right;
+      }
+      if (minIndex !== pos)
+      {
+        x = this.data[minIndex];
+        this.data[minIndex] = this.data[pos];
+        this.data[pos] = x;
+        pos = minIndex;
+      }
+      else
+      {
+        break;
+      }
+    }
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (PriorityQueue);
+
+
+/***/ }),
+/* 72 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Mouse
+{
+  /**
+   * constructor - Creates and registers this with the element to listen for
+   * mouse events
+   *
+   * @param {type} canvas  The canvas to calculate appropriate mouse position
+   * @param {type} element The element to listen for mouse events
+   */
+  constructor(element)
+  {
+    this.x = 0.0;
+    this.y = 0.0;
+    this._prevX = 0.0;
+    this._prevY = 0.0;
+    this.scrollX = 0.0;
+    this.scrollY = 0.0;
+    this.down = false;
+
+    this._click = false;
+    this._element = element;
+
+    this._dirty = true;
+
+    var self = this;
+    this.onMouseUp = function(event)
+    {
+      let screen = canvas.getBoundingClientRect();
+      self.x = event.clientX - screen.left;
+      self.y = event.clientY - screen.top;
+      self.down = false;
+      self._dirty = true;
+    }
+    this.onMouseDown = function(event)
+    {
+      let screen = canvas.getBoundingClientRect();
+      self.x = event.clientX - screen.left;
+      self.y = event.clientY - screen.top;
+      self.down = true;
+      self._dirty = true;
+    }
+    this.onMouseClick = function(event)
+    {
+      let screen = canvas.getBoundingClientRect();
+      self.x = event.clientX - screen.left;
+      self.y = event.clientY - screen.top;
+      self._click = true;
+      self._dirty = true;
+    }
+    this.onMouseWheel = function(event)
+    {
+      self.scrollX = event.deltaX;
+      self.scrollY = event.deltaY;
+      self._dirty = true;
+    }
+    this.onMouseMove = function(event)
+    {
+      let screen = canvas.getBoundingClientRect();
+      self.x = event.clientX - screen.left;
+      self.y = event.clientY - screen.top;
+      self._dirty = true;
+    }
+    this.onTouchStart = function(event)
+    {
+      var target = event.touches[0].target;
+      target.addEventListener('touchmove', self.onTouchMove);
+      target.addEventListener('touchend', self.onTouchStop);
+      target.addEventListener('touchcancel', self.onTouchStop);
+    }
+    this.onTouchStop = function(event)
+    {
+      var target = event.touches[0].target;
+      target.removeEventListener('touchmove', self.onTouchMove);
+      target.removeEventListener('touchend', self.onTouchStop);
+      target.removeEventListener('touchcancel', self.onTouchStop);
+    }
+    this.onTouchMove = function(event)
+    {
+      let screen = canvas.getBoundingClientRect();
+      self.x = event.touches[0].clientX - screen.left;
+      self.y = event.touches[0].clientY - screen.right;
+      self._dirty = true;
+    }
+
+    this._element.addEventListener('mouseup', this.onMouseUp);
+    this._element.addEventListener('mousedown', this.onMouseDown);
+    this._element.addEventListener('click', this.onMouseClick);
+    this._element.addEventListener('wheel', this.onMouseWheel);
+    this._element.addEventListener('mousemove', this.onMouseMove);
+    this._element.addEventListener('touchstart', this.onTouchStart);
+  }
+
+  destroy()
+  {
+    this._element.removeEventListener('mouseup', this.onMouseUp);
+    this._element.removeEventListener('mousedown', this.onMouseDown);
+    this._element.removeEventListener('click', this.onMouseClick);
+    this._element.removeEventListener('wheel', this.onMouseWheel);
+    this._element.removeEventListener('mousemove', this.onMouseMove);
+    this._element.removeEventListener('touchstart', this.onTouchStart);
+  }
+
+  poll()
+  {
+    this._dirty = false;
+    return {
+      x: this.x,
+      y: this.y,
+      dx: this.dx,
+      dy: this.dy,
+      scrollX: this.scrollX,
+      scrollY: this.scrollY,
+      down: this.down,
+      click: this.click,
+      time: Date.now()
+    };
+  }
+
+  isDirty()
+  {
+    return this._dirty;
+  }
+
+  get dx()
+  {
+    if (this._prevX == this.x) return 0;
+    var result = this.x - this._prevX;
+    this._prevX = this.x;
+    this._dirty = true;
+    return result;
+  }
+
+  get dy()
+  {
+    if (this._prevY == this.y) return 0;
+    var result = this.y - this._prevY;
+    this._prevY = this.y;
+    this._dirty = true;
+    return result;
+  }
+
+  get click()
+  {
+    if (!this._click) return false;
+    var result = this._click;
+    this._click = false;
+    this._dirty = true;
+    return result;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Mouse);
+
+
+/***/ }),
+/* 73 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_client_asset_AssetManager_js__ = __webpack_require__(74);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_client_camera_ViewPort_js__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_client_camera_OrthographicCamera_js__ = __webpack_require__(75);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_client_mogli_Shader_js__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_client_mogli_Program_js__ = __webpack_require__(77);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_client_mogli_Mesh_js__ = __webpack_require__(78);
+
+
+
+
+
+
+
+
+
+
+
+class Renderer
+{
+  constructor(canvas)
+  {
+    this.canvas = canvas;
+    this.viewport = new __WEBPACK_IMPORTED_MODULE_3_client_camera_ViewPort_js__["a" /* default */](this.canvas);
+
+    this.assets = new __WEBPACK_IMPORTED_MODULE_2_client_asset_AssetManager_js__["a" /* default */]();
+
+    this.camera = new __WEBPACK_IMPORTED_MODULE_4_client_camera_OrthographicCamera_js__["a" /* default */](this.viewport);
+    this.camera.transform.position[2] = 1.0;
+  }
+
+  async load()
+  {
+    this.assets.register('shader', 'vdef', './res/def.vsh');
+    this.assets.register('shader', 'fdef', './res/def.fsh');
+
+    await this.assets.fetchAssets();
+    await this._prepareAssets();
+  }
+
+  async _prepareAssets()
+  {
+		//Load resources
+		const vsrc = this.assets.getAsset('shader', 'vdef');
+		const fsrc = this.assets.getAsset('shader', 'fdef');
+
+		//Shader Programs
+		var vertexShader = new __WEBPACK_IMPORTED_MODULE_5_client_mogli_Shader_js__["a" /* default */](vsrc, __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].VERTEX_SHADER);
+		var fragmentShader = new __WEBPACK_IMPORTED_MODULE_5_client_mogli_Shader_js__["a" /* default */](fsrc, __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].FRAGMENT_SHADER);
+		this.prgm = new __WEBPACK_IMPORTED_MODULE_6_client_mogli_Program_js__["a" /* default */]();
+		this.prgm.link([vertexShader, fragmentShader]);
+
+		//Mesh
+    //TODO: get a proper OBJ loader!
+		this.mesh = __WEBPACK_IMPORTED_MODULE_7_client_mogli_Mesh_js__["a" /* default */].createMesh({
+			position: new Float32Array([
+				-0.5, 0.5,
+				0.5, 0.5,
+				0.5, -0.5,
+				-0.5, -0.5
+			]),
+			indices: new Uint16Array([
+				0, 1, 2, 3
+			])},
+			__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].GL_STATIC_DRAW);
+  }
+
+  render(world)
+  {
+		__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].clear(__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].COLOR_BUFFER_BIT | __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].DEPTH_BUFFER_BIT);
+    this.viewport.update();
+
+    //Setting up the Projection Matrix
+    const projection = this.camera.projection;
+
+    //Setting up the View Matrix
+    const view = this.camera.view;
+		const modelview = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+
+		this.prgm.bind();
+		{
+			__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].uniformMatrix4fv(this.prgm.uniforms.uProjection, false, projection);
+
+			this.mesh.bind();
+			{
+        if (Renderer.RENDER_SERVER_STATE)
+        {
+          __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].uniform3fv(this.prgm.uniforms.uColor, [0.3, 0.3, 0.3]);
+          for(const serverEntity of world.serverState.entities)
+          {
+            if (!serverEntity.renderable || !serverEntity.renderable.visible) continue;
+
+            //Setting up the Model Matrix
+            __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromRotationTranslationScale(modelview,
+              serverEntity.transform.rotation,
+              [serverEntity.transform.x, serverEntity.transform.y, 0],
+              serverEntity.transform.scale);
+            __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].mul(modelview, view, modelview);
+      			__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
+
+            //Draw it!
+            __WEBPACK_IMPORTED_MODULE_7_client_mogli_Mesh_js__["a" /* default */].draw(this.mesh);
+          }
+          __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].clear(__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].DEPTH_BUFFER_BIT);
+        }
+
+        for(const entity of world.entities)
+        {
+          const renderable = entity.renderable;
+          if (!renderable || !renderable.visible) continue;
+
+          __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].uniform3fv(this.prgm.uniforms.uColor,
+            [((renderable.color >> 16) & 0xFF) / 255.0,
+            ((renderable.color >> 8) & 0xFF) / 255.0,
+            ((renderable.color) & 0xFF) / 255.0]);
+
+          //Setting up the Model Matrix
+          __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromRotationTranslationScale(modelview,
+            entity.transform.rotation || [0, 0, 0, 1],
+            [entity.transform.x, entity.transform.y, 0],
+            entity.transform.scale || [1, 1, 1]);
+          __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].mul(modelview, view, modelview);
+    			__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
+
+          //Draw it!
+          __WEBPACK_IMPORTED_MODULE_7_client_mogli_Mesh_js__["a" /* default */].draw(this.mesh);
+        }
+			}
+			this.mesh.unbind();
+		}
+		this.prgm.unbind();
+  }
+}
+
+Renderer.RENDER_SERVER_STATE = false;
+
+/* harmony default export */ __webpack_exports__["a"] = (Renderer);
+
+
+/***/ }),
+/* 74 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class ResourceLocation
+{
+  constructor(filename)
+  {
+    this._filename = filename;
+  }
+
+  get url()
+  {
+    return this._filename;
+  }
+}
+
+class AssetManager
+{
+  constructor()
+  {
+    this.registry = {};
+  }
+
+  destroy()
+  {
+    this.registry.clear();
+  }
+
+  register(type, id, url = null)
+  {
+    if (!this.registry[type])
+    {
+      this.registry[type] = {}
+    }
+    this.registry[type][id] = new ResourceLocation(url);
+  }
+
+  unregister(type, id)
+  {
+    this.registry[type].delete(id);
+  }
+
+  getAsset(type, id)
+  {
+    let asset = this.registry[type][id];
+    if (!asset)
+    {
+      asset = AssetManager.fetchFileFromURLSync(assets[id].url);
+      this.registry[type][id] = asset;
+    }
+    return asset;
+  }
+
+  async fetchAssets()
+  {
+    const promises = [];
+    var flag = false;
+    var count = 0;
+    for(const type in this.registry)
+    {
+      const assets = this.registry[type];
+      for(const id in assets)
+      {
+        const asset = assets[id];
+        if (asset instanceof ResourceLocation)
+        {
+          ++count;
+          console.log("LOADING (" + count + ") " + type + ":" + id + "...");
+          const promise = AssetManager.fetchFileFromURL(asset.url)
+            .then(response => {
+              console.log("...RECEIVED (" + count + ") " + type + ":" + id + "...");
+              assets[id] = response;
+              --count;
+            })
+            .catch(e => { throw new Error(e); });
+          promises.push(promise);
+        }
+      }
+    }
+
+    return Promise.all(promises);
+  }
+
+  static async fetchFileFromURL(url)
+  {
+    return new Promise(function(resolve, reject) {
+      const request = new XMLHttpRequest();
+      request.timeout = 5000;
+      request.onreadystatechange = function(e) {
+        if (request.readyState == XMLHttpRequest.DONE)
+        {
+          if (request.status == 200)
+          {
+            resolve(request.response);
+          }
+          else
+          {
+            reject(request.status);
+          }
+        }
+      };
+      request.ontimeout = function() {
+        reject('timeout');
+      };
+      request.open('GET', url, true);
+      request.send(null);
+    });
+  }
+
+  static fetchFileFromURLSync(url)
+  {
+    const request = new XMLHttpRequest();
+    request.timeout = 5000;
+    request.open('GET', url, false);
+    request.send(null);
+    if (request.status == 200)
+    {
+      return request.response;
+    }
+    else
+    {
+      throw new Error(request.status);
+    }
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (AssetManager);
+
+
+/***/ }),
+/* 75 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_client_camera_Camera_js__ = __webpack_require__(76);
+
+
+
+
+class OrthographicCamera extends __WEBPACK_IMPORTED_MODULE_1_client_camera_Camera_js__["a" /* default */]
+{
+  constructor(viewport, left = -10, right = 10, top = -10, bottom = 10, near = -10, far = 10)
+  {
+    super(viewport);
+    //near plane must be > 0
+    //far plane must be > near
+    this.left = left;
+    this.right = right;
+    this.top = top;
+    this.bottom = bottom;
+    this.near = near;
+    this.far = far;
+  }
+
+  get projection()
+  {
+    //TODO: maybe cache this?
+    let width = this.right - this.left;
+    let height = this.bottom - this.top;
+    let a = width / height;
+    let v = this.viewport.width / this.viewport.height;
+    if (v >= a)
+    {
+      return __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].ortho(this._projection,
+        -(v / a) * width / 2.0, (v / a) * width / 2.0,
+        -height / 2.0, height / 2.0,
+        this.near, this.far);
+    }
+    else
+    {
+      return __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].ortho(this._projection,
+        -width / 2.0, width / 2.0,
+        -(a / v) * height / 2.0, (a / v) * height / 2.0,
+        this.near, this.far);
+    }
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (OrthographicCamera);
+
+
+/***/ }),
+/* 76 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(6);
+
+
+class Camera
+{
+  constructor(viewport)
+  {
+    this.transform = {
+      position: __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create(),
+      rotation: __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].create(),
+      scale: __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(1, 1, 1)
+    };
+
+    this.viewport = viewport;
+    this._view = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    this._orientation = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    this._projection = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+  }
+
+  get view()
+  {
+    return __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromRotationTranslationScale(this._view,
+      this.transform.rotation,
+      [-this.transform.position[0], -this.transform.position[1], -this.transform.position[2]],
+      this.transform.scale);
+  }
+
+  get orientation()
+  {
+    return __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromQuat(this._orientation, this.transform.rotation);
+  }
+
+  get projection()
+  {
+    throw new Error("undefined camera type - must be perspective or orthographic");
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Camera);
+
+
+/***/ }),
+/* 77 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Shader_js__ = __webpack_require__(32);
+
+
+
+/**
+ * Program - Manages and links related shaders. In order to set uniform values,
+ * use gl.setUniform(program.uniforms.name, value).
+ */
+class Program
+{
+  constructor()
+  {
+    //Create Program
+    this.handle = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].createProgram();
+
+    this.shaders = [];
+
+    this.attribs = {};
+    this.uniforms = {};
+  }
+
+  /**
+   * close - Destroys the program object
+   */
+  close()
+  {
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].deleteProgram(this.handle);
+    this.handle = null;
+  }
+
+  /**
+   * link - Attach passed-in shaders to this program and resolve all uniform and
+   * attribute locations.
+   *
+   * @param {Array} shaders Array of shaders to be linked
+   */
+  link(shaders)
+  {
+    //Attach shaders
+    var len = shaders.length;
+    for(let i = 0; i < len; ++i)
+    {
+      let shader = shaders[i];
+      this.shaders.push(shader);
+      __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].attachShader(this.handle, shader.handle);
+    }
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].linkProgram(this.handle);
+
+    //Validate program links
+    if (!__WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getProgramParameter(this.handle, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].LINK_STATUS))
+    {
+      let info = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getProgramInfoLog(this.handle);
+      __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].deleteProgram(this.handle);
+      this.handle = null;
+      throw new Error("Unable to initialize shader program: " + info);
+    }
+
+    //Resolve uniforms
+    const uniformCount = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getProgramParameter(this.handle, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].ACTIVE_UNIFORMS);
+    for(let i = 0; i < uniformCount; ++i)
+    {
+      const info = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getActiveUniform(this.handle, i);
+      console.log("...found uniform: \'" + info.name + "\'...");
+      this.uniforms[info.name] = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getUniformLocation(this.handle, info.name);
+    }
+
+    //Resolve attributes
+    const attribCount = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getProgramParameter(this.handle, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].ACTIVE_ATTRIBUTES);
+    for(let i = 0; i < attribCount; ++i)
+    {
+      const info = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getActiveAttrib(this.handle, i);
+      console.log("...found attrib: \'" + info.name + "\'...");
+      this.attribs[info.name] = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getAttribLocation(this.handle, info.name);
+    }
+  }
+
+  /**
+   * validate - Strictly validate the program state
+   */
+  validate()
+  {
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].validateProgram(this.handle);
+
+    if (!__WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getProgramParameter(this.handle, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].VALIDATE_STATUS))
+    {
+      let info = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getProgramInfoLog(this.handle);
+      __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].deleteProgram(this.handle);
+      this.handle = null;
+      throw new Error("Invalid program: " + info);
+    }
+  }
+
+  bind()
+  {
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].useProgram(this.handle);
+  }
+
+  unbind()
+  {
+    console.assert(this.isInUse(), "must call bind first!");
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].useProgram(null);
+  }
+
+  /**
+   * isInUse - Whether the program is bound to the current context.
+   *
+   * @return {Boolean} Whether the program is bound to the current context.
+   */
+  isInUse()
+  {
+    return __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getParameter(__WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].CURRENT_PROGRAM) == this.handle;
+  }
+
+  /**
+   * @deprecated locations already automatically resolved while linking shaders
+   */
+  findUniformLocation(name)
+  {
+    var loc = this.uniforms[name];
+    if (!loc)
+    {
+      loc = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getUniformLocation(this.handle, name);
+      if (loc == null)
+      {
+        throw new Error("Cannot find uniform with name: " + name);
+      }
+
+      this.uniforms[name] = loc;
+    }
+    return loc;
+  }
+
+  /**
+   * @deprecated locations already automatically resolved while linking shaders
+   */
+  findAttribLocation(name)
+  {
+    var loc = this.attribs[name];
+    if (!loc)
+    {
+      loc = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getAttribLocation(this.handle, name);
+      if (loc == null)
+      {
+        throw new Error("Cannot find attribute with name: " + name);
+      }
+
+      this.attribs[name] = loc;
+    }
+    return loc;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Program);
+
+
+/***/ }),
 /* 78 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Frame_js__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_integrated_entity_EntityManager_js__ = __webpack_require__(79);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_integrated_entity_SystemManager_js__ = __webpack_require__(94);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_game_GameFactory_js__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__VBO_js__ = __webpack_require__(79);
 
 
 
+/**
+ * Mesh - Vertex array object representation
+ */
+class Mesh
+{
+  constructor()
+  {
+    this.vbos = {};
+    this.vertexCount = 0;
+
+    this.ibo = null;
+  }
+
+  /**
+   * close - Destroys the mesh object and the associated buffer objects
+   */
+  close()
+  {
+    for(let loc in this.vbos)
+    {
+      let vbo = this.vbos[loc];
+      vbo.close();
+      delete this.vbos[loc];
+    }
+
+    if (this.ibo != null)
+    {
+      this.ibo.close();
+      this.ibo = null;
+    }
+  }
+
+  /**
+   * setElementArrayBuffer - Set the element array buffer to the passed-in
+   * buffer object
+   *
+   * @param {VBO} vbo the buffer object
+   *
+   * @return {Mesh} for method chaining
+   */
+  setElementArrayBuffer(vbo)
+  {
+    console.assert(vbo.target == __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].ELEMENT_ARRAY_BUFFER, "invalid element array buffer object");
+
+    if (this.ibo)
+    {
+      this.ibo.close();
+    }
+    this.ibo = vbo;
+    this.vertexCount = this.ibo.length;
+    return this; //For method chaining
+  }
+
+  /**
+   * setVertexArrayBuffer - Set the passed-in buffer object to the passed-in
+   * location for this mesh
+   *
+   * @param {WebGL} location  the location of the attribute
+   * @param {VBO} vbo         the buffer object to set at location
+   *
+   * @return {Mesh} For method chaining
+   */
+  setVertexArrayBuffer(location, vbo)
+  {
+    var vbo2 = this.vbos[location];
+    if (vbo2)
+    {
+      vbo2.close();
+    }
+    this.vbos[location] = vbo;
+    return this; //For method chaining
+  }
+
+  /**
+   * bind - Bind the mesh and the associated buffer objects to the current
+   * context
+   */
+  bind()
+  {
+    if (this.ibo)
+    {
+      this.ibo.bind();
+    }
+
+    for(let loc in this.vbos)
+    {
+      let vbo = this.vbos[loc];
+      vbo.bind();
+      __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].enableVertexAttribArray(loc);
+      __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].vertexAttribPointer(loc, vbo.vertexSize, vbo.type, vbo.normalized, vbo.stride, 0);
+    }
+  }
+
+  /**
+   * unbind - Bind an empty mesh and unbinds all associaed buffer objects in the
+   * current context
+   */
+  unbind()
+  {
+    if (this.ibo)
+    {
+      this.ibo.unbind();
+    }
+
+    for(let loc in this.vbos)
+    {
+      let vbo = this.vbos[loc];
+      __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].disableVertexAttribArray(loc);
+      vbo.unbind();
+    }
+  }
+
+  static putIndexBuffer(mesh, data, usage)
+  {
+		var ibo = new __WEBPACK_IMPORTED_MODULE_1__VBO_js__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].ELEMENT_ARRAY_BUFFER);
+		ibo.bind();
+		{
+			ibo.putData(data, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].UNSIGNED_INT, 1, false, usage || __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].STATIC_DRAW);
+			mesh.setElementArrayBuffer(ibo);
+		}
+		ibo.unbind();
+    return mesh; //For method chaining
+  }
+
+  static putVertexBuffer(mesh, data, usage, location, size, stride)
+  {
+    var vbo = new __WEBPACK_IMPORTED_MODULE_1__VBO_js__["a" /* default */]();
+    vbo.bind();
+    {
+      vbo.putData(data, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].FLOAT, size, false, usage || __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].STATIC_DRAW, stride);
+      mesh.setVertexArrayBuffer(location, vbo);
+    }
+    vbo.unbind();
+    return mesh; //For method chaining
+  }
+
+  /**
+   * @static createMesh - Creates a mesh object with specified passed-in
+   * meshData. (As of right now, it only creates 2D meshes.)
+   *
+   * @param {Object} meshData the vertex data that make up the mesh
+   * @param {GLEnum} usage    how the mesh will be used
+   *                          (i.e. gl.STATIC_DRAW, gl.DYNAMIC_DRAW)
+   */
+  static createMesh(meshData, usage)
+  {
+    //TODO: Allow variable vertex size for 3D objects
+    var mesh = new Mesh();
+    if (meshData.position)
+    {
+      this.putVertexBuffer(mesh, meshData.position, usage, 0, 2, 0);
+    }
+
+    if (meshData.texcoord)
+    {
+      this.putVertexBuffer(mesh, meshData.texcoord, usage, 0, 2, 0);
+    }
+
+    if (meshData.indices)
+    {
+      this.putIndexBuffer(mesh, meshData.indices, usage)
+    }
+    return mesh;
+  }
+
+  /**
+   * @static draw - Draws the passed-in mesh by the passed-in mode
+   *
+   * @param {Mesh} mesh       the mesh to draw
+   * @param {GlEnum} drawMode the mode to which to draw
+   *                          (i.e. gl.POINTS, gl.LINE_LOOP, gl.TRIANGLES)
+   */
+  static draw(mesh, drawMode)
+  {
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].drawElements(drawMode || __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].LINE_LOOP, mesh.vertexCount, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].UNSIGNED_SHORT, 0);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Mesh);
+
+
+/***/ }),
+/* 79 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_js__ = __webpack_require__(5);
+
+
+/**
+ * VBO - Data buffer representation
+ */
+class VBO
+{
+  constructor(target)
+  {
+    this.target = target || __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].ARRAY_BUFFER;
+    this.handle = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].createBuffer();
+    this.normalized = false;
+    this.length = 0;
+    this.vertexSize = 0;
+    this.stride = 0;
+  }
+
+  /**
+   * close - Destroys the buffer object
+   */
+  close()
+  {
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].deleteBuffer(this.handle);
+    this.handle = null;
+  }
+
+  /**
+   * putData - Put the passed-in data in this buffer object with specific
+   * instructions to how to use it.
+   *
+   * @param {Array} data          the array data
+   *                              (i.e. Float32Array, Uint16Array)
+   * @param {GLEnum} dataType     the type of data
+   *                              (i.e. gl.FLOAT, gl.UNSIGNED_INT)
+   * @param {Number} vertexSize   the size of the vertices this buffer holds
+   * @param {Boolean} normalized  whether this buffer is normalized
+   * @param {GLEnum} usage        how this buffer is stored and used
+   *                              (i.e. gl.STATIC_DRAW)
+   * @param {Number} stride       the 'step' indices to each vertex (default 0)
+   */
+  putData(data, dataType, vertexSize, normalized, usage, stride)
+  {
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, this.handle);
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bufferData(this.target, data, usage);
+    this.type = dataType;
+    this.vertexSize = vertexSize;
+    this.normalized = normalized;
+    this.length = data.length;
+    this.stride = stride || 0;
+  }
+
+  /**
+   * updateData - Update the buffer data to the passed-in data
+   *
+   * @param {Array} data    the array data (i.e. Float32Array)
+   * @param {Number} offset the index from which to update
+   */
+  updateData(data, offset)
+  {
+    if (offset + data.length > this.length)
+    {
+      var usage = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getBufferParameter(this.target, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].BUFFER_USAGE);
+      this.putData(data, this.normalized, usage);
+    }
+
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, this.handle);
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bufferSubData(this.target, offset, data);
+  }
+
+  /**
+   * bind - Binds the buffer object to the current target context
+   * (specified by putData())
+   */
+  bind()
+  {
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, this.handle);
+  }
+
+  /**
+   * unbind - Binds an empty buffer object to the current target context
+   * (specified by putData())
+   */
+  unbind()
+  {
+    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, null);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (VBO);
+
+
+/***/ }),
+/* 80 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_Application_js__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_test_SystemMotion_js__ = __webpack_require__(81);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_test_ComponentTransform_js__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_test_ComponentRenderable_js__ = __webpack_require__(83);
+
+
+
+
+
+
+
+class GameWorld
+{
+  constructor()
+  {
+    this.entityManager = null;
+  }
+
+  init(game)
+  {
+    this.entityManager = game.world.entityManager;
+
+    this.entityManager.addSystem(new __WEBPACK_IMPORTED_MODULE_1_test_SystemMotion_js__["a" /* default */]());
+
+    this.entityManager.registerEntity('player', function() {
+      this.addComponent(__WEBPACK_IMPORTED_MODULE_2_test_ComponentTransform_js__["a" /* default */]);
+      this.addComponent(__WEBPACK_IMPORTED_MODULE_3_test_ComponentRenderable_js__["a" /* default */]);
+      this.renderable.color = 0xFF00FF;
+    });
+
+    this.entityManager.registerEntity('star', function() {
+      this.addComponent(__WEBPACK_IMPORTED_MODULE_2_test_ComponentTransform_js__["a" /* default */]);
+      this.addComponent(__WEBPACK_IMPORTED_MODULE_3_test_ComponentRenderable_js__["a" /* default */]);
+    });
+  }
+
+  create(game)
+  {
+    if (__WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].isRemote()) throw new Error('must be server-side');
+    if (this.entityManager == null) throw new Error('must init first');
+
+    //populate with random
+    for(let i = 0; i < 100; ++i)
+    {
+      const entity = this.entityManager.spawnEntity('star');
+      entity.transform.x = Math.random() * 100 - 50;
+      entity.transform.y = Math.random() * 100 - 50;
+    }
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (new GameWorld());
+
+
+/***/ }),
+/* 81 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_test_System_js__ = __webpack_require__(82);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_test_ComponentTransform_js__ = __webpack_require__(33);
+
+
+
+
+class SystemMotion extends __WEBPACK_IMPORTED_MODULE_0_test_System_js__["a" /* default */]
+{
+  constructor()
+  {
+    super();
+  }
+
+  onUpdate(entityManager, delta)
+  {
+    //Interpolating...
+    const entities = entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_1_test_ComponentTransform_js__["a" /* default */]);
+    for(const entity of entities)
+    {
+      entity.transform.x = entity.transform.x + (entity.transform.nextX - entity.transform.x) * delta;
+      entity.transform.y = entity.transform.y + (entity.transform.nextY - entity.transform.y) * delta;
+    }
+  }
+
+  saveToGameState(entityManager, gameState)
+  {
+    const entities = entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_1_test_ComponentTransform_js__["a" /* default */]);
+    for(const entity of entities)
+    {
+      let result = gameState.entities[entity.id];
+      if (!result) result = gameState.entities[entity.id] = {};
+      if (!result.transform) result.transform = {};
+      result.transform.x = entity.transform.x;
+      result.transform.y = entity.transform.y;
+    }
+  }
+
+  loadFromGameState(entityManager, gameState)
+  {
+    const entities = entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_1_test_ComponentTransform_js__["a" /* default */]);
+    for(const entity of entities)
+    {
+      const result = gameState.entities[entity.id];
+      if (!result) continue;
+      if (!result.transform) continue;
+      entity.transform.nextX = result.transform.x;
+      entity.transform.nextY = result.transform.y;
+    }
+  }
+
+  writeToGameState(entityManager, gameState)
+  {
+    const entities = entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_1_test_ComponentTransform_js__["a" /* default */]);
+    for(const entity of entities)
+    {
+      let result = gameState.entities[entity.id];
+      if (!result) result = gameState.entities[entity.id] = {};
+      if (!result.transform) result.transform = {};
+      result.transform.x = entity.transform.x;
+      result.transform.y = entity.transform.y;
+    }
+  }
+
+  readFromGameState(entityManager, gameState)
+  {
+    const entities = entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_1_test_ComponentTransform_js__["a" /* default */]);
+    for(const entity of entities)
+    {
+      let result = gameState.entities[entity.id];
+      if (!result) continue;
+      if (!result.transform) continue;
+      entity.transform.nextX = result.transform.x;
+      entity.transform.nextY = result.transform.y;
+    }
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (SystemMotion);
+
+
+/***/ }),
+/* 82 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class System
+{
+  constructor()
+  {
+
+  }
+
+  onUpdate(entityManager, delta)
+  {
+
+  }
+
+  writeToGameState(entityManager, gameState)
+  {
+
+  }
+
+  readFromGameState(entityManager, gameState)
+  {
+
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (System);
+
+
+/***/ }),
+/* 83 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+function Renderable()
+{
+  this.visible = true;
+  this.color = 0xFFFFFF;
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Renderable);
+
+
+/***/ }),
+/* 84 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_test_EntityManager_js__ = __webpack_require__(85);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_Application_js__ = __webpack_require__(10);
 
 
 
@@ -15435,70 +16434,153 @@ class World
 {
   constructor()
   {
-    this.ticks = 0;
+    this.worldTicks = 0;
 
-    this.serverState = null;
-
-    this.entityManager = new __WEBPACK_IMPORTED_MODULE_1_integrated_entity_EntityManager_js__["a" /* default */]();
-    this.systemManager = new __WEBPACK_IMPORTED_MODULE_2_integrated_entity_SystemManager_js__["a" /* default */]();
-
-    __WEBPACK_IMPORTED_MODULE_3_game_GameFactory_js__["a" /* default */].init(this);
+    this.eventCache = [];
+    this.entityManager = new __WEBPACK_IMPORTED_MODULE_0_test_EntityManager_js__["a" /* default */]();
+    this.entityManager.events.on('entityCreate', (entity, name) => {
+      this.eventCache.push({
+        name: 'entityCreate',
+        target: entity.id,
+        targetName: name
+      });
+    });
+    this.entityManager.events.on('entityDestroy', (entity) => {
+      this.eventCache.push({
+        name: 'entityDestroy',
+        target: entity.id
+      });
+    });
   }
 
-  step(frame, predictive=false)
+  update(delta)
   {
-    this.ticks += frame.delta;
-
-    //Continue to update the world state
-    this.systemManager.update(this.entityManager, frame, predictive);
+    this.worldTicks += delta;
+    this.entityManager.update(delta);
   }
 
-  updateInput(inputState, targetEntity, predictive=false)
+  saveState()
   {
-    this.systemManager.updateInput(inputState, targetEntity, predictive);
+    const gameState = {
+      ticks: this.worldTicks,
+      entities: {},
+      players: {}
+    };
+
+    for(const system of this.entityManager.systems)
+    {
+      system.saveToGameState(this.entityManager, gameState);
+    }
+
+    for(const entity of this.entityManager.entities)
+    {
+      let entityData = gameState.entities[entity.id];
+      if (!entityData) entityData = gameState.entities[entity.id] = {};
+      entityData.name = entity._name;
+    }
+
+    return gameState;
+  }
+
+  loadState(gameState)
+  {
+    this.worldTicks = gameState.ticks;
+    for(const entityID in gameState.entities)
+    {
+      const entityData = gameState.entities[entityID];
+      let entity = this.entityManager.getEntityByID(entityID);
+      if (!entity)
+      {
+        entity = this.entityManager.spawnEntity(entityData.name);
+        entity._id = entityID;
+      }
+    }
+
+    for(const system of this.entityManager.systems)
+    {
+      system.loadFromGameState(this.entityManager, gameState);
+    }
   }
 
   captureState()
   {
-    //Capture a GameState and return it for sending...
-    const dst = {};
-    this.systemManager.captureSystemStates(this.entityManager, dst);
-    dst.worldTicks = this.ticks;
-    return dst;
+    const gameState = {
+      ticks: this.worldTicks,
+      events: [],
+      entities: {}
+    };
+
+    gameState.events = [];
+    for(const event of this.eventCache)
+    {
+      gameState.events.push(event);
+    }
+    this.eventCache.length = 0;
+
+    for(const system of this.entityManager.systems)
+    {
+      system.writeToGameState(this.entityManager, gameState);
+    }
+
+    return gameState;
   }
 
   resetState(gameState)
   {
-    this.ticks = gameState.worldTicks;
+    this.worldTicks = gameState.ticks;
 
-    //Continue to reset the world state
-    this.systemManager.resetSystemStates(this.entityManager, gameState);
+    for(const event of gameState.events)
+    {
+      if (event.name === 'entityCreate')
+      {
+        console.log("Created entity \'" + event.targetName + "\'...");
+        if (this.entityManager.getEntityByID(event.target)) continue;
+        const entity = this.entityManager.spawnEntity(event.targetName);
+        entity._id = event.target;
+      }
+      else if (event.name === 'entityDestroy')
+      {
+        console.log("Destroyed entity...");
+        if (!this.entityManager.entities[event.target]) continue;
+        const entity = this.entityManager.getEntityByID(event.target);
+        if (!entity) throw new Error("Cannot find entity by id \'" + event.taraget + "\' for removal");
+        this.entityManager.destroyEntity(entity);
+      }
+      else
+      {
+        throw new Error("Unknown event type for entity");
+      }
+    }
+    this.eventCache.length = 0;
 
-    //HACK: Prepare server state for rendering...
-    this.serverState = gameState;
-    this.serverState.entities = Object.values(gameState.entitylist);
+    for(const system of this.entityManager.systems)
+    {
+      system.readFromGameState(this.entityManager, gameState);
+    }
   }
 
-  get entities()
-  {
-    return this.entityManager.getEntities();
-  }
+  get entities() { return this.entityManager.entities; }
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (World);
 
 
 /***/ }),
-/* 79 */
+/* 85 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_stacktrace_js__ = __webpack_require__(80);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_stacktrace_js__ = __webpack_require__(86);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_stacktrace_js___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_stacktrace_js__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Entity_js__ = __webpack_require__(91);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_Reflection_js__ = __webpack_require__(38);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_util_ObjectPool_js__ = __webpack_require__(92);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_util_uid_js__ = __webpack_require__(93);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_test_Entity_js__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_Reflection_js__ = __webpack_require__(97);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_util_ObjectPool_js__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_util_uid_js__ = __webpack_require__(39);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_util_EventHandler_js__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__EntityRegistry_js__ = __webpack_require__(98);
+
+
+
 
 
 
@@ -15508,82 +16590,106 @@ class World
 
 class EntityManager
 {
-  constructor(E)
+  constructor()
   {
     this.entities = [];
-    this.entityPool = new __WEBPACK_IMPORTED_MODULE_3_util_ObjectPool_js__["a" /* default */](E || __WEBPACK_IMPORTED_MODULE_1__Entity_js__["a" /* default */]);
-
+    this.systems = [];
     this.components = new Map();
-    this.nextEntityID = Object(__WEBPACK_IMPORTED_MODULE_4_util_uid_js__["a" /* default */])();
+    this.registry = new __WEBPACK_IMPORTED_MODULE_6__EntityRegistry_js__["a" /* default */](this);
 
-    this.onEntityCreate = (entity) => {};
-    this.onEntityDestroy = (entity) => {};
-
-    this._timestamp = null;
+    this.events = new __WEBPACK_IMPORTED_MODULE_5_util_EventHandler_js__["a" /* default */]();
   }
 
-  createEntity(id, depth=1)
+  update(delta)
   {
-    const entity = this.entityPool.obtain();
-    entity._manager = this;
-    entity._id = id || this.getNextAvailableEntityID();
-    entity._trace = getEntityFingerprint(this._timestamp, depth);
-    this.entities.push(entity);
+    for(const system of this.systems)
+    {
+      system.onUpdate(this, delta);
+    }
+  }
 
-    this.onEntityCreate(entity);
+  getEntityByID(id)
+  {
+    for(const entity of this.entities)
+    {
+      if (entity._id === id) return entity;
+    }
+    return null;
+  }
 
+  spawnEntity(name)
+  {
+    const entity = this.registry.createEntity(name);
+    this.events.emit('entityCreate', entity, name);
     return entity;
   }
 
   destroyEntity(entity)
   {
-    this.onEntityDestroy(entity);
-
-    this.clearComponentsFromEntity(entity);
-    this.entities.splice(this.entities.indexOf(entity), 1);
-    this.entityPool.release(entity);
+    this.events.emit('entityDestroy', entity);
+    this.registry.deleteEntity(entity);
   }
 
-  getEntityByID(id)
+  clearEntities()
   {
-    for(let entity of this.entities)
+    while(this.entities.length > 0)
     {
-      if (entity._id == id)
-      {
-        return entity;
-      }
+      this.registry.deleteEntity(this.entities[0]);
     }
-    return null;
+  }
+
+  registerEntity(name, generator)
+  {
+    this.registry.register(name, generator);
+  }
+
+  unregisterEntity(name)
+  {
+    this.registry.unregister(name);
+  }
+
+  addSystem(system)
+  {
+    this.systems.push(system);
+  }
+
+  removeSystem(system)
+  {
+    this.systems.splice(this.systems.indexOf(system), 1);
   }
 
   addComponentToEntity(entity, component)
   {
-    if (this.hasComponent(entity, component))
+    if (this.hasComponentByEntity(entity, component))
     {
       throw new Error("entity already includes component \'" + __WEBPACK_IMPORTED_MODULE_2_util_Reflection_js__["a" /* default */].getClassVarName(component) + "\'");
     }
 
     entity[__WEBPACK_IMPORTED_MODULE_2_util_Reflection_js__["a" /* default */].getClassVarName(component)] = new component();
 
-    var list = this.components.get(component) || [];
+    const list = this.components.get(component) || [];
     list.push(entity);
     this.components.set(component, list);
+
+    this.events.emit('entityComponentAdd', entity, component);
   }
 
   removeComponentFromEntity(entity, component)
   {
-    if (!this.hasComponent(entity, component))
+    if (!this.hasComponentByEntity(entity, component))
     {
       throw new Error("entity does not include component \'" + __WEBPACK_IMPORTED_MODULE_2_util_Reflection_js__["a" /* default */].getClassVarName(component) + "\'");
     }
 
     delete entity[__WEBPACK_IMPORTED_MODULE_2_util_Reflection_js__["a" /* default */].getClassVarName(component)];
 
-    var list = this.components.get(component);
+    const list = this.components.get(component);
     if (list)
     {
       list.splice(list.indexOf(entity), 1);
     }
+
+    this.events.emit('entityComponentRemove', entity, component);
   }
 
   clearComponentsFromEntity(entity)
@@ -15592,22 +16698,25 @@ class EntityManager
     {
       if (list.includes(entity))
       {
+        const component = entity[__WEBPACK_IMPORTED_MODULE_2_util_Reflection_js__["a" /* default */].getClassVarName(key)];
         delete entity[__WEBPACK_IMPORTED_MODULE_2_util_Reflection_js__["a" /* default */].getClassVarName(key)];
 
         list.splice(list.indexOf(entity), 1);
+
+        this.events.emit('entityComponentRemove', entity, component);
       }
     }
   }
 
-  hasComponent(entity, component)
+  hasComponentByEntity(entity, component)
   {
-    let list = this.components.get(component);
+    const list = this.components.get(component);
     return list && list.includes(entity);
   }
 
   getComponentsByEntity(entity)
   {
-    let result = [];
+    const result = [];
     for(const [key, list] of this.components)
     {
       if (list.includes(entity))
@@ -15627,38 +16736,13 @@ class EntityManager
   {
     return this.entities;
   }
-
-  getEntityIterator()
-  {
-    return new EntityIterator(this);
-  }
-
-  getNextAvailableEntityID()
-  {
-    let iters = 100;
-    let id = Object(__WEBPACK_IMPORTED_MODULE_4_util_uid_js__["a" /* default */])();
-    while (this.entities[id])
-    {
-      id = Object(__WEBPACK_IMPORTED_MODULE_4_util_uid_js__["a" /* default */])();
-
-      if (--iters <= 0)
-        throw new Error("cannot find another unique entity id");
-    }
-    return id;
-  }
-}
-
-function getEntityFingerprint(timestamp, depth)
-{
-  const stackTrace = __WEBPACK_IMPORTED_MODULE_0_stacktrace_js___default.a.getSync()[1 + depth];
-  return timestamp + "@" + stackTrace.lineNumber + "," + stackTrace.columnNumber + ":" + stackTrace.functionName;
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (EntityManager);
 
 
 /***/ }),
-/* 80 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function(root, factory) {
@@ -15667,7 +16751,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
     /* istanbul ignore next */
     if (true) {
-        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(81), __webpack_require__(82), __webpack_require__(83)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(87), __webpack_require__(88), __webpack_require__(89)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -15894,7 +16978,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 
 /***/ }),
-/* 81 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function(root, factory) {
@@ -15903,7 +16987,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
     /* istanbul ignore next */
     if (true) {
-        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(16)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(14)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -16094,7 +17178,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 
 /***/ }),
-/* 82 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function(root, factory) {
@@ -16103,7 +17187,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
     /* istanbul ignore next */
     if (true) {
-        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(16)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(14)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -16148,7 +17232,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 
 /***/ }),
-/* 83 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function(root, factory) {
@@ -16157,7 +17241,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
     /* istanbul ignore next */
     if (true) {
-        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(84), __webpack_require__(16)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(90), __webpack_require__(14)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -16497,7 +17581,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 
 /***/ }),
-/* 84 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -16505,13 +17589,13 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
  * Licensed under the New BSD license. See LICENSE.txt or:
  * http://opensource.org/licenses/BSD-3-Clause
  */
-exports.SourceMapGenerator = __webpack_require__(35).SourceMapGenerator;
-exports.SourceMapConsumer = __webpack_require__(87).SourceMapConsumer;
-exports.SourceNode = __webpack_require__(90).SourceNode;
+exports.SourceMapGenerator = __webpack_require__(34).SourceMapGenerator;
+exports.SourceMapConsumer = __webpack_require__(93).SourceMapConsumer;
+exports.SourceNode = __webpack_require__(96).SourceNode;
 
 
 /***/ }),
-/* 85 */
+/* 91 */
 /***/ (function(module, exports) {
 
 /* -*- Mode: js; js-indent-level: 2; -*- */
@@ -16584,7 +17668,7 @@ exports.decode = function (charCode) {
 
 
 /***/ }),
-/* 86 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* -*- Mode: js; js-indent-level: 2; -*- */
@@ -16594,7 +17678,7 @@ exports.decode = function (charCode) {
  * http://opensource.org/licenses/BSD-3-Clause
  */
 
-var util = __webpack_require__(8);
+var util = __webpack_require__(7);
 
 /**
  * Determine whether mappingB is after mappingA with respect to generated
@@ -16669,7 +17753,7 @@ exports.MappingList = MappingList;
 
 
 /***/ }),
-/* 87 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* -*- Mode: js; js-indent-level: 2; -*- */
@@ -16679,11 +17763,11 @@ exports.MappingList = MappingList;
  * http://opensource.org/licenses/BSD-3-Clause
  */
 
-var util = __webpack_require__(8);
-var binarySearch = __webpack_require__(88);
-var ArraySet = __webpack_require__(37).ArraySet;
-var base64VLQ = __webpack_require__(36);
-var quickSort = __webpack_require__(89).quickSort;
+var util = __webpack_require__(7);
+var binarySearch = __webpack_require__(94);
+var ArraySet = __webpack_require__(36).ArraySet;
+var base64VLQ = __webpack_require__(35);
+var quickSort = __webpack_require__(95).quickSort;
 
 function SourceMapConsumer(aSourceMap) {
   var sourceMap = aSourceMap;
@@ -17757,7 +18841,7 @@ exports.IndexedSourceMapConsumer = IndexedSourceMapConsumer;
 
 
 /***/ }),
-/* 88 */
+/* 94 */
 /***/ (function(module, exports) {
 
 /* -*- Mode: js; js-indent-level: 2; -*- */
@@ -17874,7 +18958,7 @@ exports.search = function search(aNeedle, aHaystack, aCompare, aBias) {
 
 
 /***/ }),
-/* 89 */
+/* 95 */
 /***/ (function(module, exports) {
 
 /* -*- Mode: js; js-indent-level: 2; -*- */
@@ -17994,7 +19078,7 @@ exports.quickSort = function (ary, comparator) {
 
 
 /***/ }),
-/* 90 */
+/* 96 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* -*- Mode: js; js-indent-level: 2; -*- */
@@ -18004,8 +19088,8 @@ exports.quickSort = function (ary, comparator) {
  * http://opensource.org/licenses/BSD-3-Clause
  */
 
-var SourceMapGenerator = __webpack_require__(35).SourceMapGenerator;
-var util = __webpack_require__(8);
+var SourceMapGenerator = __webpack_require__(34).SourceMapGenerator;
+var util = __webpack_require__(7);
 
 // Matches a Windows-style `\r\n` newline or a `\n` newline used by all other
 // operating systems these days (capturing the result).
@@ -18407,435 +19491,20 @@ exports.SourceNode = SourceNode;
 
 
 /***/ }),
-/* 91 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class Entity
-{
-  constructor()
-  {
-    this.__init();
-  }
-
-  __init()
-  {
-    this._id = 0;
-  }
-
-  addComponent(component)
-  {
-    this._manager.addComponentToEntity(this, component);
-    return this;
-  }
-
-  removeComponent(component)
-  {
-    this._manager.removeComponentFromEntity(this, component);
-    return this;
-  }
-
-  clearComponents()
-  {
-    this._manager.clearComponentsFromEntity(this);
-  }
-
-  hasComponent(component)
-  {
-    return this._manager.hasComponent(this, component);
-  }
-
-  destroy()
-  {
-    this._manager.destroyEntity(this);
-  }
-
-  get id()
-  {
-    return this._id;
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Entity);
-
-
-/***/ }),
-/* 92 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class ObjectPool
-{
-  constructor(T)
-  {
-    this._freeList = [];
-    this.size = 0;
-    this.T = T;
-  }
-
-  obtain()
-  {
-    if (this._freeList.length <= 0)
-    {
-      this.expand(Math.round(this.size * 0.2) + 1);
-    }
-
-    var item = this._freeList.pop();
-    if (item.__init)
-    {
-      item.__init();
-    }
-    else
-    {
-      this.T.call(item);
-    }
-    return item;
-  }
-
-  release(item)
-  {
-    this._freeList.push(item);
-  }
-
-  expand(count)
-  {
-    for(let i = 0; i < count; ++i)
-    {
-      this._freeList.push(new this.T());
-    }
-    this.size += count;
-  }
-
-  getTotalObjectsFree()
-  {
-    return this._freeList.length;
-  }
-
-  getTotalObjectsUsed()
-  {
-    return this._count - this._freeList.length;
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (ObjectPool);
-
-
-/***/ }),
-/* 93 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-function generate()
-{
-  let fst = (Math.random() * 46656) | 0;
-  let snd = (Math.random() * 46656) | 0;
-  fst = ("000" + fst.toString(36)).slice(-3);
-  snd = ("000" + snd.toString(36)).slice(-3);
-  return fst + snd;
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (generate);
-
-
-/***/ }),
-/* 94 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class SystemManager
-{
-  constructor()
-  {
-    this.systems = [];
-    this.predictiveEntities = {};
-  }
-
-  update(entityManager, frame, predictive)
-  {
-    this.makePredictiveState(frame, predictive);
-
-    for(const system of this.systems)
-    {
-      system.onUpdate(entityManager, frame.delta);
-    }
-  }
-
-  updateInput(inputState, targetEntity, predictive)
-  {
-    this.makePredictiveState(inputState, predictive);
-
-    for(const system of this.systems)
-    {
-      system.onInputUpdate(targetEntity, inputState);
-    }
-  }
-
-  captureSystemStates(entityManager, dst)
-  {
-    for(const system of this.systems)
-    {
-      system.writeToGameState(entityManager, dst);
-    }
-  }
-
-  resetSystemStates(entityManager, gameState)
-  {
-    this.resetEntityList(entityManager, gameState);
-
-    for(const system of this.systems)
-    {
-      system.readFromGameState(entityManager, gameState);
-    }
-  }
-
-  resetEntityList(entityManager, gameState)
-  {
-    //HACK: This is to correct any dead / alive entities left...
-    const entities = gameState['entitylist'] || {};
-    for(const entity of entityManager.getEntities())
-    {
-      if (!entities[entity._id] && !entity.tracker)
-      {
-        //Maybe missed destruction event from server...
-        entityManager.destroyEntity(entity);
-      }
-    }
-    for(const entityID in entities)
-    {
-      const entity = entityManager.getEntityByID(entityID);
-      if (!entity)
-      {
-        //Maybe missed creation event from server...
-        entityManager.createEntity(entityID);
-      }
-    }
-  }
-
-  makePredictiveState(state, predictive)
-  {
-    if (predictive || state.hasOwnProperty('predictive'))
-    {
-      state.predictiveFirst = (predictive && !state.predictive);
-      state.predictive = predictive;
-    }
-
-    return state;
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (SystemManager);
-
-
-/***/ }),
-/* 95 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_integrated_entity_System_js__ = __webpack_require__(39);
-
-
-class NetworkEntitySystem extends __WEBPACK_IMPORTED_MODULE_0_integrated_entity_System_js__["a" /* default */]
-{
-  constructor(entityManager)
-  {
-    super();
-
-    this.createCache = [];
-    this.destroyCache = [];
-
-    entityManager.onEntityCreate = (entity) => {
-      if (this.destroyCache.includes(entity._id))
-      {
-        this.destroyCache.splice(this.destroyCache.indexOf(entity._id), 1);
-      }
-      this.createCache.push(entity._id);
-    };
-
-    entityManager.onEntityDestroy = (entity) => {
-      if (this.createCache.includes(entity._id))
-      {
-        this.createCache.splice(this.createCache.indexOf(entity._id), 1);
-      }
-      this.destroyCache.push(entity._id);
-    };
-  }
-
-  onUpdate(entityManager, delta)
-  {
-    super.onUpdate(entityManager, delta);
-  }
-
-  onInputUpdate(entity, inputState)
-  {
-    super.onInputUpdate(entity, inputState)
-  }
-
-  writeToGameState(entityManager, gameState)
-  {
-    super.writeToGameState(entityManager, gameState);
-
-    let entities = gameState['entities.create'];
-    if (!entities) entities = gameState['entities.create'] = [];
-    for(const entityID of this.createCache)
-    {
-      entities.push(entityID);
-    }
-    this.createCache.length = 0;
-
-    entities = gameState['entities.destroy'];
-    if (!entities) entities = gameState['entities.destroy'] = [];
-    for(const entityID of entities)
-    {
-      entities.push(entityID);
-    }
-    this.destroyCache.length = 0;
-  }
-
-  readFromGameState(entityManager, gameState)
-  {
-    super.readFromGameState(entityManager, gameState);
-
-    //BUG: This is not actually running...
-    let entities = gameState['entities.create'] || [];
-    for(const entityID of entities)
-    {
-      const entity = entityManager.getEntityByID(entityID);
-      if (entity) continue;
-
-      entityManager.createEntity(entityID);
-    }
-
-    //BUG: This is not actually running...
-    entities = gameState['entities.destroy'] || [];
-    for(const entityID of entities)
-    {
-      const entity = entityManager.getEntityByID(entityID);
-      if (!entity) continue;
-
-      entityManager.destroyEntity(entity);
-    }
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (NetworkEntitySystem);
-
-
-/***/ }),
-/* 96 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_js__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_game_PlayerComponent_js__ = __webpack_require__(40);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_game_TransformComponent_js__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_game_RenderableComponent_js__ = __webpack_require__(41);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_game_BulletComponent_js__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_game_GameFactory_js__ = __webpack_require__(17);
-
-
-
-
-
-
-
-
-class PlayerSystem extends __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_js__["a" /* default */]
-{
-  constructor()
-  {
-    super(__WEBPACK_IMPORTED_MODULE_1_game_PlayerComponent_js__["a" /* default */]);
-  }
-
-  onInputUpdate(entity, inputState)
-  {
-    if (!entity.hasComponent(__WEBPACK_IMPORTED_MODULE_1_game_PlayerComponent_js__["a" /* default */])) return;
-    entity.player.nextX = inputState.x;
-    entity.player.nextY = inputState.y;
-    entity.player.move = inputState.down;
-    //HACK: this will run once on server and client-side, needs a way to keep predicted alive
-    if (inputState.click)// && !inputState.predictive)
-    {
-      const bulletSpeed = 10;
-      const bulletEntity = __WEBPACK_IMPORTED_MODULE_5_game_GameFactory_js__["a" /* default */].createEntity('bullet');
-      const dx = entity.player.nextX - entity.transform.x;
-      const dy = entity.player.nextY - entity.transform.y;
-      const rot = -Math.atan2(-dy, dx);
-      bulletEntity.transform.x = entity.transform.x;
-      bulletEntity.transform.y = entity.transform.y;
-      bulletEntity.renderable.color = 0xFF00FF;
-      bulletEntity.bullet.owner = entity._id;
-      bulletEntity.bullet.speedx = Math.cos(rot) * bulletSpeed;
-      bulletEntity.bullet.speedy = Math.sin(rot) * bulletSpeed;
-
-      //FIXME: need to have a function to create predicted entity, and replace it later.
-      //FIXME: this is because, this may be created multiple times, and should be the same.
-      //FIXME: to keep track of the predicted entity, Valve fingerprints the code that is called.
-      //FIXME: https://developer.valvesoftware.com/wiki/Prediction#Predicting_entity_creation
-
-      //TODO: What you could do is make 2 different update loops: one for update once, and the other for predictions
-    }
-  }
-
-  onEntityUpdate(entity, delta)
-  {
-    if (entity.player.move)
-    {
-      const dx = entity.player.nextX - entity.transform.x;
-      const dy = entity.player.nextY - entity.transform.y;
-      const rot = -Math.atan2(-dy, dx);
-
-      const speed = 15.0;
-      entity.motion.motionX += Math.cos(rot) * speed * delta;
-      entity.motion.motionY += Math.sin(rot) * speed * delta;
-    }
-  }
-
-  writeEntityToData(entity, dst)
-  {
-    dst.player.nextX = entity.player.nextX;
-    dst.player.nextY = entity.player.nextY;
-    dst.player.move = entity.player.move;
-  }
-
-  readEntityFromData(src, entity)
-  {
-    entity.player.nextX = src.player.nextX;
-    entity.player.nextY = src.player.nextY;
-    entity.player.move = src.player.move;
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (PlayerSystem);
-
-
-/***/ }),
 /* 97 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_js__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_game_MotionComponent_js__ = __webpack_require__(42);
-
-
-
-class MotionSystem extends __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_js__["a" /* default */]
+class Reflection
 {
-  constructor()
+  static getClassVarName(T)
   {
-    super(__WEBPACK_IMPORTED_MODULE_1_game_MotionComponent_js__["a" /* default */]);
-  }
-
-  onEntityUpdate(entity, delta)
-  {
-    const fricRatio = 1.0 / (1.0 + (delta * entity.motion.friction));
-    entity.motion.motionX *= fricRatio;
-    entity.motion.motionY *= fricRatio;
-    entity.transform.x += entity.motion.motionX * delta;
-    entity.transform.y += entity.motion.motionY * delta;
+    const name = T.name;
+    return name.charAt(0).toLowerCase() + name.slice(1);
   }
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (MotionSystem);
+/* harmony default export */ __webpack_exports__["a"] = (Reflection);
 
 
 /***/ }),
@@ -18843,20 +19512,76 @@ class MotionSystem extends __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_j
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_js__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_game_TransformComponent_js__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Entity_js__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_ObjectPool_js__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_uid_js__ = __webpack_require__(39);
 
 
 
-class TransformSystem extends __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_js__["a" /* default */]
+
+
+class EntityRegistry
 {
-  constructor()
+  constructor(entityManager)
   {
-    super(__WEBPACK_IMPORTED_MODULE_1_game_TransformComponent_js__["a" /* default */]);
+    this.entityManager = entityManager;
+    this.entityMap = new Map();
+    this.entityPool = new __WEBPACK_IMPORTED_MODULE_1_util_ObjectPool_js__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0__Entity_js__["a" /* default */]);
+  }
+
+  register(name, entityGenerator)
+  {
+    this.entityMap.set(name, entityGenerator);
+  }
+
+  unregister(name)
+  {
+    this.entityMap.delete(name);
+  }
+
+  createEntity(name)
+  {
+    const generator = this.entityMap.get(name);
+    if (!generator) throw new Error("entity \'" + name + "\' is not registered");
+    const entity = this._createEntity();
+    entity._manager = this.entityManager;
+    entity._name = name;
+    this.entityManager.entities.push(entity);
+    generator.apply(entity);
+    return entity;
+  }
+
+  deleteEntity(entity)
+  {
+    entity.clearComponents();
+    this.entityManager.entities.splice(this.entityManager.entities.indexOf(entity), 1);
+    this.entityPool.release(entity);
+  }
+
+  _createEntity()
+  {
+    const entity = this.entityPool.obtain();
+    entity._manager = this.entityManager;
+    entity._id = this._nextAvailableEntityID();
+    return entity;
+  }
+
+  _nextAvailableEntityID()
+  {
+    let iters = 100;
+    let id = Object(__WEBPACK_IMPORTED_MODULE_2_util_uid_js__["a" /* default */])();
+    while (this.entityManager.entities[id])
+    {
+      id = Object(__WEBPACK_IMPORTED_MODULE_2_util_uid_js__["a" /* default */])();
+
+      if (--iters <= 0)
+        throw new Error("cannot find another unique entity id");
+    }
+    return id;
   }
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (TransformSystem);
+/* harmony default export */ __webpack_exports__["a"] = (EntityRegistry);
 
 
 /***/ }),
@@ -18864,250 +19589,22 @@ class TransformSystem extends __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSyste
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_js__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_game_BulletComponent_js__ = __webpack_require__(19);
-
-
-
-class BulletSystem extends __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_js__["a" /* default */]
+class LocalPlayer
 {
-  constructor()
+  constructor(entity, clientID, camera)
   {
-    super(__WEBPACK_IMPORTED_MODULE_1_game_BulletComponent_js__["a" /* default */]);
+    this.entity = entity;
+    this.clientID = clientID;
+    this.camera = camera;
   }
 
-  onEntityUpdate(entity, delta)
+  onUpdate(delta)
   {
-    //TODO: this would be a problem when calculating collision...
-    entity.life -= delta;
-    if (entity.life < 0)
-    {
-      entity.destroy();
-    }
-    else
-    {
-      entity.transform.x += entity.bullet.speedx * delta;
-      entity.transform.y += entity.bullet.speedy * delta;
-    }
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (BulletSystem);
-
-
-/***/ }),
-/* 100 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_game_SynchronizedSystem_js__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_game_RotatingComponent_js__ = __webpack_require__(43);
-
-
-
-
-
-class RotatingSystem extends __WEBPACK_IMPORTED_MODULE_1_game_SynchronizedSystem_js__["a" /* default */]
-{
-  constructor()
-  {
-    super(__WEBPACK_IMPORTED_MODULE_2_game_RotatingComponent_js__["a" /* default */]);
-  }
-
-  onEntityUpdate(entity, delta)
-  {
-    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].rotateZ(entity.transform.rotation, entity.transform.rotation, entity.rotating.speed * delta);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (RotatingSystem);
-
-
-/***/ }),
-/* 101 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_js__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_game_FollowComponent_js__ = __webpack_require__(44);
-
-
-
-class FollowSystem extends __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_js__["a" /* default */]
-{
-  constructor()
-  {
-    super(__WEBPACK_IMPORTED_MODULE_1_game_FollowComponent_js__["a" /* default */]);
-  }
-
-  onEntityUpdate(entity, delta)
-  {
-    if (entity.follow.target != null)
-    {
-      const targetEntity = entity.follow.target;
-      const dx = targetEntity.transform.x - entity.transform.x;
-      const dy = targetEntity.transform.y - entity.transform.y;
-      const distSqu = dx * dx + dy * dy;
-      if (distSqu > entity.follow.targetDistance * entity.follow.targetDistance)
-      {
-        const dist = Math.sqrt(distSqu);
-        entity.motion.motionX += (dx / dist) * delta;
-        entity.motion.motionY += (dy / dist) * delta;
-      }
-    }
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (FollowSystem);
-
-
-/***/ }),
-/* 102 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class PriorityQueue
-{
-  constructor(comparator)
-  {
-    this.comparator = comparator || ((a, b) => {
-      return (a || 0) - (b || 0);
-    });
-    this.length = 0;
-    this.data = [];
-    this._heapify();
-  }
-
-  queue(value)
-  {
-    this.length++;
-    this.data.push(value);
-    this._bubbleUp(this.data.length - 1);
-  }
-
-  dequeue()
-  {
-    if (!this.length) throw new Error("empty queue");
-    this.length--;
-    var last, ret;
-    ret = this.data[0];
-    last = this.data.pop();
-    if (this.data.length > 0)
-    {
-      this.data[0] = last;
-      this._bubbleDown(0);
-    }
-    return ret;
-  }
-
-  peek()
-  {
-    if (!this.length) throw new Error("empty queue");
-    return this.data[0];
-  }
-
-  clear()
-  {
-    this.length = 0;
-    this.data.length = 0;
-  }
-
-  _heapify()
-  {
-    var i, j, ref;
-    if (this.data.length > 0)
-    {
-      for (i = j = 1, ref = this.data.length; 1 <= ref ? j < ref : j > ref; i = 1 <= ref ? ++j : --j)
-      {
-        this._bubbleUp(i);
-      }
-    }
-  }
-
-  _bubbleUp(pos)
-  {
-    var parent, x;
-    while (pos > 0)
-    {
-      parent = (pos - 1) >>> 1;
-      if (this.comparator(this.data[pos], this.data[parent]) < 0)
-      {
-        x = this.data[parent];
-        this.data[parent] = this.data[pos];
-        this.data[pos] = x;
-        pos = parent;
-      }
-      else
-      {
-        break;
-      }
-    }
-  }
-
-  _bubbleDown(pos)
-  {
-    var last, left, minIndex, right, x;
-    last = this.data.length - 1;
-    while (true)
-    {
-      left = (pos << 1) + 1;
-      right = left + 1;
-      minIndex = pos;
-      if (left <= last && this.comparator(this.data[left], this.data[minIndex]) < 0)
-      {
-        minIndex = left;
-      }
-      if (right <= last && this.comparator(this.data[right], this.data[minIndex]) < 0)
-      {
-        minIndex = right;
-      }
-      if (minIndex !== pos)
-      {
-        x = this.data[minIndex];
-        this.data[minIndex] = this.data[pos];
-        this.data[pos] = x;
-        pos = minIndex;
-      }
-      else
-      {
-        break;
-      }
-    }
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (PriorityQueue);
-
-
-/***/ }),
-/* 103 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class PlayerController
-{
-  constructor(entityManager, renderer)
-  {
-    this.entityManager = entityManager;
-    this.renderer = renderer;
-
-    this.clientPlayer = null;
-  }
-
-  setClientPlayer(entity)
-  {
-    this.clientPlayer = entity;
-  }
-
-  onUpdate(frame)
-  {
-    //Smoothly follow the player
-    if (this.clientPlayer)
+    if (LocalPlayer.CAMERA_FOLLOW && this.entity)
     {
       const dampingFactor = 0.3;
-      const playerTransform = this.clientPlayer.transform;
-      const cameraTransform = this.renderer.camera.transform;
+      const playerTransform = this.entity.transform;
+      const cameraTransform = this.camera.transform;
       const dx = playerTransform.x - cameraTransform.position[0];
       const dy = playerTransform.y - cameraTransform.position[1];
       cameraTransform.position[0] += dx * dampingFactor;
@@ -19115,996 +19612,36 @@ class PlayerController
     }
   }
 
-  getClientPlayer()
+  onInputUpdate(inputState)
   {
-    return this.clientPlayer;
+    this.entity.transform.nextX = inputState.x;
+    this.entity.transform.nextY = inputState.y;
+  }
+
+  saveToGameState(gameState)
+  {
+
+  }
+
+  loadFromGameState(gameState)
+  {
+
+  }
+
+  writeToGameState(gameState)
+  {
+
+  }
+
+  readFromGameState(gameState)
+  {
+
   }
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (PlayerController);
+LocalPlayer.CAMERA_FOLLOW = false;
 
-
-/***/ }),
-/* 104 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class Mouse
-{
-  /**
-   * constructor - Creates and registers this with the element to listen for
-   * mouse events
-   *
-   * @param {type} canvas  The canvas to calculate appropriate mouse position
-   * @param {type} element The element to listen for mouse events
-   */
-  constructor(element)
-  {
-    this.x = 0.0;
-    this.y = 0.0;
-    this._prevX = 0.0;
-    this._prevY = 0.0;
-    this.scrollX = 0.0;
-    this.scrollY = 0.0;
-    this.down = false;
-
-    this._click = false;
-    this._element = element;
-
-    this._dirty = true;
-
-    var self = this;
-    this.onMouseUp = function(event)
-    {
-      let screen = canvas.getBoundingClientRect();
-      self.x = event.clientX - screen.left;
-      self.y = event.clientY - screen.top;
-      self.down = false;
-      self._dirty = true;
-    }
-    this.onMouseDown = function(event)
-    {
-      let screen = canvas.getBoundingClientRect();
-      self.x = event.clientX - screen.left;
-      self.y = event.clientY - screen.top;
-      self.down = true;
-      self._dirty = true;
-    }
-    this.onMouseClick = function(event)
-    {
-      let screen = canvas.getBoundingClientRect();
-      self.x = event.clientX - screen.left;
-      self.y = event.clientY - screen.top;
-      self._click = true;
-      self._dirty = true;
-    }
-    this.onMouseWheel = function(event)
-    {
-      self.scrollX = event.deltaX;
-      self.scrollY = event.deltaY;
-      self._dirty = true;
-    }
-    this.onMouseMove = function(event)
-    {
-      let screen = canvas.getBoundingClientRect();
-      self.x = event.clientX - screen.left;
-      self.y = event.clientY - screen.top;
-      self._dirty = true;
-    }
-    this.onTouchStart = function(event)
-    {
-      var target = event.touches[0].target;
-      target.addEventListener('touchmove', self.onTouchMove);
-      target.addEventListener('touchend', self.onTouchStop);
-      target.addEventListener('touchcancel', self.onTouchStop);
-    }
-    this.onTouchStop = function(event)
-    {
-      var target = event.touches[0].target;
-      target.removeEventListener('touchmove', self.onTouchMove);
-      target.removeEventListener('touchend', self.onTouchStop);
-      target.removeEventListener('touchcancel', self.onTouchStop);
-    }
-    this.onTouchMove = function(event)
-    {
-      let screen = canvas.getBoundingClientRect();
-      self.x = event.touches[0].clientX - screen.left;
-      self.y = event.touches[0].clientY - screen.right;
-      self._dirty = true;
-    }
-
-    this._element.addEventListener('mouseup', this.onMouseUp);
-    this._element.addEventListener('mousedown', this.onMouseDown);
-    this._element.addEventListener('click', this.onMouseClick);
-    this._element.addEventListener('wheel', this.onMouseWheel);
-    this._element.addEventListener('mousemove', this.onMouseMove);
-    this._element.addEventListener('touchstart', this.onTouchStart);
-  }
-
-  destroy()
-  {
-    this._element.removeEventListener('mouseup', this.onMouseUp);
-    this._element.removeEventListener('mousedown', this.onMouseDown);
-    this._element.removeEventListener('click', this.onMouseClick);
-    this._element.removeEventListener('wheel', this.onMouseWheel);
-    this._element.removeEventListener('mousemove', this.onMouseMove);
-    this._element.removeEventListener('touchstart', this.onTouchStart);
-  }
-
-  poll()
-  {
-    this._dirty = false;
-    return {
-      x: this.x,
-      y: this.y,
-      dx: this.dx,
-      dy: this.dy,
-      scrollX: this.scrollX,
-      scrollY: this.scrollY,
-      down: this.down,
-      click: this.click,
-      time: Date.now()
-    };
-  }
-
-  isDirty()
-  {
-    return this._dirty;
-  }
-
-  get dx()
-  {
-    if (this._prevX == this.x) return 0;
-    var result = this.x - this._prevX;
-    this._prevX = this.x;
-    this._dirty = true;
-    return result;
-  }
-
-  get dy()
-  {
-    if (this._prevY == this.y) return 0;
-    var result = this.y - this._prevY;
-    this._prevY = this.y;
-    this._dirty = true;
-    return result;
-  }
-
-  get click()
-  {
-    if (!this._click) return false;
-    var result = this._click;
-    this._click = false;
-    this._dirty = true;
-    return result;
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Mouse);
-
-
-/***/ }),
-/* 105 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_client_asset_AssetManager_js__ = __webpack_require__(106);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_client_camera_ViewPort_js__ = __webpack_require__(45);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_client_camera_OrthographicCamera_js__ = __webpack_require__(107);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_client_mogli_Shader_js__ = __webpack_require__(46);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_client_mogli_Program_js__ = __webpack_require__(109);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_client_mogli_Mesh_js__ = __webpack_require__(110);
-
-
-
-
-
-
-
-
-
-
-
-class Renderer
-{
-  constructor(canvas)
-  {
-    this.canvas = canvas;
-    this.viewport = new __WEBPACK_IMPORTED_MODULE_3_client_camera_ViewPort_js__["a" /* default */](this.canvas);
-
-    this.assets = new __WEBPACK_IMPORTED_MODULE_2_client_asset_AssetManager_js__["a" /* default */]();
-
-    this.camera = new __WEBPACK_IMPORTED_MODULE_4_client_camera_OrthographicCamera_js__["a" /* default */](this.viewport);
-    this.camera.transform.position[2] = 1.0;
-  }
-
-  async load()
-  {
-    this.assets.register('shader', 'vdef', './res/def.vsh');
-    this.assets.register('shader', 'fdef', './res/def.fsh');
-
-    await this.assets.fetchAssets();
-    await this._prepareAssets();
-  }
-
-  async _prepareAssets()
-  {
-		//Load resources
-		const vsrc = this.assets.getAsset('shader', 'vdef');
-		const fsrc = this.assets.getAsset('shader', 'fdef');
-
-		//Shader Programs
-		var vertexShader = new __WEBPACK_IMPORTED_MODULE_5_client_mogli_Shader_js__["a" /* default */](vsrc, __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].VERTEX_SHADER);
-		var fragmentShader = new __WEBPACK_IMPORTED_MODULE_5_client_mogli_Shader_js__["a" /* default */](fsrc, __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].FRAGMENT_SHADER);
-		this.prgm = new __WEBPACK_IMPORTED_MODULE_6_client_mogli_Program_js__["a" /* default */]();
-		this.prgm.link([vertexShader, fragmentShader]);
-
-		//Mesh
-    //TODO: get a proper OBJ loader!
-		this.mesh = __WEBPACK_IMPORTED_MODULE_7_client_mogli_Mesh_js__["a" /* default */].createMesh({
-			position: new Float32Array([
-				-0.5, 0.5,
-				0.5, 0.5,
-				0.5, -0.5,
-				-0.5, -0.5
-			]),
-			indices: new Uint16Array([
-				0, 1, 2, 3
-			])},
-			__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].GL_STATIC_DRAW);
-  }
-
-  render(world)
-  {
-		__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].clear(__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].COLOR_BUFFER_BIT | __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].DEPTH_BUFFER_BIT);
-    this.viewport.update();
-
-    //Setting up the Projection Matrix
-    const projection = this.camera.projection;
-
-    //Setting up the View Matrix
-    const view = this.camera.view;
-		const modelview = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
-
-		this.prgm.bind();
-		{
-			__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].uniformMatrix4fv(this.prgm.uniforms.uProjection, false, projection);
-
-			this.mesh.bind();
-			{
-        if (Renderer.RENDER_SERVER_STATE)
-        {
-          __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].uniform3fv(this.prgm.uniforms.uColor, [0.3, 0.3, 0.3]);
-          for(const serverEntity of world.serverState.entities)
-          {
-            if (!serverEntity.renderable || !serverEntity.renderable.visible) continue;
-
-            //Setting up the Model Matrix
-            __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromRotationTranslationScale(modelview,
-              serverEntity.transform.rotation,
-              [serverEntity.transform.x, serverEntity.transform.y, 0],
-              serverEntity.transform.scale);
-            __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].mul(modelview, view, modelview);
-      			__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
-
-            //Draw it!
-            __WEBPACK_IMPORTED_MODULE_7_client_mogli_Mesh_js__["a" /* default */].draw(this.mesh);
-          }
-          __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].clear(__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].DEPTH_BUFFER_BIT);
-        }
-
-        for(const entity of world.entities)
-        {
-          const renderable = entity.renderable;
-          if (!renderable || !renderable.visible) continue;
-
-          __WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].uniform3fv(this.prgm.uniforms.uColor,
-            [((renderable.color >> 16) & 0xFF) / 255.0,
-            ((renderable.color >> 8) & 0xFF) / 255.0,
-            ((renderable.color) & 0xFF) / 255.0]);
-
-          //Setting up the Model Matrix
-          __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromRotationTranslationScale(modelview,
-            entity.transform.rotation,
-            [entity.transform.x, entity.transform.y, 0],
-            entity.transform.scale);
-          __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].mul(modelview, view, modelview);
-    			__WEBPACK_IMPORTED_MODULE_1_client_mogli_gl_js__["a" /* default */].uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
-
-          //Draw it!
-          __WEBPACK_IMPORTED_MODULE_7_client_mogli_Mesh_js__["a" /* default */].draw(this.mesh);
-        }
-			}
-			this.mesh.unbind();
-		}
-		this.prgm.unbind();
-  }
-}
-
-Renderer.RENDER_SERVER_STATE = true;
-
-/* harmony default export */ __webpack_exports__["a"] = (Renderer);
-
-
-/***/ }),
-/* 106 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class ResourceLocation
-{
-  constructor(filename)
-  {
-    this._filename = filename;
-  }
-
-  get url()
-  {
-    return this._filename;
-  }
-}
-
-class AssetManager
-{
-  constructor()
-  {
-    this.registry = {};
-  }
-
-  destroy()
-  {
-    this.registry.clear();
-  }
-
-  register(type, id, url = null)
-  {
-    if (!this.registry[type])
-    {
-      this.registry[type] = {}
-    }
-    this.registry[type][id] = new ResourceLocation(url);
-  }
-
-  unregister(type, id)
-  {
-    this.registry[type].delete(id);
-  }
-
-  getAsset(type, id)
-  {
-    let asset = this.registry[type][id];
-    if (!asset)
-    {
-      asset = AssetManager.fetchFileFromURLSync(assets[id].url);
-      this.registry[type][id] = asset;
-    }
-    return asset;
-  }
-
-  async fetchAssets()
-  {
-    const promises = [];
-    var flag = false;
-    var count = 0;
-    for(const type in this.registry)
-    {
-      const assets = this.registry[type];
-      for(const id in assets)
-      {
-        const asset = assets[id];
-        if (asset instanceof ResourceLocation)
-        {
-          ++count;
-          console.log("LOADING (" + count + ") " + type + ":" + id + "...");
-          const promise = AssetManager.fetchFileFromURL(asset.url)
-            .then(response => {
-              console.log("...RECEIVED (" + count + ") " + type + ":" + id + "...");
-              assets[id] = response;
-              --count;
-            })
-            .catch(e => { throw new Error(e); });
-          promises.push(promise);
-        }
-      }
-    }
-
-    return Promise.all(promises);
-  }
-
-  static async fetchFileFromURL(url)
-  {
-    return new Promise(function(resolve, reject) {
-      const request = new XMLHttpRequest();
-      request.timeout = 5000;
-      request.onreadystatechange = function(e) {
-        if (request.readyState == XMLHttpRequest.DONE)
-        {
-          if (request.status == 200)
-          {
-            resolve(request.response);
-          }
-          else
-          {
-            reject(request.status);
-          }
-        }
-      };
-      request.ontimeout = function() {
-        reject('timeout');
-      };
-      request.open('GET', url, true);
-      request.send(null);
-    });
-  }
-
-  static fetchFileFromURLSync(url)
-  {
-    const request = new XMLHttpRequest();
-    request.timeout = 5000;
-    request.open('GET', url, false);
-    request.send(null);
-    if (request.status == 200)
-    {
-      return request.response;
-    }
-    else
-    {
-      throw new Error(request.status);
-    }
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (AssetManager);
-
-
-/***/ }),
-/* 107 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_client_camera_Camera_js__ = __webpack_require__(108);
-
-
-
-
-class OrthographicCamera extends __WEBPACK_IMPORTED_MODULE_1_client_camera_Camera_js__["a" /* default */]
-{
-  constructor(viewport, left = -10, right = 10, top = -10, bottom = 10, near = -10, far = 10)
-  {
-    super(viewport);
-    //near plane must be > 0
-    //far plane must be > near
-    this.left = left;
-    this.right = right;
-    this.top = top;
-    this.bottom = bottom;
-    this.near = near;
-    this.far = far;
-  }
-
-  get projection()
-  {
-    //TODO: maybe cache this?
-    let width = this.right - this.left;
-    let height = this.bottom - this.top;
-    let a = width / height;
-    let v = this.viewport.width / this.viewport.height;
-    if (v >= a)
-    {
-      return __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].ortho(this._projection,
-        -(v / a) * width / 2.0, (v / a) * width / 2.0,
-        -height / 2.0, height / 2.0,
-        this.near, this.far);
-    }
-    else
-    {
-      return __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].ortho(this._projection,
-        -width / 2.0, width / 2.0,
-        -(a / v) * height / 2.0, (a / v) * height / 2.0,
-        this.near, this.far);
-    }
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (OrthographicCamera);
-
-
-/***/ }),
-/* 108 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(3);
-
-
-class Camera
-{
-  constructor(viewport)
-  {
-    this.transform = {
-      position: __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create(),
-      rotation: __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].create(),
-      scale: __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].fromValues(1, 1, 1)
-    };
-
-    this.viewport = viewport;
-    this._view = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
-    this._orientation = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
-    this._projection = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
-  }
-
-  get view()
-  {
-    return __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromRotationTranslationScale(this._view,
-      this.transform.rotation,
-      [-this.transform.position[0], -this.transform.position[1], -this.transform.position[2]],
-      this.transform.scale);
-  }
-
-  get orientation()
-  {
-    return __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].fromQuat(this._orientation, this.transform.rotation);
-  }
-
-  get projection()
-  {
-    throw new Error("undefined camera type - must be perspective or orthographic");
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Camera);
-
-
-/***/ }),
-/* 109 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_js__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Shader_js__ = __webpack_require__(46);
-
-
-
-/**
- * Program - Manages and links related shaders. In order to set uniform values,
- * use gl.setUniform(program.uniforms.name, value).
- */
-class Program
-{
-  constructor()
-  {
-    //Create Program
-    this.handle = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].createProgram();
-
-    this.shaders = [];
-
-    this.attribs = {};
-    this.uniforms = {};
-  }
-
-  /**
-   * close - Destroys the program object
-   */
-  close()
-  {
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].deleteProgram(this.handle);
-    this.handle = null;
-  }
-
-  /**
-   * link - Attach passed-in shaders to this program and resolve all uniform and
-   * attribute locations.
-   *
-   * @param {Array} shaders Array of shaders to be linked
-   */
-  link(shaders)
-  {
-    //Attach shaders
-    var len = shaders.length;
-    for(let i = 0; i < len; ++i)
-    {
-      let shader = shaders[i];
-      this.shaders.push(shader);
-      __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].attachShader(this.handle, shader.handle);
-    }
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].linkProgram(this.handle);
-
-    //Validate program links
-    if (!__WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getProgramParameter(this.handle, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].LINK_STATUS))
-    {
-      let info = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getProgramInfoLog(this.handle);
-      __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].deleteProgram(this.handle);
-      this.handle = null;
-      throw new Error("Unable to initialize shader program: " + info);
-    }
-
-    //Resolve uniforms
-    const uniformCount = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getProgramParameter(this.handle, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].ACTIVE_UNIFORMS);
-    for(let i = 0; i < uniformCount; ++i)
-    {
-      const info = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getActiveUniform(this.handle, i);
-      console.log("...found uniform: \'" + info.name + "\'...");
-      this.uniforms[info.name] = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getUniformLocation(this.handle, info.name);
-    }
-
-    //Resolve attributes
-    const attribCount = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getProgramParameter(this.handle, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].ACTIVE_ATTRIBUTES);
-    for(let i = 0; i < attribCount; ++i)
-    {
-      const info = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getActiveAttrib(this.handle, i);
-      console.log("...found attrib: \'" + info.name + "\'...");
-      this.attribs[info.name] = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getAttribLocation(this.handle, info.name);
-    }
-  }
-
-  /**
-   * validate - Strictly validate the program state
-   */
-  validate()
-  {
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].validateProgram(this.handle);
-
-    if (!__WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getProgramParameter(this.handle, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].VALIDATE_STATUS))
-    {
-      let info = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getProgramInfoLog(this.handle);
-      __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].deleteProgram(this.handle);
-      this.handle = null;
-      throw new Error("Invalid program: " + info);
-    }
-  }
-
-  bind()
-  {
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].useProgram(this.handle);
-  }
-
-  unbind()
-  {
-    console.assert(this.isInUse(), "must call bind first!");
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].useProgram(null);
-  }
-
-  /**
-   * isInUse - Whether the program is bound to the current context.
-   *
-   * @return {Boolean} Whether the program is bound to the current context.
-   */
-  isInUse()
-  {
-    return __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getParameter(__WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].CURRENT_PROGRAM) == this.handle;
-  }
-
-  /**
-   * @deprecated locations already automatically resolved while linking shaders
-   */
-  findUniformLocation(name)
-  {
-    var loc = this.uniforms[name];
-    if (!loc)
-    {
-      loc = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getUniformLocation(this.handle, name);
-      if (loc == null)
-      {
-        throw new Error("Cannot find uniform with name: " + name);
-      }
-
-      this.uniforms[name] = loc;
-    }
-    return loc;
-  }
-
-  /**
-   * @deprecated locations already automatically resolved while linking shaders
-   */
-  findAttribLocation(name)
-  {
-    var loc = this.attribs[name];
-    if (!loc)
-    {
-      loc = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getAttribLocation(this.handle, name);
-      if (loc == null)
-      {
-        throw new Error("Cannot find attribute with name: " + name);
-      }
-
-      this.attribs[name] = loc;
-    }
-    return loc;
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Program);
-
-
-/***/ }),
-/* 110 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_js__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__VBO_js__ = __webpack_require__(111);
-
-
-
-/**
- * Mesh - Vertex array object representation
- */
-class Mesh
-{
-  constructor()
-  {
-    this.vbos = {};
-    this.vertexCount = 0;
-
-    this.ibo = null;
-  }
-
-  /**
-   * close - Destroys the mesh object and the associated buffer objects
-   */
-  close()
-  {
-    for(let loc in this.vbos)
-    {
-      let vbo = this.vbos[loc];
-      vbo.close();
-      delete this.vbos[loc];
-    }
-
-    if (this.ibo != null)
-    {
-      this.ibo.close();
-      this.ibo = null;
-    }
-  }
-
-  /**
-   * setElementArrayBuffer - Set the element array buffer to the passed-in
-   * buffer object
-   *
-   * @param {VBO} vbo the buffer object
-   *
-   * @return {Mesh} for method chaining
-   */
-  setElementArrayBuffer(vbo)
-  {
-    console.assert(vbo.target == __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].ELEMENT_ARRAY_BUFFER, "invalid element array buffer object");
-
-    if (this.ibo)
-    {
-      this.ibo.close();
-    }
-    this.ibo = vbo;
-    this.vertexCount = this.ibo.length;
-    return this; //For method chaining
-  }
-
-  /**
-   * setVertexArrayBuffer - Set the passed-in buffer object to the passed-in
-   * location for this mesh
-   *
-   * @param {WebGL} location  the location of the attribute
-   * @param {VBO} vbo         the buffer object to set at location
-   *
-   * @return {Mesh} For method chaining
-   */
-  setVertexArrayBuffer(location, vbo)
-  {
-    var vbo2 = this.vbos[location];
-    if (vbo2)
-    {
-      vbo2.close();
-    }
-    this.vbos[location] = vbo;
-    return this; //For method chaining
-  }
-
-  /**
-   * bind - Bind the mesh and the associated buffer objects to the current
-   * context
-   */
-  bind()
-  {
-    if (this.ibo)
-    {
-      this.ibo.bind();
-    }
-
-    for(let loc in this.vbos)
-    {
-      let vbo = this.vbos[loc];
-      vbo.bind();
-      __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].enableVertexAttribArray(loc);
-      __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].vertexAttribPointer(loc, vbo.vertexSize, vbo.type, vbo.normalized, vbo.stride, 0);
-    }
-  }
-
-  /**
-   * unbind - Bind an empty mesh and unbinds all associaed buffer objects in the
-   * current context
-   */
-  unbind()
-  {
-    if (this.ibo)
-    {
-      this.ibo.unbind();
-    }
-
-    for(let loc in this.vbos)
-    {
-      let vbo = this.vbos[loc];
-      __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].disableVertexAttribArray(loc);
-      vbo.unbind();
-    }
-  }
-
-  static putIndexBuffer(mesh, data, usage)
-  {
-		var ibo = new __WEBPACK_IMPORTED_MODULE_1__VBO_js__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].ELEMENT_ARRAY_BUFFER);
-		ibo.bind();
-		{
-			ibo.putData(data, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].UNSIGNED_INT, 1, false, usage || __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].STATIC_DRAW);
-			mesh.setElementArrayBuffer(ibo);
-		}
-		ibo.unbind();
-    return mesh; //For method chaining
-  }
-
-  static putVertexBuffer(mesh, data, usage, location, size, stride)
-  {
-    var vbo = new __WEBPACK_IMPORTED_MODULE_1__VBO_js__["a" /* default */]();
-    vbo.bind();
-    {
-      vbo.putData(data, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].FLOAT, size, false, usage || __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].STATIC_DRAW, stride);
-      mesh.setVertexArrayBuffer(location, vbo);
-    }
-    vbo.unbind();
-    return mesh; //For method chaining
-  }
-
-  /**
-   * @static createMesh - Creates a mesh object with specified passed-in
-   * meshData. (As of right now, it only creates 2D meshes.)
-   *
-   * @param {Object} meshData the vertex data that make up the mesh
-   * @param {GLEnum} usage    how the mesh will be used
-   *                          (i.e. gl.STATIC_DRAW, gl.DYNAMIC_DRAW)
-   */
-  static createMesh(meshData, usage)
-  {
-    //TODO: Allow variable vertex size for 3D objects
-    var mesh = new Mesh();
-    if (meshData.position)
-    {
-      this.putVertexBuffer(mesh, meshData.position, usage, 0, 2, 0);
-    }
-
-    if (meshData.texcoord)
-    {
-      this.putVertexBuffer(mesh, meshData.texcoord, usage, 0, 2, 0);
-    }
-
-    if (meshData.indices)
-    {
-      this.putIndexBuffer(mesh, meshData.indices, usage)
-    }
-    return mesh;
-  }
-
-  /**
-   * @static draw - Draws the passed-in mesh by the passed-in mode
-   *
-   * @param {Mesh} mesh       the mesh to draw
-   * @param {GlEnum} drawMode the mode to which to draw
-   *                          (i.e. gl.POINTS, gl.LINE_LOOP, gl.TRIANGLES)
-   */
-  static draw(mesh, drawMode)
-  {
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].drawElements(drawMode || __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].LINE_LOOP, mesh.vertexCount, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].UNSIGNED_SHORT, 0);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Mesh);
-
-
-/***/ }),
-/* 111 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_js__ = __webpack_require__(7);
-
-
-/**
- * VBO - Data buffer representation
- */
-class VBO
-{
-  constructor(target)
-  {
-    this.target = target || __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].ARRAY_BUFFER;
-    this.handle = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].createBuffer();
-    this.normalized = false;
-    this.length = 0;
-    this.vertexSize = 0;
-    this.stride = 0;
-  }
-
-  /**
-   * close - Destroys the buffer object
-   */
-  close()
-  {
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].deleteBuffer(this.handle);
-    this.handle = null;
-  }
-
-  /**
-   * putData - Put the passed-in data in this buffer object with specific
-   * instructions to how to use it.
-   *
-   * @param {Array} data          the array data
-   *                              (i.e. Float32Array, Uint16Array)
-   * @param {GLEnum} dataType     the type of data
-   *                              (i.e. gl.FLOAT, gl.UNSIGNED_INT)
-   * @param {Number} vertexSize   the size of the vertices this buffer holds
-   * @param {Boolean} normalized  whether this buffer is normalized
-   * @param {GLEnum} usage        how this buffer is stored and used
-   *                              (i.e. gl.STATIC_DRAW)
-   * @param {Number} stride       the 'step' indices to each vertex (default 0)
-   */
-  putData(data, dataType, vertexSize, normalized, usage, stride)
-  {
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, this.handle);
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bufferData(this.target, data, usage);
-    this.type = dataType;
-    this.vertexSize = vertexSize;
-    this.normalized = normalized;
-    this.length = data.length;
-    this.stride = stride || 0;
-  }
-
-  /**
-   * updateData - Update the buffer data to the passed-in data
-   *
-   * @param {Array} data    the array data (i.e. Float32Array)
-   * @param {Number} offset the index from which to update
-   */
-  updateData(data, offset)
-  {
-    if (offset + data.length > this.length)
-    {
-      var usage = __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].getBufferParameter(this.target, __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].BUFFER_USAGE);
-      this.putData(data, this.normalized, usage);
-    }
-
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, this.handle);
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bufferSubData(this.target, offset, data);
-  }
-
-  /**
-   * bind - Binds the buffer object to the current target context
-   * (specified by putData())
-   */
-  bind()
-  {
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, this.handle);
-  }
-
-  /**
-   * unbind - Binds an empty buffer object to the current target context
-   * (specified by putData())
-   */
-  unbind()
-  {
-    __WEBPACK_IMPORTED_MODULE_0__gl_js__["a" /* default */].bindBuffer(this.target, null);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (VBO);
+/* harmony default export */ __webpack_exports__["a"] = (LocalPlayer);
 
 
 /***/ })

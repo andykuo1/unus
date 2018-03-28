@@ -56,9 +56,65 @@ Complication:
 They will react to past information...
 
 
+EntityCreation (Server-Only?)
+Slow Movement (Dead Reckoning / Prediction)
+
+NetworkPlayer (Interpolation)
+  this.position;
+  this.nextPosition;
+LocalPlayer (Prediction)
+  this.position;
+Planets (Interpolation)
+  this.position;
+  this.rotation;
+  this.rotationSpeed;
+Bullets (Interpolation)
+  this.position;
+  this.bulletSpeed;
+Trains (Interpolation)
+  this.position;
+  this.nextPosition;
+  this.rotation;
+  this.nextRotation;
+
+class Entity
+{
+  update(dt)
+  {
+    this.time += dt;
+
+    if (this.time < this.currentTime)
+    {
+      //Interpolate
+      this.position = this.nextPosition * dt;
+    }
+    else
+    {
+      //Extrapolate
+      this.position += this.speed * dt;
+    }
+  }
+
+  readFromPacket(packet)
+  {
+    this.nextPosition = packet.position;
+  }
+
+  writeToPacket(packet)
+  {
+    packet.position = this.position;
+  }
+}
 
 
 
+3 Ways to synchronize data:
+  Dead Reckoning (Prediction)
+    - A way to predict given dt from past state
+  Interpolation (Lag Compensation)
+    - A way to get state given dt between past and next state
+  Server-Only
+    - A way to emit an event for the server to do something
 
 
 

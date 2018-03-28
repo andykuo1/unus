@@ -109,9 +109,9 @@ class Renderer
 
           //Setting up the Model Matrix
           mat4.fromRotationTranslationScale(modelview,
-            entity.transform.rotation,
+            entity.transform.rotation || [0, 0, 0, 1],
             [entity.transform.x, entity.transform.y, 0],
-            entity.transform.scale);
+            entity.transform.scale || [1, 1, 1]);
           mat4.mul(modelview, view, modelview);
     			gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
 
@@ -125,6 +125,6 @@ class Renderer
   }
 }
 
-Renderer.RENDER_SERVER_STATE = true;
+Renderer.RENDER_SERVER_STATE = false;
 
 export default Renderer;

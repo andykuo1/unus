@@ -2,7 +2,7 @@ import socketio from 'socket.io-client';
 
 import Application from './Application.js';
 import NetworkHandler from 'integrated/NetworkHandler.js';
-import ClientGame from 'client/ClientGame.js';
+import ClientGame from 'test/ClientGame.js';
 
 //Window Setup
 const canvas = document.getElementById('canvas');

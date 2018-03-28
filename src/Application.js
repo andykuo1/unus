@@ -36,8 +36,8 @@ class Application
     this._frames++;
 
     //TODO: slowly get rid of frame and use this._delta
-    this._frame.next(this._now);
-    this._game.update(this._frame);
+    //this._frame.next(this._now);
+    this._game.update(this._delta);
   }
 
   getFrameTime()
