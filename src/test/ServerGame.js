@@ -15,7 +15,7 @@ class ServerGame
   {
     this.world = new World();
     this.inputStates = new PriorityQueue((a, b) => {
-      return a.worldTicks - b.worldTicks;
+      return a.ticks - b.ticks;
     });
 
     this.players = [];
@@ -71,6 +71,10 @@ class ServerGame
     Console.addCommand("stop", "stop", (args) => {
       console.log("Stopping server...");
       //TODO: ADD state-preservation features...
+      const gameState = this.world.saveState();
+      //TODO: Write game state to file...
+      //TODO: Load game state from file...
+      //this.world.loadState(gameState);
       console.log("Server stopped.");
       process.exit(0);
     });
@@ -92,10 +96,10 @@ class ServerGame
       if (!player) throw new Error("cannot find player with id \'" + inputState.clientID + "\'");
 
       //Update world to just before input...
-      const dt = inputState.ticks - this.world.ticks;
+      const dt = inputState.ticks - this.world.worldTicks;
       player.onInputUpdate(inputState);
       //TODO: What is delta?
-      //if (dt > 0)
+      if (dt > 0)
       {
         player.onUpdate(delta);
       }
@@ -115,7 +119,11 @@ class ServerGame
   sendServerUpdate()
   {
     const gameState = this.world.captureState();
-    Application.network.sendToAll('server.gamestate', gameState);
+    Application.network.clients.forEach((client, id) => {
+      const player = this.getPlayerByClientID(id);
+      gameState.playerTicks = player.playerTicks;
+      Application.network.sendTo('server.gamestate', gameState, client);
+    });
   }
 
   getPlayerByClientID(clientID)

@@ -1,4 +1,5 @@
 import socketio from 'socket.io-client';
+import 'util/MathHelper.js';
 
 import Application from './Application.js';
 import NetworkHandler from 'integrated/NetworkHandler.js';

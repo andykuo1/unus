@@ -76,6 +76,7 @@ class ClientGame
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
     this.thePlayer.onUpdate(delta);
     this.world.update(delta);
+
     this.renderer.render(this.world);
   }
 
@@ -85,8 +86,10 @@ class ClientGame
     this.world.resetState(gameState);
     this.thePlayer.readFromGameState(gameState);
 
+    const playerTicks = gameState.playerTicks;
+
     //CLIENT removes all INPUT_STATE older than CURRENT_GAME_STATE.
-    while(this.inputStates.length > 0 && this.world.ticks >= this.inputStates.peek().ticks)
+    while(this.inputStates.length > 0 && playerTicks >= this.inputStates.peek().ticks)
     {
       this.inputStates.dequeue();
     }
@@ -100,9 +103,10 @@ class ClientGame
       const inputState = this.inputStates.dequeue();
 
       //Update world to just before input...
-      const dt = inputState.ticks - this.world.ticks;
+      const dt = inputState.ticks - playerTicks;
       this.thePlayer.onInputUpdate(inputState);
-      //if (dt > 0)
+      //TODO: What is dt?
+      if (dt > 0)
       {
         this.thePlayer.onUpdate(dt);
       }
@@ -128,7 +132,7 @@ class ClientGame
       inputState.x, inputState.y);
     inputState.x = vec[0];
     inputState.y = vec[1];
-    inputState.ticks = this.world.ticks;
+    inputState.ticks = this.world.worldTicks;
     return inputState;
   }
 

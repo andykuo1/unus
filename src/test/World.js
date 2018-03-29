@@ -7,6 +7,7 @@ class World
   constructor()
   {
     this.worldTicks = 0;
+    this.prevWorldTicks = 0;
 
     this.eventCache = [];
     this.entityManager = new EntityManager();
@@ -28,7 +29,7 @@ class World
   update(delta)
   {
     this.worldTicks += delta;
-    this.entityManager.update(delta);
+    this.entityManager.update(this.worldTicks - this.prevWorldTicks);
   }
 
   saveState()
@@ -56,7 +57,7 @@ class World
 
   loadState(gameState)
   {
-    this.worldTicks = gameState.ticks;
+    this.prevWorldTicks = this.worldTicks = gameState.ticks;
     for(const entityID in gameState.entities)
     {
       const entityData = gameState.entities[entityID];
@@ -99,7 +100,7 @@ class World
 
   resetState(gameState)
   {
-    this.worldTicks = gameState.ticks;
+    this.prevWorldTicks = this.worldTicks = gameState.ticks;
 
     for(const event of gameState.events)
     {

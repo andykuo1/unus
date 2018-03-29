@@ -4,17 +4,19 @@ class RemotePlayer
   {
     this.entity = entity;
     this.clientID = clientID;
+    this.playerTicks = 0;
   }
 
   onUpdate(delta)
   {
-    
+
   }
 
   onInputUpdate(inputState)
   {
     this.entity.transform.x = inputState.x;
     this.entity.transform.y = inputState.y;
+    this.playerTicks = inputState.ticks;
   }
 
   saveToGameState(gameState)

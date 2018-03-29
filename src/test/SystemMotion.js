@@ -15,8 +15,8 @@ class SystemMotion extends System
     const entities = entityManager.getEntitiesByComponent(ComponentTransform);
     for(const entity of entities)
     {
-      entity.transform.x = entity.transform.x + (entity.transform.nextX - entity.transform.x) * delta;
-      entity.transform.y = entity.transform.y + (entity.transform.nextY - entity.transform.y) * delta;
+      entity.transform.x = Math.lerp(entity.transform.x, entity.transform.nextX, delta);
+      entity.transform.y = Math.lerp(entity.transform.y, entity.transform.nextY, delta);
     }
   }
 

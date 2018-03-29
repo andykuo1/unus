@@ -1,6 +1,7 @@
 import socketio from 'socket.io';
 import express from 'express';
 import path from 'path';
+import 'util/MathHelper.js';
 
 import Application from './Application.js';
 import NetworkHandler from 'integrated/NetworkHandler.js';

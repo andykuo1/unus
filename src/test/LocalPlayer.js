@@ -23,6 +23,7 @@ class LocalPlayer
 
   onInputUpdate(inputState)
   {
+    //TODO: The input does not match the server state...
     this.entity.transform.nextX = inputState.x;
     this.entity.transform.nextY = inputState.y;
   }
