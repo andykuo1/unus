@@ -10958,6 +10958,10 @@ class NetworkHandler
 
 
 
+//BUG: There is a jitter when moving too faast
+//BUG: The game should start with all objects in place
+//BUG: The player should move at a linear speed...
+
 class ClientGame
 {
   constructor(canvas)
@@ -16339,8 +16343,8 @@ class SystemMotion extends __WEBPACK_IMPORTED_MODULE_0_test_System_js__["a" /* d
       const result = gameState.entities[entity.id];
       if (!result) continue;
       if (!result.transform) continue;
-      entity.transform.nextX = result.transform.x;
-      entity.transform.nextY = result.transform.y;
+      entity.transform.nextX = entity.transform.x = result.transform.x;
+      entity.transform.nextY = entity.transform.y = result.transform.y;
     }
   }
 

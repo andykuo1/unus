@@ -41,8 +41,8 @@ class SystemMotion extends System
       const result = gameState.entities[entity.id];
       if (!result) continue;
       if (!result.transform) continue;
-      entity.transform.nextX = result.transform.x;
-      entity.transform.nextY = result.transform.y;
+      entity.transform.nextX = entity.transform.x = result.transform.x;
+      entity.transform.nextY = entity.transform.y = result.transform.y;
     }
   }
 

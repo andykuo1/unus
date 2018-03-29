@@ -10,6 +10,9 @@ import GameWorld from 'test/GameWorld.js';
 import World from 'test/World.js';
 import LocalPlayer from 'test/LocalPlayer.js';
 
+//BUG: There is a jitter when moving too fast
+//BUG: The player should move at a linear speed...
+
 class ClientGame
 {
   constructor(canvas)

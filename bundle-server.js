@@ -689,6 +689,7 @@ class ServerGame
       //Update world to just before input...
       const dt = inputState.ticks - this.world.ticks;
       player.onInputUpdate(inputState);
+      //TODO: What is delta?
       //if (dt > 0)
       {
         player.onUpdate(delta);
@@ -1512,8 +1513,8 @@ class SystemMotion extends __WEBPACK_IMPORTED_MODULE_0_test_System_js__["a" /* d
       const result = gameState.entities[entity.id];
       if (!result) continue;
       if (!result.transform) continue;
-      entity.transform.nextX = result.transform.x;
-      entity.transform.nextY = result.transform.y;
+      entity.transform.nextX = entity.transform.x = result.transform.x;
+      entity.transform.nextY = entity.transform.y = result.transform.y;
     }
   }
 
