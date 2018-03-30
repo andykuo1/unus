@@ -1,3 +1,4 @@
+import { quat } from 'gl-matrix';
 import System from 'test/System.js';
 
 import ComponentTransform from 'test/ComponentTransform.js';
@@ -15,8 +16,10 @@ class SystemMotion extends System
     const entities = entityManager.getEntitiesByComponent(ComponentTransform);
     for(const entity of entities)
     {
-      entity.transform.x = Math.lerp(entity.transform.x, entity.transform.nextX, delta);
-      entity.transform.y = Math.lerp(entity.transform.y, entity.transform.nextY, delta);
+      const transform = entity.transform;
+      transform.x = Math.lerp(transform.x, transform.nextX, delta);
+      transform.y = Math.lerp(transform.y, transform.nextY, delta);
+      //quat.rotateZ(transform.rotation, transform.rotation, delta);
     }
   }
 

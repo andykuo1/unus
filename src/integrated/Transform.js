@@ -23,25 +23,13 @@ class Transform
     this.scale[2] = 0;
   }
 
-  get x()
-  {
-    return this.position[0];
-  }
+  get x() { return this.position[0]; }
 
-  get y()
-  {
-    return this.position[1];
-  }
+  get y() { return this.position[1]; }
 
-  set x(rhs)
-  {
-    this.position[0] = rhs;
-  }
+  set x(rhs) { this.position[0] = rhs; }
 
-  set y(rhs)
-  {
-    this.position[1] = rhs;
-  }
+  set y(rhs) { this.position[1] = rhs; }
 }
 
 export default Transfom;
