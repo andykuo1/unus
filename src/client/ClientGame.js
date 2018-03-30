@@ -170,8 +170,8 @@ class ClientGame
   sendClientInput(inputState)
   {
     //FIXME: Force 200ms lag...
-    //setTimeout(() => this.networkHandler.sendToServer('client.inputstate', inputState), 200);
-    Application.network.sendToServer('client.inputstate', inputState);
+    setTimeout(() => Application.network.sendToServer('client.inputstate', inputState), 200);
+    //Application.network.sendToServer('client.inputstate', inputState);
   }
 }
 
