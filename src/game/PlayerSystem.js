@@ -56,20 +56,6 @@ class PlayerSystem extends SynchronizedSystem
       entity.motion.motionY += Math.sin(rot) * speed * delta;
     }
   }
-
-  writeEntityToData(entity, dst)
-  {
-    dst.player.nextX = entity.player.nextX;
-    dst.player.nextY = entity.player.nextY;
-    dst.player.move = entity.player.move;
-  }
-
-  readEntityFromData(src, entity)
-  {
-    entity.player.nextX = src.player.nextX;
-    entity.player.nextY = src.player.nextY;
-    entity.player.move = src.player.move;
-  }
 }
 
 export default PlayerSystem;
