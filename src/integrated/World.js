@@ -1,6 +1,6 @@
 import Frame from 'util/Frame.js';
 
-import EntityManager from 'integrated/newentity/EntityManager.js';
+import EntityManager from 'integrated/entity/EntityManager.js';
 import SystemManager from 'integrated/entity/SystemManager.js';
 
 import GameFactory from 'game/GameFactory.js';

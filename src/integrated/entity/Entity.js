@@ -2,12 +2,14 @@ class Entity
 {
   constructor()
   {
+    this._manager = null;
     this.__init();
   }
 
   __init()
   {
     this._id = 0;
+    this._name = null;
   }
 
   addComponent(component)
@@ -29,7 +31,7 @@ class Entity
 
   hasComponent(component)
   {
-    return this._manager.hasComponent(this, component);
+    return this._manager.hasComponentByEntity(this, component);
   }
 
   destroy()
@@ -37,10 +39,9 @@ class Entity
     this._manager.destroyEntity(this);
   }
 
-  get id()
-  {
-    return this._id;
-  }
+  get id() { return this._id; }
+
+  get name() { return this._name; }
 }
 
 export default Entity;

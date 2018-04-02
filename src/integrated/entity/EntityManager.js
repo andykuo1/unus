@@ -1,88 +1,93 @@
-import StackTrace from 'stacktrace-js';
-import Entity from './Entity.js';
-
 import Reflection from 'util/Reflection.js';
-import ObjectPool from 'util/ObjectPool.js';
 import UID from 'util/uid.js';
+import EventHandler from 'util/EventHandler.js';
+
+import EntityRegistry from './EntityRegistry.js';
+import Entity from './Entity.js';
 
 class EntityManager
 {
-  constructor(E)
+  constructor()
   {
     this.entities = [];
-    this.entityPool = new ObjectPool(E || Entity);
-
     this.components = new Map();
-    this.nextEntityID = UID();
+    this.registry = new EntityRegistry(this);
 
-    this.onEntityCreate = (entity) => {};
-    this.onEntityDestroy = (entity) => {};
-
-    this._timestamp = null;
+    this.events = new EventHandler();
   }
 
-  createEntity(id, depth=1)
+  getEntityByID(id)
   {
-    const entity = this.entityPool.obtain();
-    entity._manager = this;
-    entity._id = id || this.getNextAvailableEntityID();
-    entity._trace = getEntityFingerprint(this._timestamp, depth);
-    this.entities.push(entity);
+    for(const entity of this.entities)
+    {
+      if (entity._id === id) return entity;
+    }
+    return null;
+  }
 
-    this.onEntityCreate(entity);
-
+  spawnEntity(name)
+  {
+    const entity = this.registry.createEntity(name);
+    this.events.emit('entityCreate', entity, name);
     return entity;
   }
 
   destroyEntity(entity)
   {
-    this.onEntityDestroy(entity);
-
-    this.clearComponentsFromEntity(entity);
-    this.entities.splice(this.entities.indexOf(entity), 1);
-    this.entityPool.release(entity);
+    this.events.emit('entityDestroy', entity);
+    this.registry.deleteEntity(entity);
   }
 
-  getEntityByID(id)
+  clearEntities()
   {
-    for(let entity of this.entities)
+    while(this.entities.length > 0)
     {
-      if (entity._id == id)
-      {
-        return entity;
-      }
+      this.registry.deleteEntity(this.entities[0]);
     }
-    return null;
+  }
+
+  registerEntity(name, generator)
+  {
+    this.registry.register(name, generator);
+  }
+
+  unregisterEntity(name)
+  {
+    this.registry.unregister(name);
   }
 
   addComponentToEntity(entity, component)
   {
-    if (this.hasComponent(entity, component))
+    if (this.hasComponentByEntity(entity, component))
     {
       throw new Error("entity already includes component \'" + Reflection.getClassVarName(component) + "\'");
     }
 
     entity[Reflection.getClassVarName(component)] = new component();
 
-    var list = this.components.get(component) || [];
+    const list = this.components.get(component) || [];
     list.push(entity);
     this.components.set(component, list);
+
+    this.events.emit('entityComponentAdd', entity, component);
   }
 
   removeComponentFromEntity(entity, component)
   {
-    if (!this.hasComponent(entity, component))
+    if (!this.hasComponentByEntity(entity, component))
     {
       throw new Error("entity does not include component \'" + Reflection.getClassVarName(component) + "\'");
     }
 
     delete entity[Reflection.getClassVarName(component)];
 
-    var list = this.components.get(component);
+    const list = this.components.get(component);
     if (list)
     {
       list.splice(list.indexOf(entity), 1);
     }
+
+    this.events.emit('entityComponentRemove', entity, component);
   }
 
   clearComponentsFromEntity(entity)
@@ -91,22 +96,25 @@ class EntityManager
     {
       if (list.includes(entity))
       {
+        const component = entity[Reflection.getClassVarName(key)];
         delete entity[Reflection.getClassVarName(key)];
 
         list.splice(list.indexOf(entity), 1);
+
+        this.events.emit('entityComponentRemove', entity, component);
       }
     }
   }
 
-  hasComponent(entity, component)
+  hasComponentByEntity(entity, component)
   {
-    let list = this.components.get(component);
+    const list = this.components.get(component);
     return list && list.includes(entity);
   }
 
   getComponentsByEntity(entity)
   {
-    let result = [];
+    const result = [];
     for(const [key, list] of this.components)
     {
       if (list.includes(entity))
@@ -121,36 +129,6 @@ class EntityManager
   {
     return this.components.get(component) || [];
   }
-
-  getEntities()
-  {
-    return this.entities;
-  }
-
-  getEntityIterator()
-  {
-    return new EntityIterator(this);
-  }
-
-  getNextAvailableEntityID()
-  {
-    let iters = 100;
-    let id = UID();
-    while (this.entities[id])
-    {
-      id = UID();
-
-      if (--iters <= 0)
-        throw new Error("cannot find another unique entity id");
-    }
-    return id;
-  }
-}
-
-function getEntityFingerprint(timestamp, depth)
-{
-  const stackTrace = StackTrace.getSync()[1 + depth];
-  return timestamp + "@" + stackTrace.lineNumber + "," + stackTrace.columnNumber + ":" + stackTrace.functionName;
 }
 
 export default EntityManager;
