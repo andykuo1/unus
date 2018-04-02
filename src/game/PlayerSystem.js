@@ -8,9 +8,9 @@ import GameFactory from 'game/GameFactory.js';
 
 class PlayerSystem extends SynchronizedSystem
 {
-  constructor()
+  constructor(entityManager)
   {
-    super(Player);
+    super(entityManager, Player);
   }
 
   onInputUpdate(entity, inputState)
@@ -23,7 +23,7 @@ class PlayerSystem extends SynchronizedSystem
     if (inputState.click)// && !inputState.predictive)
     {
       const bulletSpeed = 10;
-      const bulletEntity = GameFactory.createEntity('bullet');
+      const bulletEntity = GameFactory.entityManager.spawnEntity('bullet');
       const dx = entity.player.nextX - entity.transform.x;
       const dy = entity.player.nextY - entity.transform.y;
       const rot = -Math.atan2(-dy, dx);

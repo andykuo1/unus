@@ -3,9 +3,9 @@ import Follow from 'game/FollowComponent.js';
 
 class FollowSystem extends SynchronizedSystem
 {
-  constructor()
+  constructor(entityManager)
   {
-    super(Follow);
+    super(entityManager, Follow);
   }
 
   onEntityUpdate(entity, delta)

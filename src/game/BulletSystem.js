@@ -3,9 +3,9 @@ import Bullet from 'game/BulletComponent.js';
 
 class BulletSystem extends SynchronizedSystem
 {
-  constructor()
+  constructor(entityManager)
   {
-    super(Bullet);
+    super(entityManager, Bullet);
   }
 
   onEntityUpdate(entity, delta)

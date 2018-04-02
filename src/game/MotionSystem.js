@@ -3,9 +3,9 @@ import Motion from 'game/MotionComponent.js';
 
 class MotionSystem extends SynchronizedSystem
 {
-  constructor()
+  constructor(entityManager)
   {
-    super(Motion);
+    super(entityManager, Motion);
   }
 
   onEntityUpdate(entity, delta)

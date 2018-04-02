@@ -7,4 +7,15 @@ function Transform()
   this.scale = [1, 1, 1];
 }
 
+Transform.sync = {
+  x: { type: 'float' },
+  y: { type: 'float' },
+  position: { type: 'array',
+    elements: { type: 'float' } },
+  rotation: { type: 'array',
+    elements: { type: 'float' } },
+  scale: { type: 'array',
+    elements: { type: 'float' } }
+}
+
 export default Transform;

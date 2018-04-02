@@ -3,9 +3,9 @@ import Transform from 'game/TransformComponent.js';
 
 class TransformSystem extends SynchronizedSystem
 {
-  constructor()
+  constructor(entityManager)
   {
-    super(Transform);
+    super(entityManager, Transform);
   }
 }
 

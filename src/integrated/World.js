@@ -1,6 +1,6 @@
 import Frame from 'util/Frame.js';
 
-import EntityManager from 'integrated/entity/EntityManager.js';
+import EntityManager from 'integrated/newentity/EntityManager.js';
 import SystemManager from 'integrated/entity/SystemManager.js';
 
 import GameFactory from 'game/GameFactory.js';
@@ -55,7 +55,7 @@ class World
 
   get entities()
   {
-    return this.entityManager.getEntities();
+    return this.entityManager.entities;
   }
 }
 

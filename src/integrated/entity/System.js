@@ -1,8 +1,8 @@
 class System
 {
-  constructor()
+  constructor(entityManager)
   {
-
+    this.entityManager = entityManager;
   }
 
   onUpdate(entityManager, frame)

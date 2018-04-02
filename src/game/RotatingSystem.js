@@ -5,9 +5,9 @@ import Rotating from 'game/RotatingComponent.js';
 
 class RotatingSystem extends SynchronizedSystem
 {
-  constructor()
+  constructor(entityManager)
   {
-    super(Rotating);
+    super(entityManager, Rotating);
   }
 
   onEntityUpdate(entity, delta)

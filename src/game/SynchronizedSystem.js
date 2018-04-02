@@ -3,9 +3,9 @@ import Reflection from 'util/Reflection.js';
 
 class SynchronizedSystem extends System
 {
-  constructor(component)
+  constructor(entityManager, component)
   {
-    super();
+    super(entityManager);
     this.component = component;
     this.componentName = Reflection.getClassVarName(this.component);
   }

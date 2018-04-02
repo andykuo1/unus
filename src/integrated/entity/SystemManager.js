@@ -28,6 +28,14 @@ class SystemManager
 
   captureSystemStates(entityManager, dst)
   {
+    if (!dst.entitylist) dst.entitylist = {};
+
+    for(const entity of entityManager.entities)
+    {
+      if (!dst.entitylist[entity.id]) dst.entitylist[entity.id] = {};
+      dst.entitylist[entity.id].name = entity._name;
+    }
+
     for(const system of this.systems)
     {
       system.writeToGameState(entityManager, dst);
@@ -48,7 +56,7 @@ class SystemManager
   {
     //HACK: This is to correct any dead / alive entities left...
     const entities = gameState['entitylist'] || {};
-    for(const entity of entityManager.getEntities())
+    for(const entity of entityManager.entities)
     {
       if (!entities[entity._id] && !entity.tracker)
       {
@@ -58,11 +66,12 @@ class SystemManager
     }
     for(const entityID in entities)
     {
-      const entity = entityManager.getEntityByID(entityID);
+      let entity = entityManager.getEntityByID(entityID);
       if (!entity)
       {
         //Maybe missed creation event from server...
-        entityManager.createEntity(entityID);
+        entity = entityManager.spawnEntity(entities[entityID].name);
+        entity._id = entityID;
       }
     }
   }
