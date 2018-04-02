@@ -2,7 +2,7 @@ import socketio from 'socket.io-client';
 
 import Application from './Application.js';
 import NetworkHandler from 'integrated/NetworkHandler.js';
-import ClientGame from 'client/ClientGame.js';
+import ClientEngine from 'client/ClientEngine.js';
 
 //Window Setup
 const canvas = document.getElementById('canvas');
@@ -18,7 +18,7 @@ function start()
 {
 	const socket = socketio();
 	const network = new NetworkHandler(socket, true);
-	const game = new ClientGame(canvas);
+	const game = new ClientEngine(canvas);
 	Application.init(network, game)
 		.then(() => requestAnimationFrame(onRequestAnimationFrame));
 }

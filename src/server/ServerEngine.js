@@ -16,7 +16,7 @@ SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
 SERVER sends CURRENT_GAME_STATE to all CLIENTS.
 */
 
-class ServerGame
+class ServerEngine
 {
   constructor()
   {
@@ -28,7 +28,7 @@ class ServerGame
     this.playerManager = new PlayerManager(this.world.entityManager);
   }
 
-  async load()
+  async start()
   {
     console.log("Loading server...");
 
@@ -140,4 +140,4 @@ class ServerGame
   }
 }
 
-export default ServerGame;
+export default ServerEngine;

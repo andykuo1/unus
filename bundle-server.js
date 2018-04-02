@@ -329,7 +329,7 @@ class Application
       this._frames = 0;
     }, 1000);
 
-    await this._game.load();
+    await this._game.start();
   }
 
   update()
@@ -580,7 +580,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_path___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_path__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Application_js__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_integrated_NetworkHandler_js__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_server_ServerGame_js__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_server_ServerEngine_js__ = __webpack_require__(20);
 
 
 
@@ -614,7 +614,7 @@ function start()
 {
 	const socket = __WEBPACK_IMPORTED_MODULE_0_socket_io___default()(server);
 	const network = new __WEBPACK_IMPORTED_MODULE_4_integrated_NetworkHandler_js__["a" /* default */](socket, false);
-	const game = new __WEBPACK_IMPORTED_MODULE_5_server_ServerGame_js__["a" /* default */](network);
+	const game = new __WEBPACK_IMPORTED_MODULE_5_server_ServerEngine_js__["a" /* default */]();
 	__WEBPACK_IMPORTED_MODULE_3__Application_js__["a" /* default */].init(network, game)
 		.then(() => setInterval(onInterval, TIMESTEP));
 }
@@ -864,7 +864,7 @@ SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
 SERVER sends CURRENT_GAME_STATE to all CLIENTS.
 */
 
-class ServerGame
+class ServerEngine
 {
   constructor()
   {
@@ -876,7 +876,7 @@ class ServerGame
     this.playerManager = new __WEBPACK_IMPORTED_MODULE_4_server_PlayerManager_js__["a" /* default */](this.world.entityManager);
   }
 
-  async load()
+  async start()
   {
     console.log("Loading server...");
 
@@ -988,7 +988,7 @@ class ServerGame
   }
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (ServerGame);
+/* harmony default export */ __webpack_exports__["a"] = (ServerEngine);
 
 
 /***/ }),

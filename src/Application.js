@@ -25,7 +25,7 @@ class Application
       this._frames = 0;
     }, 1000);
 
-    await this._game.load();
+    await this._game.start();
   }
 
   update()

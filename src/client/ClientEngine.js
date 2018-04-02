@@ -25,7 +25,7 @@ CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
 CLIENT sends CURRENT_INPUT_STATE.
 */
 
-class ClientGame
+class ClientEngine
 {
   constructor(canvas)
   {
@@ -40,7 +40,7 @@ class ClientGame
     this.playerController = new PlayerController(this.world.entityManager, this.renderer);
   }
 
-  async load()
+  async start()
   {
     console.log("Loading client...");
     await this.renderer.load();
@@ -175,4 +175,4 @@ class ClientGame
   }
 }
 
-export default ClientGame;
+export default ClientEngine;

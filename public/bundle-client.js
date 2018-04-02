@@ -2457,7 +2457,7 @@ class Application
       this._frames = 0;
     }, 1000);
 
-    await this._game.load();
+    await this._game.start();
   }
 
   update()
@@ -7654,7 +7654,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_socket_io_client___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_socket_io_client__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Application_js__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_integrated_NetworkHandler_js__ = __webpack_require__(70);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_client_ClientGame_js__ = __webpack_require__(72);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_client_ClientEngine_js__ = __webpack_require__(72);
 
 
 
@@ -7675,7 +7675,7 @@ function start()
 {
 	const socket = __WEBPACK_IMPORTED_MODULE_0_socket_io_client___default()();
 	const network = new __WEBPACK_IMPORTED_MODULE_2_integrated_NetworkHandler_js__["a" /* default */](socket, true);
-	const game = new __WEBPACK_IMPORTED_MODULE_3_client_ClientGame_js__["a" /* default */](canvas);
+	const game = new __WEBPACK_IMPORTED_MODULE_3_client_ClientEngine_js__["a" /* default */](canvas);
 	__WEBPACK_IMPORTED_MODULE_1__Application_js__["a" /* default */].init(network, game)
 		.then(() => requestAnimationFrame(onRequestAnimationFrame));
 }
@@ -11221,7 +11221,7 @@ CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
 CLIENT sends CURRENT_INPUT_STATE.
 */
 
-class ClientGame
+class ClientEngine
 {
   constructor(canvas)
   {
@@ -11236,7 +11236,7 @@ class ClientGame
     this.playerController = new __WEBPACK_IMPORTED_MODULE_5_client_PlayerController_js__["a" /* default */](this.world.entityManager, this.renderer);
   }
 
-  async load()
+  async start()
   {
     console.log("Loading client...");
     await this.renderer.load();
@@ -11371,7 +11371,7 @@ class ClientGame
   }
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (ClientGame);
+/* harmony default export */ __webpack_exports__["a"] = (ClientEngine);
 
 
 /***/ }),
