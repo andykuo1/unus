@@ -3,6 +3,7 @@ import Frame from 'util/Frame.js';
 import EntityManager from 'integrated/entity/EntityManager.js';
 import SystemManager from 'integrated/entity/SystemManager.js';
 
+import Application from 'Application.js';
 import GameFactory from 'game/GameFactory.js';
 
 class World
@@ -25,11 +26,13 @@ class World
 
     //Continue to update the world state
     this.systemManager.update(this.entityManager, frame, predictive);
+    Application.events.emit('worldStep', this.entityManager, frame, predictive);
   }
 
   updateInput(inputState, targetEntity, predictive=false)
   {
     this.systemManager.updateInput(inputState, targetEntity, predictive);
+    Application.events.emit('inputStep', inputState, targetEntity, predictive);
   }
 
   captureState()
@@ -38,6 +41,7 @@ class World
     const dst = {};
     this.systemManager.captureSystemStates(this.entityManager, dst);
     dst.worldTicks = this.ticks;
+    Application.events.emit('worldCapture', this.entityManager, dst);
     return dst;
   }
 
@@ -47,6 +51,7 @@ class World
 
     //Continue to reset the world state
     this.systemManager.resetSystemStates(this.entityManager, gameState);
+    Application.events.emit('worldReset', this.entityManager, gameState);
 
     //HACK: Prepare server state for rendering...
     this.serverState = gameState;
