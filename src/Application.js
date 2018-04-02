@@ -1,4 +1,5 @@
 import Frame from 'util/Frame.js';
+import EventHandler from 'util/EventHandler.js';
 
 class Application
 {
@@ -11,6 +12,7 @@ class Application
   {
     this._network = network;
     this._game = game;
+    this._events = new EventHandler();
 
     this._startTime = Date.now();
 
@@ -38,6 +40,8 @@ class Application
     //TODO: slowly get rid of frame and use this._delta
     this._frame.next(this._now);
     this._game.update(this._frame);
+
+    this._events.emit('update', this._delta);
   }
 
   getFrameTime()
@@ -58,6 +62,8 @@ class Application
   get network() { return this._network; }
 
   get game() { return this._game; }
+
+  get events() { return this._events; }
 }
 
 export default new Application();

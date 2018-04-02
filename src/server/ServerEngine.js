@@ -38,11 +38,6 @@ class ServerEngine
     //Setup world...
     this.onWorldSetup();
 
-    await this.connect();
-  }
-
-  async connect()
-  {
     console.log("Connecting server...");
 
     Application.network.events.on('clientConnect', (client, data) => {

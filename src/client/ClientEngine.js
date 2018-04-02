@@ -44,11 +44,7 @@ class ClientEngine
   {
     console.log("Loading client...");
     await this.renderer.load();
-    await this.connect();
-  }
 
-  async connect()
-  {
     console.log("Connecting client...");
     Application.network.events.on('serverConnect', (server, data) => {
       //Setup the world from state...
