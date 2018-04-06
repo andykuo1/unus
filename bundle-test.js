@@ -68,40 +68,6 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-class Reflection
-{
-  static getClassVarName(T)
-  {
-    const name = T.name;
-    return name.charAt(0).toLowerCase() + name.slice(1);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Reflection);
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-function generate()
-{
-  let fst = (Math.random() * 46656) | 0;
-  let snd = (Math.random() * 46656) | 0;
-  fst = ("000" + fst.toString(36)).slice(-3);
-  snd = ("000" + snd.toString(36)).slice(-3);
-  return fst + snd;
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (generate);
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
 class Entity
 {
   constructor()
@@ -152,6 +118,40 @@ class Entity
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (Entity);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Reflection
+{
+  static getClassVarName(T)
+  {
+    const name = T.name;
+    return name.charAt(0).toLowerCase() + name.slice(1);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Reflection);
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+function generate()
+{
+  let fst = (Math.random() * 46656) | 0;
+  let snd = (Math.random() * 46656) | 0;
+  fst = ("000" + fst.toString(36)).slice(-3);
+  snd = ("000" + snd.toString(36)).slice(-3);
+  return fst + snd;
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (generate);
 
 
 /***/ }),
@@ -224,8 +224,10 @@ console.log("======== Stopping test.... ========");
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Reflection_js__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Reflection_js__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_integrated_entity_EntityManager_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_integrated_entity_Entity_js__ = __webpack_require__(0);
+
 
 
 
@@ -307,7 +309,6 @@ class EntitySystem
 
 function writeProperty(propertyName, propertyData, syncData, dst)
 {
-  console.log("Writing property " + propertyName + " with data " + propertyData + " with type " + syncData.type + " into " + dst);
   const propertyType = syncData.type;
   if (propertyType === 'array')
   {
@@ -319,13 +320,36 @@ function writeProperty(propertyName, propertyData, syncData, dst)
       writeProperty(i, propertyData[i], syncData.elements, elements);
     }
   }
+  else if (propertyType === 'integer')
+  {
+    dst[propertyName] = Math.trunc(Number(propertyData)) ;
+  }
   else if (propertyType === 'float')
   {
     dst[propertyName] = Number(propertyData);
   }
+  else if (propertyType === 'boolean')
+  {
+    dst[propertyName] = Boolean(propertyData);
+  }
   else if (propertyType === 'string')
   {
-    dst[propertyName] = String(propertyType);
+    dst[propertyName] = String(propertyData);
+  }
+  else if (propertyType === 'entity')
+  {
+    if (typeof propertyData === 'string')
+    {
+      dst[propertyName] = String(propertyData);
+    }
+    else if (propertyData instanceof __WEBPACK_IMPORTED_MODULE_2_integrated_entity_Entity_js__["a" /* default */])
+    {
+      dst[propertyName] = propertyData.id;
+    }
+    else
+    {
+      throw new Error("unknown entity type \'" + propertyData + "\'");
+    }
   }
   else
   {
@@ -343,11 +367,11 @@ function writeProperty(propertyName, propertyData, syncData, dst)
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Reflection_js__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_uid_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Reflection_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_uid_js__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_EventHandler_js__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__EntityRegistry_js__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Entity_js__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Entity_js__ = __webpack_require__(0);
 
 
 
@@ -590,8 +614,8 @@ class EventHandler
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_ObjectPool_js__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_uid_js__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Entity_js__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_uid_js__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Entity_js__ = __webpack_require__(0);
 
 
 
@@ -745,7 +769,7 @@ Transform.sync = {
     elements: { type: 'float' } },
   scale: { type: 'array',
     elements: { type: 'float' } }
-}
+};
 
 /* harmony default export */ __webpack_exports__["a"] = (Transform);
 

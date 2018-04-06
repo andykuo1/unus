@@ -1,5 +1,6 @@
 import Reflection from 'util/Reflection.js';
 import EntityManager from 'integrated/entity/EntityManager.js';
+import Entity from 'integrated/entity/Entity.js';
 
 class EntitySystem
 {
@@ -79,7 +80,6 @@ class EntitySystem
 
 function writeProperty(propertyName, propertyData, syncData, dst)
 {
-  console.log("Writing property " + propertyName + " with data " + propertyData + " with type " + syncData.type + " into " + dst);
   const propertyType = syncData.type;
   if (propertyType === 'array')
   {
@@ -91,13 +91,36 @@ function writeProperty(propertyName, propertyData, syncData, dst)
       writeProperty(i, propertyData[i], syncData.elements, elements);
     }
   }
+  else if (propertyType === 'integer')
+  {
+    dst[propertyName] = Math.trunc(Number(propertyData)) ;
+  }
   else if (propertyType === 'float')
   {
     dst[propertyName] = Number(propertyData);
   }
+  else if (propertyType === 'boolean')
+  {
+    dst[propertyName] = Boolean(propertyData);
+  }
   else if (propertyType === 'string')
   {
-    dst[propertyName] = String(propertyType);
+    dst[propertyName] = String(propertyData);
+  }
+  else if (propertyType === 'entity')
+  {
+    if (typeof propertyData === 'string')
+    {
+      dst[propertyName] = String(propertyData);
+    }
+    else if (propertyData instanceof Entity)
+    {
+      dst[propertyName] = propertyData.id;
+    }
+    else
+    {
+      throw new Error("unknown entity type \'" + propertyData + "\'");
+    }
   }
   else
   {

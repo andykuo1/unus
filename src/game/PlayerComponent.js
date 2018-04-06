@@ -6,4 +6,11 @@ function Player()
   this.move = false;
 }
 
+Player.sync = {
+  socketID: { type: 'integer' },
+  nextX: { type: 'float' },
+  nextY: { type: 'float' },
+  move: { type: 'boolean' }
+};
+
 export default Player;

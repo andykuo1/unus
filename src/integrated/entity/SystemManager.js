@@ -26,22 +26,6 @@ class SystemManager
     }
   }
 
-  captureSystemStates(entityManager, dst)
-  {
-    if (!dst.entitylist) dst.entitylist = {};
-
-    for(const entity of entityManager.entities)
-    {
-      if (!dst.entitylist[entity.id]) dst.entitylist[entity.id] = {};
-      dst.entitylist[entity.id].name = entity._name;
-    }
-
-    for(const system of this.systems)
-    {
-      system.writeToGameState(entityManager, dst);
-    }
-  }
-
   resetSystemStates(entityManager, gameState)
   {
     this.resetEntityList(entityManager, gameState);

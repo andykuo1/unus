@@ -79,15 +79,15 @@ class Renderer
         if (Renderer.RENDER_SERVER_STATE)
         {
           gl.uniform3fv(this.prgm.uniforms.uColor, [0.3, 0.3, 0.3]);
-          for(const serverEntity of world.serverState.entities)
+          for(const serverEntity of Object.values(world.serverState))
           {
-            if (!serverEntity.renderable || !serverEntity.renderable.visible) continue;
+            if (!serverEntity.components.renderable || !serverEntity.components.renderable.visible) continue;
 
             //Setting up the Model Matrix
             mat4.fromRotationTranslationScale(modelview,
-              serverEntity.transform.rotation,
-              [serverEntity.transform.x, serverEntity.transform.y, 0],
-              serverEntity.transform.scale);
+              serverEntity.components.transform.rotation,
+              [serverEntity.components.transform.x, serverEntity.components.transform.y, 0],
+              serverEntity.components.transform.scale);
             mat4.mul(modelview, view, modelview);
       			gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
 

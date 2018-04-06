@@ -16,6 +16,6 @@ Transform.sync = {
     elements: { type: 'float' } },
   scale: { type: 'array',
     elements: { type: 'float' } }
-}
+};
 
 export default Transform;
