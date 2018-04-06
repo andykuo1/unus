@@ -10,6 +10,7 @@ class Entity
   {
     this._id = 0;
     this._name = null;
+    this._tracker = null;
   }
 
   addComponent(component)
@@ -42,6 +43,8 @@ class Entity
   get id() { return this._id; }
 
   get name() { return this._name; }
+
+  get tracker() { return this._tracker; }
 }
 
 export default Entity;

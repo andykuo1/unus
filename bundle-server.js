@@ -565,6 +565,7 @@ class Entity
   {
     this._id = 0;
     this._name = null;
+    this._tracker = null;
   }
 
   addComponent(component)
@@ -597,6 +598,8 @@ class Entity
   get id() { return this._id; }
 
   get name() { return this._name; }
+
+  get tracker() { return this._tracker; }
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (Entity);
@@ -1215,6 +1218,18 @@ class EntityManager
     return result;
   }
 
+  getComponentClassByName(componentName)
+  {
+    for(const component of this.components.keys())
+    {
+      if (__WEBPACK_IMPORTED_MODULE_0_util_Reflection_js__["a" /* default */].getClassVarName(component) === componentName)
+      {
+        return component;
+      }
+    }
+    return null;
+  }
+
   getEntitiesByComponent(component)
   {
     return this.components.get(component) || [];
@@ -1565,22 +1580,6 @@ class PlayerSystem extends __WEBPACK_IMPORTED_MODULE_0_game_SynchronizedSystem_j
       entity.motion.motionY += Math.sin(rot) * speed * delta;
     }
   }
-
-/*
-  writeEntityToData(entity, dst)
-  {
-    dst.player.nextX = entity.player.nextX;
-    dst.player.nextY = entity.player.nextY;
-    dst.player.move = entity.player.move;
-  }
-
-  readEntityFromData(src, entity)
-  {
-    entity.player.nextX = src.player.nextX;
-    entity.player.nextY = src.player.nextY;
-    entity.player.move = src.player.move;
-  }
-  */
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (PlayerSystem);

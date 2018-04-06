@@ -4,10 +4,12 @@
   "description": "An online browser game.",
   "main": "./bundle-server.js",
   "scripts": {
-    "start": "npm run build-all; bash run.sh",
-    "build-all": "npm run build-server; npm run build-client",
+    "start": "npm run build-all && clear && bash run.sh",
+    "test": "npm run build-test && node ./bundle-test.js",
+    "build-all": "npm run build-test && npm run build-server && npm run build-client",
     "build-server": "webpack --config webpack.server.config.js",
-    "build-client": "webpack --config webpack.client.config.js"
+    "build-client": "webpack --config webpack.client.config.js",
+    "build-test": "webpack --config webpack.test.config.js"
   },
   "repository": {
     "type": "git",

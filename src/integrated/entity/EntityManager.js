@@ -125,6 +125,18 @@ class EntityManager
     return result;
   }
 
+  getComponentClassByName(componentName)
+  {
+    for(const component of this.components.keys())
+    {
+      if (Reflection.getClassVarName(component) === componentName)
+      {
+        return component;
+      }
+    }
+    return null;
+  }
+
   getEntitiesByComponent(component)
   {
     return this.components.get(component) || [];
