@@ -1,5 +1,8 @@
 import EventHandler from 'util/EventHandler.js';
 
+//EVENT: playerJoined(entityPlayer) - called after a player joins (ServerEngine)
+//EVENT: playerLeft(entityPlayer) - called before a player leaves (ServerEngine)
+
 class GameEngine
 {
   constructor(world)

@@ -1106,9 +1106,11 @@ class ServerEngine
     this.world = new __WEBPACK_IMPORTED_MODULE_1_integrated_World_js__["a" /* default */]();
     this.gameEngine = new __WEBPACK_IMPORTED_MODULE_6_integrated_GameEngine_js__["a" /* default */](this.world);
 
+    this.clientPlayers = new Map();
     this.clientStates = new __WEBPACK_IMPORTED_MODULE_5_util_PriorityQueue_js__["a" /* default */]((a, b) => {
       return a.worldTicks - b.worldTicks;
     });
+
     this.syncer = new __WEBPACK_IMPORTED_MODULE_3_server_ServerSynchronizer_js__["a" /* default */](this.world);
 
     this.shouldFullWorldUpdate = false;
@@ -1129,17 +1131,39 @@ class ServerEngine
 
     console.log("Connecting server...");
 
-    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.events.on('clientConnect', client => {
-      client.on('clientData', data => {
-          data.target = client.id;
-          this.clientStates.queue(data);
-          __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.emit('clientData', client, data);
-        });
-    });
+    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.events.on('clientConnect', this.onClientConnect.bind(this));
+    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.events.on('clientDisconnect', this.onClientDisconnect.bind(this));
 
     this.syncer.init();
 
     await __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.initServer();
+  }
+
+  onClientConnect(client)
+  {
+    const clientID = client.id;
+
+    //Create player...
+    const entity = this.world.entityManager.spawnEntity('player');
+    entity.player.socketID = clientID;
+    this.clientPlayers.set(clientID, entity);
+
+    //Listen for incoming client data...
+    client.on('clientData', data => {
+        data.target = clientID;
+        this.clientStates.queue(data);
+        __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.emit('clientData', client, data);
+      });
+  }
+
+  onClientDisconnect(client)
+  {
+    const clientID = client.id;
+
+    //Destroy player...
+    const entity = this.clientPlayers.get(clientID);
+    this.entityManager.destroyEntity(entity);
+    this.clientPlayers.delete(clientID);
   }
 
   update(frame)
@@ -1152,8 +1176,7 @@ class ServerEngine
 
       //Get oldest input state (ASSUMES INPUT STATES IS SORTED BY TIME!)
       const clientState = this.clientStates.dequeue();
-      const targetPlayer = clientState.target;
-      const entityPlayer = this.syncer.playerSyncer.playerManager.getPlayerByClientID(targetPlayer);
+      const entityPlayer = this.getPlayerByClientID(clientState.target);
 
       //Process input
       this.gameEngine.processInput(clientState, entityPlayer);
@@ -1192,6 +1215,11 @@ class ServerEngine
   {
     //TODO: ADD initial world state / loading
     __WEBPACK_IMPORTED_MODULE_4_game_GameFactory_js__["a" /* default */].createWorld(this);
+  }
+
+  getPlayerByClientID(socketID)
+  {
+    return this.clientPlayers.get(socketID);
   }
 }
 
@@ -1988,12 +2016,6 @@ class PlayerSyncer
 {
   constructor(world)
   {
-    this.world = world;
-
-    this.clientStates = new __WEBPACK_IMPORTED_MODULE_3_util_PriorityQueue_js__["a" /* default */]((a, b) => {
-      return a.worldTicks - b.worldTicks;
-    });
-    this.playerManager = new __WEBPACK_IMPORTED_MODULE_1_server_PlayerManager_js__["a" /* default */](this.world.entityManager);
   }
 
   init()
@@ -2001,33 +2023,15 @@ class PlayerSyncer
     if (!__WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].isRemote())
     {
       //Application.events.on('update', this.onServerUpdate.bind(this));
-      __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.events.on('clientConnect', this.onClientConnect.bind(this));
       __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.events.on('handshakeResponse', this.onHandshakeResponse.bind(this));
-      __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.events.on('clientDisconnect', this.onClientDisconnect.bind(this));
     }
-    else
-    {
-      //Application.events.on('serverData', this.onServerData.bind(this));
-    }
-  }
-
-  //Server side
-  onClientConnect(client)
-  {
-    this.playerManager.createPlayer(client.id);
   }
 
   //Server side
   onHandshakeResponse(client, data)
   {
-    const clientEntity = this.playerManager.getPlayerByClientID(client.id);
+    const clientEntity = __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].game.getPlayerByClientID(client.id);
     data.entityID = clientEntity._id;
-  }
-
-  //Server side
-  onClientDisconnect(client)
-  {
-    this.playerManager.destroyPlayer(client.id);
   }
 }
 
@@ -2047,33 +2051,11 @@ class PlayerManager
   constructor(entityManager)
   {
     this.entityManager = entityManager;
-
-    this.players = new Map();
-  }
-
-  createPlayer(socketID)
-  {
-    const entity = this.entityManager.spawnEntity('player');
-    entity.player.socketID = socketID;
-    this.players.set(socketID, entity);
-    return entity;
-  }
-
-  destroyPlayer(socketID)
-  {
-    const entity = this.players.get(socketID);
-    this.players.delete(socketID);
-    this.entityManager.destroyEntity(entity);
   }
 
   onUpdate(frame)
   {
     //Nothing here really...
-  }
-
-  getPlayerByClientID(socketID)
-  {
-    return this.players.get(socketID);
   }
 
   getPlayers()
@@ -2082,7 +2064,7 @@ class PlayerManager
   }
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (PlayerManager);
+/* unused harmony default export */ var _unused_webpack_default_export = (PlayerManager);
 
 
 /***/ }),
