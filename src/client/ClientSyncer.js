@@ -13,15 +13,18 @@ class ClientSyncer
     this.input = input;
     this.renderer = renderer;
 
+    this.currentInput = null;
     this.inputStates = new PriorityQueue((a, b) => {
       return a.worldTicks - b.worldTicks;
     });
     this.playerController = new PlayerController(this.world.entityManager, renderer);
+
+    Application.events.on('serverData', this.onServerData.bind(this));
   }
 
   init()
   {
-    Application.network.events.on('serverConnect', (server, data) => {
+    Application.network.events.on('handshakeResult', (server, data) => {
       //Setup the world from state...
       this.world.resetState(data['gameState']);
 
@@ -30,7 +33,6 @@ class ClientSyncer
       if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
       this.playerController.setClientPlayer(clientEntity);
     });
-
   }
 
   onUpdate(frame)
@@ -52,6 +54,18 @@ class ClientSyncer
     this.world.step(frame, true);
 
     this.playerController.onUpdate(frame);
+  }
+
+  onInputUpdate(inputState)
+  {
+    const vec = ViewPort.getPointFromScreen(
+      vec3.create(),
+      this.renderer.camera, this.renderer.viewport,
+      inputState.x, inputState.y);
+    inputState.x = vec[0];
+    inputState.y = vec[1];
+    inputState.worldTicks = this.world.ticks;
+    this.currentInput = inputState;
   }
 
   getCurrentInputState()
@@ -77,7 +91,7 @@ class ClientSyncer
     //Application.network.sendToServer('client.inputstate', inputState);
   }
 
-  onServerUpdate(server, gameState)
+  onServerData(server, gameState)
   {
     //CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
     const currentTicks = this.world.ticks;

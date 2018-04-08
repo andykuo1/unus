@@ -20,11 +20,17 @@ class ServerSynchronizer
   init()
   {
     Application.network.events.on('clientConnect', this.onClientConnect.bind(this));
+    Application.network.events.on('handshakeResponse', this.onHandshakeResponse.bind(this));
     Application.network.events.on('clientDisconnect', this.onClientDisconnect.bind(this));
   }
 
-  onClientConnect(client, data)
+  onClientConnect(client)
   {
+  }
+
+  onHandshakeResponse(client, data)
+  {
+    console.log("BAM!");
     //Insert new player...
     const clientEntity = this.playerManager.createPlayer(client.id);
     data.entityID = clientEntity._id;

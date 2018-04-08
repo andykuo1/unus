@@ -9997,7 +9997,7 @@ class NetworkHandler
     else
     {
       //Client-side init
-      this.socketID = -1;
+      this.localSocketID = -1;
     }
   }
 
@@ -10005,45 +10005,53 @@ class NetworkHandler
   {
     if (!this.remote) throw new Error("Initializing wrong network side");
 
+    this.events.emit('serverConnect', this.socket);
+
     this.socket.on('disconnect', () => {
       console.log("Disconnected from server...");
-      this.socketID = -1;
+      this.localSocketID = -1;
       this.events.emit('serverDisconnect', this.socket);
-
       window.close();
     });
 
-    return new Promise((resolve, reject) => {
-      this.socket.emit('client-handshake');
-      this.socket.on('server-handshake', (data) => {
-        console.log("Connected to server...");
-        this.socketID = data.socketID;
-        this.events.emit('serverConnect', this.socket, data);
-
-        //Start game...
-        resolve();
-      });
-    });
+    await this.handshake();
   }
 
   async initServer()
   {
     if (this.remote) throw new Error("Initializing wrong network side");
 
-    this.socket.on('connection', (socket) => {
-      socket.on('client-handshake', () => {
-        console.log("Added client: " + socket.id);
-        this.clients.set(socket.id, socket);
-        const data = { socketID: socket.id };
-        this.events.emit('clientConnect', socket, data);
+    this.socket.on('connection', socket => {
+      console.log("Connection established: " + socket.id);
+      const socketID = socket.id;
+      this.clients.set(socketID, socket);
+      this.events.emit('clientConnect', socket);
 
-        socket.emit('server-handshake', data);
+      socket.on('clientHandshake', () => {
+        console.log("Handshaking with " + socket.id + "...");
+        const data = {};
+        data.socketID = socketID;
+        //To build the data packet before sending...
+        this.events.emit('handshakeResponse', socket, data);
+        socket.emit('serverHandshake', data);
+      });
 
-        socket.on('disconnect', () => {
-          this.events.emit('clientDisconnect', socket);
-          console.log("Removed client: " + socket.id);
-          this.clients.delete(socket.id);
-        });
+      socket.on('disconnect', () => {
+        console.log("Connection lost: " + socket.id);
+        this.clients.delete(socketID);
+        this.events.emit('clientDisconnect', socket);
+      });
+    });
+  }
+
+  async handshake()
+  {
+    return new Promise((resolve, reject) => {
+      this.socket.emit('clientHandshake');
+      this.socket.on('serverHandshake', data => {
+        this.localSocketID = data.socketID;
+        this.events.emit('handshakeResult', this.socket, data);
+        resolve();
       });
     });
   }
@@ -10123,11 +10131,9 @@ class ClientEngine
     await this.renderer.load();
 
     console.log("Connecting client...");
-    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.events.on('serverConnect', (server, data) => {
-      //Listening to the server...
-      server.on('serverData', (data) => {
-        this.syncer.onServerUpdate(server, data);
-      });
+    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.events.on('serverConnect', server => {
+      server.on('serverData',
+        data => __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.emit('serverData', server, data));
     });
 
     this.syncer.init();
@@ -10137,6 +10143,8 @@ class ClientEngine
 
   update(frame)
   {
+    //Application.events.emit('inputUpdate');
+
     this.syncer.onUpdate(frame);
     this.renderer.render(this.world);
   }
@@ -15869,15 +15877,18 @@ class ClientSyncer
     this.input = input;
     this.renderer = renderer;
 
+    this.currentInput = null;
     this.inputStates = new __WEBPACK_IMPORTED_MODULE_3_util_PriorityQueue_js__["a" /* default */]((a, b) => {
       return a.worldTicks - b.worldTicks;
     });
     this.playerController = new __WEBPACK_IMPORTED_MODULE_4_client_PlayerController_js__["a" /* default */](this.world.entityManager, renderer);
+
+    __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].events.on('serverData', this.onServerData.bind(this));
   }
 
   init()
   {
-    __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].network.events.on('serverConnect', (server, data) => {
+    __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].network.events.on('handshakeResult', (server, data) => {
       //Setup the world from state...
       this.world.resetState(data['gameState']);
 
@@ -15886,7 +15897,6 @@ class ClientSyncer
       if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
       this.playerController.setClientPlayer(clientEntity);
     });
-
   }
 
   onUpdate(frame)
@@ -15908,6 +15918,18 @@ class ClientSyncer
     this.world.step(frame, true);
 
     this.playerController.onUpdate(frame);
+  }
+
+  onInputUpdate(inputState)
+  {
+    const vec = __WEBPACK_IMPORTED_MODULE_5_client_camera_ViewPort_js__["a" /* default */].getPointFromScreen(
+      __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create(),
+      this.renderer.camera, this.renderer.viewport,
+      inputState.x, inputState.y);
+    inputState.x = vec[0];
+    inputState.y = vec[1];
+    inputState.worldTicks = this.world.ticks;
+    this.currentInput = inputState;
   }
 
   getCurrentInputState()
@@ -15933,7 +15955,7 @@ class ClientSyncer
     //Application.network.sendToServer('client.inputstate', inputState);
   }
 
-  onServerUpdate(server, gameState)
+  onServerData(server, gameState)
   {
     //CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
     const currentTicks = this.world.ticks;

@@ -34,7 +34,7 @@ class ServerEngine
 
     console.log("Connecting server...");
 
-    Application.network.events.on('clientConnect', (client, data) => {
+    Application.network.events.on('clientConnect', client => {
       client.on('clientData',
         data => Application.events.emit('clientData', client, data));
     });

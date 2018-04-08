@@ -37,11 +37,9 @@ class ClientEngine
     await this.renderer.load();
 
     console.log("Connecting client...");
-    Application.network.events.on('serverConnect', (server, data) => {
-      //Listening to the server...
-      server.on('serverData', (data) => {
-        this.syncer.onServerUpdate(server, data);
-      });
+    Application.network.events.on('serverConnect', server => {
+      server.on('serverData',
+        data => Application.events.emit('serverData', server, data));
     });
 
     this.syncer.init();
@@ -51,6 +49,8 @@ class ClientEngine
 
   update(frame)
   {
+    //Application.events.emit('inputUpdate');
+
     this.syncer.onUpdate(frame);
     this.renderer.render(this.world);
   }
