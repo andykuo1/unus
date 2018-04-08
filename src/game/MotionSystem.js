@@ -1,11 +1,23 @@
-import SynchronizedSystem from 'game/SynchronizedSystem.js';
 import Motion from 'game/MotionComponent.js';
 
-class MotionSystem extends SynchronizedSystem
+import Application from 'Application.js';
+
+class MotionSystem
 {
   constructor(entityManager)
   {
-    super(entityManager, Motion);
+    this.entityManager = entityManager;
+
+    Application.events.on('update', this.onUpdate.bind(this));
+  }
+
+  onUpdate(delta)
+  {
+    const entities = this.entityManager.getEntitiesByComponent(Motion);
+    for(const entity of entities)
+    {
+      this.onEntityUpdate(entity, delta);
+    }
   }
 
   onEntityUpdate(entity, delta)

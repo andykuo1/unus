@@ -7,17 +7,13 @@ class SystemManager
 
   update(entityManager, frame, predictive)
   {
-    for(const system of this.systems)
-    {
-      system.onUpdate(entityManager, frame.delta);
-    }
   }
 
   updateInput(inputState, targetEntity, predictive)
   {
     for(const system of this.systems)
     {
-      system.onInputUpdate(targetEntity, inputState);
+      if (system.onInputUpdate) system.onInputUpdate(targetEntity, inputState);
     }
   }
 }

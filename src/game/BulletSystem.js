@@ -1,11 +1,23 @@
-import SynchronizedSystem from 'game/SynchronizedSystem.js';
 import Bullet from 'game/BulletComponent.js';
 
-class BulletSystem extends SynchronizedSystem
+import Application from 'Application.js';
+
+class BulletSystem
 {
   constructor(entityManager)
   {
-    super(entityManager, Bullet);
+    this.entityManager = entityManager;
+
+    Application.events.on('update', this.onUpdate.bind(this));
+  }
+
+  onUpdate(delta)
+  {
+    const entities = this.entityManager.getEntitiesByComponent(Bullet);
+    for(const entity of entities)
+    {
+      this.onEntityUpdate(entity, delta);
+    }
   }
 
   onEntityUpdate(entity, delta)

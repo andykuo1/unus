@@ -1,4 +1,3 @@
-import SynchronizedSystem from 'game/SynchronizedSystem.js';
 import Player from 'game/PlayerComponent.js';
 import Transform from 'game/TransformComponent.js';
 import Renderable from 'game/RenderableComponent.js';
@@ -7,11 +6,22 @@ import Bullet from 'game/BulletComponent.js';
 import Application from 'Application.js';
 import GameFactory from 'game/GameFactory.js';
 
-class PlayerSystem extends SynchronizedSystem
+class PlayerSystem
 {
   constructor(entityManager)
   {
-    super(entityManager, Player);
+    this.entityManager = entityManager;
+
+    Application.events.on('update', this.onUpdate.bind(this));
+  }
+
+  onUpdate(delta)
+  {
+    const entities = this.entityManager.getEntitiesByComponent(Player);
+    for(const entity of entities)
+    {
+      this.onEntityUpdate(entity, delta);
+    }
   }
 
   onInputUpdate(entity, inputState)

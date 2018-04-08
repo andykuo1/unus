@@ -1,13 +1,25 @@
 import { quat } from 'gl-matrix';
 
-import SynchronizedSystem from 'game/SynchronizedSystem.js';
 import Rotating from 'game/RotatingComponent.js';
 
-class RotatingSystem extends SynchronizedSystem
+import Application from 'Application.js';
+
+class RotatingSystem
 {
   constructor(entityManager)
   {
-    super(entityManager, Rotating);
+    this.entityManager = entityManager;
+
+    Application.events.on('update', this.onUpdate.bind(this));
+  }
+
+  onUpdate(delta)
+  {
+    const entities = this.entityManager.getEntitiesByComponent(Rotating);
+    for(const entity of entities)
+    {
+      this.onEntityUpdate(entity, delta);
+    }
   }
 
   onEntityUpdate(entity, delta)

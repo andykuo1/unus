@@ -1,1 +1,1 @@
-import TestSerializer from 'test/TestSerializer.js';
+import 'test/TestSerializer.js';
