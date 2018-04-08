@@ -32,6 +32,11 @@ class GameEngine
     this.world.updateInput(clientState, targetEntity);
   }
 
+  handleMessage(message)
+  {
+    this.events.emit('message', message);
+  }
+
   step(isReenact, t, dt, physicsOnly)
   {
     if (physicsOnly)

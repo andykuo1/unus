@@ -32,10 +32,10 @@ class ClientEngine
     this.world = new World();
     this.renderer = new Renderer(canvas);
     this.input = new Mouse(document);
+    this.syncer = new ClientSyncer(this.world, this.input, this.renderer);
 
     this.gameEngine = new GameEngine(this.world);
-
-    this.syncer = new ClientSyncer(this.world, this.input, this.renderer);
+    this.inboundMessages = [];
   }
 
   async start()
@@ -43,11 +43,8 @@ class ClientEngine
     console.log("Loading client...");
     await this.renderer.load();
 
-    console.log("Connecting client...");
-    Application.network.events.on('serverConnect', server => {
-      server.on('serverData',
-        data => Application.events.emit('serverData', server, data));
-    });
+    console.log("Connecting to server...");
+    Application.network.events.on('serverConnect', this.onServerConnect.bind(this));
 
     this.world.init();
     this.syncer.init();
@@ -55,12 +52,32 @@ class ClientEngine
     await Application.network.initClient();
   }
 
+  onServerConnect(server)
+  {
+    server.on('serverData', data => {
+      this.inboundMessages.push(data);
+      Application.events.emit('serverData', server, data)
+    });
+  }
+
   update(frame)
   {
+    //Pre-step
+
+    while(this.inboundMessages.length > 0)
+    {
+      //Process incoming messages from server...
+      this.gameEngine.handleMessage(this.inboundMessages.pop());
+    }
+
+    //FIXME: Where should this be?
     const inputState = this.input.poll();
     Application.events.emit('inputUpdate', inputState);
-
+    //this.applyDelayedInputs(); <- artificial delay on user inputs...
     this.syncer.onUpdate(frame);
+    this.gameEngine.step(false, frame.then, frame.delta);
+
+    //Post-step
     this.renderer.render(this.world);
   }
 }

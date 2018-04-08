@@ -20,10 +20,9 @@ class ServerEngine
   constructor(gameEngine)
   {
     this.world = new World();
-    this.gameEngine = new GameEngine(this.world);
-
     this.syncer = new ServerSynchronizer(this.world);
 
+    this.gameEngine = new GameEngine(this.world);
     this.clientPlayers = new Map();
     this.clientStates = new PriorityQueue((a, b) => {
       return a.worldTicks - b.worldTicks;
@@ -62,14 +61,14 @@ class ServerEngine
     const entityPlayer = this.world.entityManager.spawnEntity('player');
     entityPlayer.player.clientID = clientID;
     this.clientPlayers.set(clientID, entityPlayer);
-    this.gameEngine.emit('playerJoined', entityPlayer);
+    this.gameEngine.events.emit('playerJoined', entityPlayer);
 
     //Listen for incoming client data...
     client.on('clientData', data => {
-        data.target = clientID;
-        this.clientStates.queue(data);
-        Application.events.emit('clientData', client, data);
-      });
+      data.target = clientID;
+      this.clientStates.queue(data);
+      Application.events.emit('clientData', client, data);
+    });
   }
 
   onClientDisconnect(client)
@@ -78,7 +77,7 @@ class ServerEngine
 
     //Destroy player...
     const entityPlayer = this.clientPlayers.get(clientID);
-    this.gameEngine.emit('playerLeft', entityPlayer);
+    this.gameEngine.events.emit('playerLeft', entityPlayer);
     this.entityManager.destroyEntity(entity);
     this.clientPlayers.delete(clientID);
   }
@@ -100,7 +99,7 @@ class ServerEngine
     }
 
     //Run the game
-    this.gameEngine.step(false, frame.delta);
+    this.gameEngine.step(false, frame.then, frame.delta);
 
     //Update the players...
     const worldState = {};

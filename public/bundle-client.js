@@ -6401,14 +6401,14 @@ const forEach = (function() {
 "use strict";
 function Player()
 {
-  this.socketID = -1;
+  this.clientID = -1;
   this.nextX = 0;
   this.nextY = 0;
   this.move = false;
 }
 
 Player.sync = {
-  socketID: { type: 'integer' },
+  clientID: { type: 'integer' },
   nextX: { type: 'float' },
   nextY: { type: 'float' },
   move: { type: 'boolean' }
@@ -10128,10 +10128,10 @@ class ClientEngine
     this.world = new __WEBPACK_IMPORTED_MODULE_1_integrated_World_js__["a" /* default */]();
     this.renderer = new __WEBPACK_IMPORTED_MODULE_3_client_Renderer_js__["a" /* default */](canvas);
     this.input = new __WEBPACK_IMPORTED_MODULE_2_client_input_Mouse_js__["a" /* default */](document);
+    this.syncer = new __WEBPACK_IMPORTED_MODULE_5_client_ClientSyncer_js__["a" /* default */](this.world, this.input, this.renderer);
 
     this.gameEngine = new __WEBPACK_IMPORTED_MODULE_6_integrated_GameEngine_js__["a" /* default */](this.world);
-
-    this.syncer = new __WEBPACK_IMPORTED_MODULE_5_client_ClientSyncer_js__["a" /* default */](this.world, this.input, this.renderer);
+    this.inboundMessages = [];
   }
 
   async start()
@@ -10139,11 +10139,8 @@ class ClientEngine
     console.log("Loading client...");
     await this.renderer.load();
 
-    console.log("Connecting client...");
-    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.events.on('serverConnect', server => {
-      server.on('serverData',
-        data => __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.emit('serverData', server, data));
-    });
+    console.log("Connecting to server...");
+    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.events.on('serverConnect', this.onServerConnect.bind(this));
 
     this.world.init();
     this.syncer.init();
@@ -10151,13 +10148,40 @@ class ClientEngine
     await __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.initClient();
   }
 
+  onServerConnect(server)
+  {
+    server.on('serverData', data => {
+      this.inboundMessages.push(data);
+      __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.emit('serverData', server, data)
+    });
+  }
+
   update(frame)
   {
+    //Pre-step
+
+    while(this.inboundMessages.length > 0)
+    {
+      //Process incoming messages from server...
+      this.gameEngine.handleMessage(this.inboundMessages.pop());
+    }
+
     const inputState = this.input.poll();
     __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.emit('inputUpdate', inputState);
+    //this.applyDelayedInputs(); <- artificial delay on user inputs...
+    this.syncer.onUpdate(frame);
+    this.gameEngine.step(false, frame.then, frame.delta);
+
+    //Post-step
+    this.renderer.render(this.world);
+
+    /*
+    const inputState = this.input.poll();
+    Application.events.emit('inputUpdate', inputState);
 
     this.syncer.onUpdate(frame);
     this.renderer.render(this.world);
+    */
   }
 }
 
@@ -15920,7 +15944,6 @@ class ClientSyncer
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
     if (targetEntity) this.world.updateInput(currentInputState, targetEntity, true);
-    this.world.step(frame.delta, true);
 
     this.playerController.onUpdate(frame);
   }
@@ -16152,6 +16175,9 @@ class PlayerController
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_EventHandler_js__ = __webpack_require__(10);
 
 
+//EVENT: playerJoined(entityPlayer) - called after a player joins (ServerEngine)
+//EVENT: playerLeft(entityPlayer) - called before a player leaves (ServerEngine)
+
 class GameEngine
 {
   constructor(world)
@@ -16179,6 +16205,11 @@ class GameEngine
   processInput(clientState, targetEntity)
   {
     this.world.updateInput(clientState, targetEntity);
+  }
+
+  handleMessage(message)
+  {
+    this.events.emit('message', message);
   }
 
   step(isReenact, t, dt, physicsOnly)

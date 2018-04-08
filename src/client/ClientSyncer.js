@@ -71,7 +71,6 @@ class ClientSyncer
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
     if (targetEntity) this.world.updateInput(currentInputState, targetEntity, true);
-    this.world.step(frame.delta, true);
 
     this.playerController.onUpdate(frame);
   }
