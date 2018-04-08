@@ -35,11 +35,6 @@ class World
     Application.events.emit('worldStep', this, delta);
   }
 
-  updateInput(inputState, targetEntity)
-  {
-    Application.events.emit('inputStep', inputState, targetEntity);
-  }
-
   captureState()
   {
     //Capture a GameState and return it for sending...

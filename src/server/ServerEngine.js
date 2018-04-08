@@ -93,6 +93,7 @@ class ServerEngine
       //Get oldest input state (ASSUMES INPUT STATES IS SORTED BY TIME!)
       const clientState = this.clientStates.dequeue();
       const entityPlayer = this.getPlayerByClientID(clientState.target);
+      if (!entityPlayer) continue;
 
       //Process input
       this.gameEngine.processInput(clientState, entityPlayer);

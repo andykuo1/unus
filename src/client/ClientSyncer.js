@@ -13,17 +13,12 @@ class ClientSyncer
     this.input = input;
     this.renderer = renderer;
 
-    this.currentInput = null;
-    this.inputStates = new PriorityQueue((a, b) => {
-      return a.worldTicks - b.worldTicks;
-    });
     this.playerController = new PlayerController(this.world.entityManager, renderer);
   }
 
   init()
   {
     Application.events.on('serverData', this.onServerData.bind(this));
-    Application.events.on('inputStep', this.onInputUpdate.bind(this));
     Application.network.events.on('handshakeResult', this.onHandshakeResult.bind(this));
   }
 
@@ -38,87 +33,15 @@ class ClientSyncer
     this.playerController.setClientPlayer(clientEntity);
   }
 
-  onInputUpdate(inputState, targetEntity)
-  {
-    this.currentInput = inputState;
-  }
-
   onUpdate(frame)
   {
-    //CLIENT stores CURRENT_INPUT_STATE.
-    var currentInputState = this.currentInput;
-    this.currentInput = null;
-    if (currentInputState != null)
-    {
-      //HACK: this should always be called, or else desync happens...
-      this.inputStates.queue(currentInputState);
-
-      //CLIENT sends CURRENT_INPUT_STATE.
-      const data = currentInputState;
-      Application.events.emit('clientResponse', data);
-      //FIXME: Force 200ms lag...
-      setTimeout(() => Application.network.sendToServer('clientData', data), 200);
-      //Application.network.sendToServer('clientData', data);
-    }
-    var targetEntity = currentInputState ? this.playerController.getClientPlayer() : null;
-
-    //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
-    if (targetEntity) this.world.updateInput(currentInputState, targetEntity, true);
-
     this.playerController.onUpdate(frame);
   }
 
   onServerData(server, data)
   {
     const gameState = data.worldState;
-
-    //CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
-    const currentTicks = this.world.ticks;
     this.world.resetState(gameState);
-
-    //CLIENT removes all INPUT_STATE older than CURRENT_GAME_STATE.
-    while(this.inputStates.length > 0 && this.world.ticks >= this.inputStates.peek().worldTicks)
-    {
-      this.inputStates.dequeue();
-    }
-
-    const oldInputStates = [];
-    const nextFrame = new Frame();
-
-    //CLIENT updates CLIENT_GAME_STATE with all remaining INPUT_STATE.
-    while(this.inputStates.length > 0)
-    {
-      //Get oldest input state (ASSUMES INPUT STATES IS SORTED BY TIME!)
-      const inputState = this.inputStates.dequeue();
-      const targetEntity = this.playerController.getClientPlayer();
-
-      //Update world to just before input...
-      const dt = inputState.worldTicks - this.world.ticks;
-      if (dt > 0)
-      {
-        this.world.step(dt, true);
-      }
-
-      //Update world to after this input state...
-      this.world.updateInput(inputState, targetEntity, true);
-      inputState.worldTicks = this.world.ticks;
-
-      oldInputStates.push(inputState);
-    }
-    //Re-add all future inputs...
-    for(const state of oldInputStates)
-    {
-      this.inputStates.queue(state);
-    }
-
-    //Update world to current tick...
-    const dt = currentTicks - this.world.ticks;
-    if (dt > 0)
-    {
-      this.world.step(dt, true);
-    }
-
-    Application.events.emit('serverUpdate', server, gameState);
   }
 }
 

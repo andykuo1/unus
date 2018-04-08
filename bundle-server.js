@@ -1171,6 +1171,7 @@ class ServerEngine
       //Get oldest input state (ASSUMES INPUT STATES IS SORTED BY TIME!)
       const clientState = this.clientStates.dequeue();
       const entityPlayer = this.getPlayerByClientID(clientState.target);
+      if (!entityPlayer) continue;
 
       //Process input
       this.gameEngine.processInput(clientState, entityPlayer);
@@ -1265,11 +1266,6 @@ class World
   {
     this.ticks += delta;
     __WEBPACK_IMPORTED_MODULE_3_Application_js__["a" /* default */].events.emit('worldStep', this, delta);
-  }
-
-  updateInput(inputState, targetEntity)
-  {
-    __WEBPACK_IMPORTED_MODULE_3_Application_js__["a" /* default */].events.emit('inputStep', inputState, targetEntity);
   }
 
   captureState()
@@ -1684,7 +1680,6 @@ class PlayerSystem
     this.entityManager = entityManager;
 
     __WEBPACK_IMPORTED_MODULE_4_Application_js__["a" /* default */].events.on('update', this.onUpdate.bind(this));
-    __WEBPACK_IMPORTED_MODULE_4_Application_js__["a" /* default */].events.on('inputStep', this.onInputUpdate.bind(this));
   }
 
   onUpdate(delta)
@@ -1693,29 +1688,6 @@ class PlayerSystem
     for(const entity of entities)
     {
       this.onEntityUpdate(entity, delta);
-    }
-  }
-
-  onInputUpdate(inputState, entity)
-  {
-    if (!entity.hasComponent(__WEBPACK_IMPORTED_MODULE_0_game_PlayerComponent_js__["a" /* default */])) return;
-    entity.player.nextX = inputState.x;
-    entity.player.nextY = inputState.y;
-    entity.player.move = inputState.down;
-    //HACK: this will run once on server and client-side, needs a way to keep predicted alive
-    if (inputState.click && !__WEBPACK_IMPORTED_MODULE_4_Application_js__["a" /* default */].isRemote())
-    {
-      const dx = entity.player.nextX - entity.transform.x;
-      const dy = entity.player.nextY - entity.transform.y;
-      const rot = -Math.atan2(-dy, dx);
-      __WEBPACK_IMPORTED_MODULE_4_Application_js__["a" /* default */].events.emit('fireBullet', entity, rot);
-
-      //FIXME: need to have a function to create predicted entity, and replace it later.
-      //FIXME: this is because, this may be created multiple times, and should be the same.
-      //FIXME: to keep track of the predicted entity, Valve fingerprints the code that is called.
-      //FIXME: https://developer.valvesoftware.com/wiki/Prediction#Predicting_entity_creation
-
-      //TODO: What you could do is make 2 different update loops: one for update once, and the other for predictions
     }
   }
 
@@ -1996,6 +1968,8 @@ class ServerSynchronizer
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_EventHandler_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_Application_js__ = __webpack_require__(0);
+
 
 
 //EVENT: playerJoined(entityPlayer) - called after a player joins (ServerEngine)
@@ -2027,12 +2001,23 @@ class GameEngine
 
   processInput(clientState, targetEntity)
   {
-    this.world.updateInput(clientState, targetEntity);
-  }
+    //TODO: Move this game code somewhere else...
+    
+    const player = targetEntity.player;
+    player.nextX = clientState.x;
+    player.nextY = clientState.y;
+    player.move = clientState.down;
 
-  handleMessage(message)
-  {
-    this.events.emit('message', message);
+    if (!__WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].isRemote())
+    {
+      if (clientState.click)
+      {
+        const dx = player.nextX - targetEntity.transform.x;
+        const dy = player.nextY - targetEntity.transform.y;
+        const rot = -Math.atan2(-dy, dx);
+        __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].events.emit('fireBullet', targetEntity, rot);
+      }
+    }
   }
 
   step(isReenact, t, dt, physicsOnly)

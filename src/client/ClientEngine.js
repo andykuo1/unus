@@ -41,6 +41,7 @@ class ClientEngine
 
     this.gameEngine = new GameEngine(this.world);
     this.inboundMessages = [];
+    this.outboundMessages = [];
     this.clientInputDelay = 0;
     this.clientStates = new PriorityQueue((a, b) => {
       return a.worldTicks - b.worldTicks;
@@ -74,11 +75,9 @@ class ClientEngine
     //Grab all input this frame...
     this.checkInput();
 
-    //Process incoming messages from server...
-    while(this.inboundMessages.length > 0)
-    {
-      this.gameEngine.handleMessage(this.inboundMessages.pop());
-    }
+    //Process messages from and to server...
+    this.handleInboundMessages();
+    this.handleOutboundMessages();
 
     //Process inputs with delay...
     this.applyClientStates();
@@ -89,6 +88,26 @@ class ClientEngine
 
     //Render the game...
     this.renderer.render(this.world);
+  }
+
+  handleInboundMessages()
+  {
+    while(this.inboundMessages.length > 0)
+    {
+      const message = this.inboundMessages.pop();
+      //TODO: do something with this message...
+    }
+  }
+
+  handleOutboundMessages()
+  {
+    while(this.outboundMessages.length > 0)
+    {
+      const message = this.outboundMessages.pop();
+      //FIXME: Force 200ms lag...
+      setTimeout(() => Application.network.sendToServer('clientData', message), 200);
+      //Application.network.sendToServer('clientData', data);
+    }
   }
 
   applyClientStates()
@@ -112,6 +131,7 @@ class ClientEngine
     inputState.y = vec[1];
     inputState.worldTicks = this.world.worldTicks;
     this.clientStates.queue(inputState);
+    this.outboundMessages.push(inputState);
   }
 }
 

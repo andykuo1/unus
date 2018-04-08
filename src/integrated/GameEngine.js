@@ -1,4 +1,5 @@
 import EventHandler from 'util/EventHandler.js';
+import Application from 'Application.js';
 
 //EVENT: playerJoined(entityPlayer) - called after a player joins (ServerEngine)
 //EVENT: playerLeft(entityPlayer) - called before a player leaves (ServerEngine)
@@ -29,12 +30,23 @@ class GameEngine
 
   processInput(clientState, targetEntity)
   {
-    this.world.updateInput(clientState, targetEntity);
-  }
+    //TODO: Move this game code somewhere else...
 
-  handleMessage(message)
-  {
-    this.events.emit('message', message);
+    const player = targetEntity.player;
+    player.nextX = clientState.x;
+    player.nextY = clientState.y;
+    player.move = clientState.down;
+
+    if (!Application.isRemote())
+    {
+      if (clientState.click)
+      {
+        const dx = player.nextX - targetEntity.transform.x;
+        const dy = player.nextY - targetEntity.transform.y;
+        const rot = -Math.atan2(-dy, dx);
+        Application.events.emit('fireBullet', targetEntity, rot);
+      }
+    }
   }
 
   step(isReenact, t, dt, physicsOnly)
