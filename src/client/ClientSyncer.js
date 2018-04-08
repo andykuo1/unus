@@ -76,8 +76,10 @@ class ClientSyncer
     this.playerController.onUpdate(frame);
   }
 
-  onServerData(server, gameState)
+  onServerData(server, data)
   {
+    const gameState = data.worldState;
+    
     //CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
     const currentTicks = this.world.ticks;
     this.world.resetState(gameState);

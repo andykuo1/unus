@@ -53,7 +53,7 @@ class ServerEngine
   {
     this.syncer.onUpdate(frame);
 
-    const data = this.world.captureState();
+    const data = {};
     Application.events.emit('serverResponse', data);
     Application.network.sendToAll('serverData', data);
   }

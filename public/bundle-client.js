@@ -10193,6 +10193,12 @@ class World
   init()
   {
     __WEBPACK_IMPORTED_MODULE_4_game_GameFactory_js__["a" /* default */].init(this);
+    __WEBPACK_IMPORTED_MODULE_3_Application_js__["a" /* default */].events.on('serverResponse', this.onServerResponse.bind(this));
+  }
+
+  onServerResponse(data)
+  {
+     data.worldState = this.captureState();
   }
 
   step(frame)
@@ -15915,8 +15921,10 @@ class ClientSyncer
     this.playerController.onUpdate(frame);
   }
 
-  onServerData(server, gameState)
+  onServerData(server, data)
   {
+    const gameState = data.worldState;
+    
     //CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
     const currentTicks = this.world.ticks;
     this.world.resetState(gameState);

@@ -21,6 +21,12 @@ class World
   init()
   {
     GameFactory.init(this);
+    Application.events.on('serverResponse', this.onServerResponse.bind(this));
+  }
+
+  onServerResponse(data)
+  {
+     data.worldState = this.captureState();
   }
 
   step(frame)

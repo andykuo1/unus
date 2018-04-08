@@ -1129,7 +1129,7 @@ class ServerEngine
   {
     this.syncer.onUpdate(frame);
 
-    const data = this.world.captureState();
+    const data = {};
     __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.emit('serverResponse', data);
     __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.sendToAll('serverData', data);
   }
@@ -1189,6 +1189,12 @@ class World
   init()
   {
     __WEBPACK_IMPORTED_MODULE_4_game_GameFactory_js__["a" /* default */].init(this);
+    __WEBPACK_IMPORTED_MODULE_3_Application_js__["a" /* default */].events.on('serverResponse', this.onServerResponse.bind(this));
+  }
+
+  onServerResponse(data)
+  {
+     data.worldState = this.captureState();
   }
 
   step(frame)
