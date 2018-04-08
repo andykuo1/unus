@@ -2,10 +2,8 @@ import { quat } from 'gl-matrix';
 
 import Application from 'Application.js';
 
-import SynchronizedSystem from 'game/SynchronizedSystem.js';
 import PlayerSystem from 'game/PlayerSystem.js';
 import MotionSystem from 'game/MotionSystem.js';
-import TransformSystem from 'game/TransformSystem.js';
 import BulletSystem from 'game/BulletSystem.js';
 import RotatingSystem from 'game/RotatingSystem.js';
 
@@ -29,10 +27,19 @@ class GameFactory
     this.entityManager = game.entityManager;
     game.systemManager.systems.push(new PlayerSystem(this.entityManager));
     game.systemManager.systems.push(new MotionSystem(this.entityManager));
-    game.systemManager.systems.push(new TransformSystem(this.entityManager));
-    game.systemManager.systems.push(new SynchronizedSystem(this.entityManager, Renderable));
     game.systemManager.systems.push(new BulletSystem(this.entityManager));
     game.systemManager.systems.push(new RotatingSystem(this.entityManager));
+
+    Application.events.on('fireBullet', (owner, direction) => {
+      const bulletSpeed = 10;
+      const bulletEntity = this.entityManager.spawnEntity('bullet');
+      bulletEntity.transform.x = owner.transform.x;
+      bulletEntity.transform.y = owner.transform.y;
+      bulletEntity.renderable.color = 0xFF00FF;
+      bulletEntity.bullet.owner = owner._id;
+      bulletEntity.bullet.speedx = Math.cos(direction) * bulletSpeed;
+      bulletEntity.bullet.speedy = Math.sin(direction) * bulletSpeed;
+    });
 
     this.entityManager.registerEntity('player', function(){
       this.addComponent(Transform);

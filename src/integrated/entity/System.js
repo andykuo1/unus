@@ -14,16 +14,6 @@ class System
   {
 
   }
-
-  writeToGameState(entityManager, gameState)
-  {
-
-  }
-
-  readFromGameState(entityManager, gameState)
-  {
-
-  }
 }
 
 export default System;

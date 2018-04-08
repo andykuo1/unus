@@ -4,6 +4,7 @@ import Transform from 'game/TransformComponent.js';
 import Renderable from 'game/RenderableComponent.js';
 import Bullet from 'game/BulletComponent.js';
 
+import Application from 'Application.js';
 import GameFactory from 'game/GameFactory.js';
 
 class PlayerSystem extends SynchronizedSystem
@@ -20,19 +21,12 @@ class PlayerSystem extends SynchronizedSystem
     entity.player.nextY = inputState.y;
     entity.player.move = inputState.down;
     //HACK: this will run once on server and client-side, needs a way to keep predicted alive
-    if (inputState.click)// && !inputState.predictive)
+    if (inputState.click)
     {
-      const bulletSpeed = 10;
-      const bulletEntity = GameFactory.entityManager.spawnEntity('bullet');
       const dx = entity.player.nextX - entity.transform.x;
       const dy = entity.player.nextY - entity.transform.y;
       const rot = -Math.atan2(-dy, dx);
-      bulletEntity.transform.x = entity.transform.x;
-      bulletEntity.transform.y = entity.transform.y;
-      bulletEntity.renderable.color = 0xFF00FF;
-      bulletEntity.bullet.owner = entity._id;
-      bulletEntity.bullet.speedx = Math.cos(rot) * bulletSpeed;
-      bulletEntity.bullet.speedy = Math.sin(rot) * bulletSpeed;
+      Application.events.emit('fireBullet', entity, rot);
 
       //FIXME: need to have a function to create predicted entity, and replace it later.
       //FIXME: this is because, this may be created multiple times, and should be the same.

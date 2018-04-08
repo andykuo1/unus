@@ -4,6 +4,8 @@ function Bullet()
   this.life = 3;
   this.speedx = 0;
   this.speedy = 0;
+  
+  this.speed = 1;
 }
 
 Bullet.sync = {

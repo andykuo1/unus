@@ -39,9 +39,7 @@ class World
   captureState()
   {
     //Capture a GameState and return it for sending...
-    const dst = {};
-    const payload = this.entitySystem.serialize();
-    dst.payload = payload;
+    const dst = this.entitySystem.serialize();
 
     if (!dst.entitylist) dst.entitylist = {};
     for(const entity of this.entities)
@@ -60,13 +58,12 @@ class World
     this.ticks = gameState.worldTicks;
 
     //Continue to reset the world state
-    this.systemManager.resetEntityList(this.entityManager, gameState);
-    this.entitySystem.deserialize(gameState.payload);
+    this.entitySystem.deserialize(gameState);
 
     Application.events.emit('worldReset', this.entityManager, gameState);
 
     //HACK: Prepare server state for rendering...
-    this.serverState = gameState.payload;
+    this.serverState = gameState;
   }
 
   get entityManager() { return this.entitySystem.manager; }

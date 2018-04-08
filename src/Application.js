@@ -6,13 +6,13 @@ class Application
   constructor()
   {
     this._frame = new Frame();
+    this._events = new EventHandler();
   }
 
   async init(network, game)
   {
     this._network = network;
     this._game = game;
-    this._events = new EventHandler();
 
     this._startTime = Date.now();
 

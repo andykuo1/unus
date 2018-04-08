@@ -236,14 +236,30 @@ class EntitySystem
   constructor()
   {
     this.manager = new __WEBPACK_IMPORTED_MODULE_1_integrated_entity_EntityManager_js__["a" /* default */]();
+    this.manager.events.on('entityCreate', this.onEntityCreate.bind(this));
+    this.manager.events.on('entityDestroy', this.onEntityDestroy.bind(this));
+
+    this.cachedEvents = [];
   }
 
   serialize()
   {
     const payload = {};
+    payload.isComplete = true;
+
+    //Write events...
+    const eventsPayload = payload.events = [];
+    for(const event of this.cachedEvents)
+    {
+      eventsPayload.push(event);
+    }
+    this.cachedEvents.length = 0;
+
+    //Write entities...
+    const entitiesPayload = payload.entities = {};
     for(const entity of this.manager.entities)
     {
-      const entityData = payload[entity.id] = {};
+      const entityData = entitiesPayload[entity.id] = {};
       entityData.name = entity.name;
       if (entity.tracker !== null) entityData.tracker = String(entity.tracker);
 
@@ -264,9 +280,30 @@ class EntitySystem
 
   deserialize(payload)
   {
-    for(const entityID of Object.keys(payload))
+    const eventsPayload = payload.events;
+    for(const event of payload.events)
     {
-      const entityData = payload[entityID];
+      if (event.type === 'create')
+      {
+        const entity = this.manager.spawnEntity(event.entityName);
+        entity._id = event.entityID;
+      }
+      else if (event.type === 'destroy')
+      {
+        const entity = this.manager.getEntityByID(event.entityID);
+        if (entity === null) continue;
+        this.manager.destroyEntity(entity);
+      }
+      else
+      {
+        throw new Error("unknown event type \'" + event.type + "\'");
+      }
+    }
+
+    const entitiesPayload = payload.entities;
+    for(const entityID of Object.keys(entitiesPayload))
+    {
+      const entityData = entitiesPayload[entityID];
       let entity = this.manager.getEntityByID(entityID);
       if (entity === null)
       {
@@ -304,6 +341,36 @@ class EntitySystem
         }
       }
     }
+
+    if (payload.isComplete)
+    {
+      //Destroy any that do not belong...
+      for(const entity of this.manager.entities)
+      {
+        if (!entitiesPayload.hasOwnProperty(entity.id)) //&& !entity.tracker
+        {
+          this.manager.destroyEntity(entity);
+        }
+      }
+    }
+  }
+  
+  onEntityCreate(entity)
+  {
+    const event = {};
+    event.type = 'create';
+    event.entityID = entity.id;
+    event.entityName = entity.name;
+    this.cachedEvents.push(event);
+  }
+
+  onEntityDestroy(entity)
+  {
+    const event = {};
+    event.type = 'destroy';
+    event.entityID = entity.id;
+    event.entityName = entity.name;
+    this.cachedEvents.push(event);
   }
 }
 

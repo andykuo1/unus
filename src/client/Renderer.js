@@ -79,7 +79,7 @@ class Renderer
         if (Renderer.RENDER_SERVER_STATE)
         {
           gl.uniform3fv(this.prgm.uniforms.uColor, [0.3, 0.3, 0.3]);
-          for(const serverEntity of Object.values(world.serverState))
+          for(const serverEntity of Object.values(world.serverState.entities))
           {
             if (!serverEntity.components.renderable || !serverEntity.components.renderable.visible) continue;
 
