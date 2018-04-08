@@ -19,18 +19,6 @@ class ClientSyncer
   init()
   {
     Application.events.on('serverData', this.onServerData.bind(this));
-    Application.network.events.on('handshakeResult', this.onHandshakeResult.bind(this));
-  }
-
-  onHandshakeResult(server, data)
-  {
-    //Setup the world from state...
-    this.world.resetState(data['gameState']);
-
-    //Get this client player...
-    const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
-    if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
-    this.playerController.setClientPlayer(clientEntity);
   }
 
   onUpdate(frame)

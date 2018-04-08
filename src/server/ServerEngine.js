@@ -1,7 +1,6 @@
 import Application from 'Application.js';
 import World from 'integrated/World.js';
 import Console from 'server/console/Console.js';
-import ServerSynchronizer from 'server/ServerSynchronizer.js';
 import GameFactory from 'game/GameFactory.js';
 import PriorityQueue from 'util/PriorityQueue.js';
 import GameEngine from 'integrated/GameEngine.js';
@@ -20,7 +19,6 @@ class ServerEngine
   constructor(gameEngine)
   {
     this.world = new World();
-    this.syncer = new ServerSynchronizer(this.world);
 
     this.gameEngine = new GameEngine(this.world);
     this.clientPlayers = new Map();
@@ -47,8 +45,7 @@ class ServerEngine
 
     Application.network.events.on('clientConnect', this.onClientConnect.bind(this));
     Application.network.events.on('clientDisconnect', this.onClientDisconnect.bind(this));
-
-    this.syncer.init();
+    Application.network.events.on('handshakeResponse', this.onHandshakeResponse.bind(this));
 
     await Application.network.initServer();
   }
@@ -80,6 +77,16 @@ class ServerEngine
     this.gameEngine.events.emit('playerLeft', entityPlayer);
     this.world.entityManager.destroyEntity(entityPlayer);
     this.clientPlayers.delete(clientID);
+  }
+
+  onHandshakeResponse(client, data)
+  {
+    const clientEntity = this.getPlayerByClientID(client.id);
+    if (!clientEntity) throw new Error("trying to handshake with an unknown client");
+    data.entityID = clientEntity._id;
+
+    //Send previous game state...
+    data.initialState = this.world.captureState();
   }
 
   update(frame)

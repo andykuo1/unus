@@ -10273,6 +10273,7 @@ class ClientEngine
 
     console.log("Connecting to server...");
     __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.events.on('serverConnect', this.onServerConnect.bind(this));
+    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.events.on('handshakeResult', this.onHandshakeResult.bind(this));
 
     this.world.init();
     this.syncer.init();
@@ -10286,6 +10287,17 @@ class ClientEngine
       this.inboundMessages.push(data);
       __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.emit('serverData', server, data)
     });
+  }
+
+  onHandshakeResult(server, data)
+  {
+    //Setup the world from state...
+    this.world.resetState(data.initialState);
+
+    //Get this client player...
+    const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
+    if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
+    this.syncer.playerController.setClientPlayer(clientEntity);
   }
 
   update(frame)
@@ -10323,8 +10335,8 @@ class ClientEngine
     {
       const message = this.outboundMessages.pop();
       //FIXME: Force 200ms lag...
-      setTimeout(() => __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.sendToServer('clientData', message), 200);
-      //Application.network.sendToServer('clientData', data);
+      setTimeout(() => __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.sendToServer('clientData', message), 200 + 100 * Math.random());
+      //Application.network.sendToServer('clientData', message);
     }
   }
 
@@ -16031,18 +16043,6 @@ class ClientSyncer
   init()
   {
     __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].events.on('serverData', this.onServerData.bind(this));
-    __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].network.events.on('handshakeResult', this.onHandshakeResult.bind(this));
-  }
-
-  onHandshakeResult(server, data)
-  {
-    //Setup the world from state...
-    this.world.resetState(data['gameState']);
-
-    //Get this client player...
-    const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
-    if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
-    this.playerController.setClientPlayer(clientEntity);
   }
 
   onUpdate(frame)
@@ -16144,7 +16144,7 @@ class GameEngine
   processInput(clientState, targetEntity)
   {
     //TODO: Move this game code somewhere else...
-    
+
     const player = targetEntity.player;
     player.nextX = clientState.x;
     player.nextY = clientState.y;
