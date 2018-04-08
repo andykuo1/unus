@@ -14,6 +14,9 @@ SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
 SERVER sends CURRENT_GAME_STATE to all CLIENTS.
 */
 
+
+//EVENT: 'clientData' - called on receiving data from client
+
 class ServerEngine
 {
   constructor()

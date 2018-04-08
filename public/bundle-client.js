@@ -10114,6 +10114,10 @@ CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
 CLIENT sends CURRENT_INPUT_STATE.
 */
 
+//EVENT: 'clientResponse' - called before sending data to server
+//EVENT: 'serverData' - called on receiving data from server
+//EVENT: 'inputUpdate' - called after polling input
+
 class ClientEngine
 {
   constructor(canvas)
@@ -10143,8 +10147,11 @@ class ClientEngine
 
   update(frame)
   {
-    //Application.events.emit('inputUpdate');
+    const inputState = this.input.poll();
+    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.emit('inputUpdate', inputState);
 
+    const data = {};
+    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.emit('clientResponse', data);
     this.syncer.onUpdate(frame);
     this.renderer.render(this.world);
   }
@@ -15882,27 +15889,43 @@ class ClientSyncer
       return a.worldTicks - b.worldTicks;
     });
     this.playerController = new __WEBPACK_IMPORTED_MODULE_4_client_PlayerController_js__["a" /* default */](this.world.entityManager, renderer);
-
-    __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].events.on('serverData', this.onServerData.bind(this));
   }
 
   init()
   {
-    __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].network.events.on('handshakeResult', (server, data) => {
-      //Setup the world from state...
-      this.world.resetState(data['gameState']);
+    __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].events.on('serverData', this.onServerData.bind(this));
+    __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].events.on('inputUpdate', this.onInputUpdate.bind(this));
+    __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].network.events.on('handshakeResult', this.onHandshakeResult.bind(this));
+  }
 
-      //Get this client player...
-      const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
-      if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
-      this.playerController.setClientPlayer(clientEntity);
-    });
+  onInputUpdate(inputState)
+  {
+    const vec = __WEBPACK_IMPORTED_MODULE_5_client_camera_ViewPort_js__["a" /* default */].getPointFromScreen(
+      __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create(),
+      this.renderer.camera, this.renderer.viewport,
+      inputState.x, inputState.y);
+    inputState.x = vec[0];
+    inputState.y = vec[1];
+    inputState.worldTicks = this.world.ticks;
+    this.currentInput = inputState;
+  }
+
+  onHandshakeResult(server, data)
+  {
+    //Setup the world from state...
+    this.world.resetState(data['gameState']);
+
+    //Get this client player...
+    const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
+    if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
+    this.playerController.setClientPlayer(clientEntity);
   }
 
   onUpdate(frame)
   {
     //CLIENT stores CURRENT_INPUT_STATE.
-    var currentInputState = this.getCurrentInputState();
+    var currentInputState = this.currentInput;
+    this.currentInput = null;
     if (currentInputState != null)
     {
       //HACK: this should always be called, or else desync happens...
@@ -15918,34 +15941,6 @@ class ClientSyncer
     this.world.step(frame, true);
 
     this.playerController.onUpdate(frame);
-  }
-
-  onInputUpdate(inputState)
-  {
-    const vec = __WEBPACK_IMPORTED_MODULE_5_client_camera_ViewPort_js__["a" /* default */].getPointFromScreen(
-      __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create(),
-      this.renderer.camera, this.renderer.viewport,
-      inputState.x, inputState.y);
-    inputState.x = vec[0];
-    inputState.y = vec[1];
-    inputState.worldTicks = this.world.ticks;
-    this.currentInput = inputState;
-  }
-
-  getCurrentInputState()
-  {
-    //TODO: need to adjust the frame delta to match if skipped input frames
-    //TODO: if (!this.input.isDirty()) return null;
-    const inputState = this.input.poll();
-
-    const vec = __WEBPACK_IMPORTED_MODULE_5_client_camera_ViewPort_js__["a" /* default */].getPointFromScreen(
-      __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec3 */].create(),
-      this.renderer.camera, this.renderer.viewport,
-      inputState.x, inputState.y);
-    inputState.x = vec[0];
-    inputState.y = vec[1];
-    inputState.worldTicks = this.world.ticks;
-    return inputState;
   }
 
   sendClientInput(inputState)

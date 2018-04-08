@@ -18,27 +18,43 @@ class ClientSyncer
       return a.worldTicks - b.worldTicks;
     });
     this.playerController = new PlayerController(this.world.entityManager, renderer);
-
-    Application.events.on('serverData', this.onServerData.bind(this));
   }
 
   init()
   {
-    Application.network.events.on('handshakeResult', (server, data) => {
-      //Setup the world from state...
-      this.world.resetState(data['gameState']);
+    Application.events.on('serverData', this.onServerData.bind(this));
+    Application.events.on('inputUpdate', this.onInputUpdate.bind(this));
+    Application.network.events.on('handshakeResult', this.onHandshakeResult.bind(this));
+  }
 
-      //Get this client player...
-      const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
-      if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
-      this.playerController.setClientPlayer(clientEntity);
-    });
+  onInputUpdate(inputState)
+  {
+    const vec = ViewPort.getPointFromScreen(
+      vec3.create(),
+      this.renderer.camera, this.renderer.viewport,
+      inputState.x, inputState.y);
+    inputState.x = vec[0];
+    inputState.y = vec[1];
+    inputState.worldTicks = this.world.ticks;
+    this.currentInput = inputState;
+  }
+
+  onHandshakeResult(server, data)
+  {
+    //Setup the world from state...
+    this.world.resetState(data['gameState']);
+
+    //Get this client player...
+    const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
+    if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
+    this.playerController.setClientPlayer(clientEntity);
   }
 
   onUpdate(frame)
   {
     //CLIENT stores CURRENT_INPUT_STATE.
-    var currentInputState = this.getCurrentInputState();
+    var currentInputState = this.currentInput;
+    this.currentInput = null;
     if (currentInputState != null)
     {
       //HACK: this should always be called, or else desync happens...
@@ -54,34 +70,6 @@ class ClientSyncer
     this.world.step(frame, true);
 
     this.playerController.onUpdate(frame);
-  }
-
-  onInputUpdate(inputState)
-  {
-    const vec = ViewPort.getPointFromScreen(
-      vec3.create(),
-      this.renderer.camera, this.renderer.viewport,
-      inputState.x, inputState.y);
-    inputState.x = vec[0];
-    inputState.y = vec[1];
-    inputState.worldTicks = this.world.ticks;
-    this.currentInput = inputState;
-  }
-
-  getCurrentInputState()
-  {
-    //TODO: need to adjust the frame delta to match if skipped input frames
-    //TODO: if (!this.input.isDirty()) return null;
-    const inputState = this.input.poll();
-
-    const vec = ViewPort.getPointFromScreen(
-      vec3.create(),
-      this.renderer.camera, this.renderer.viewport,
-      inputState.x, inputState.y);
-    inputState.x = vec[0];
-    inputState.y = vec[1];
-    inputState.worldTicks = this.world.ticks;
-    return inputState;
   }
 
   sendClientInput(inputState)

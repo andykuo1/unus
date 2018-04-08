@@ -30,7 +30,6 @@ class ServerSynchronizer
 
   onHandshakeResponse(client, data)
   {
-    console.log("BAM!");
     //Insert new player...
     const clientEntity = this.playerManager.createPlayer(client.id);
     data.entityID = clientEntity._id;
