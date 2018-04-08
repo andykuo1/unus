@@ -2074,6 +2074,8 @@ class EventHandler
         ++i;
       }
     }
+
+    this.onEventProcessed(eventName, args);
   }
 
   on(eventName, listener)
@@ -2087,6 +2089,11 @@ class EventHandler
       listener();
       return true;
     });
+  }
+
+  onEventProcessed(eventName, args)
+  {
+    //Do nothing...
   }
 }
 
@@ -9989,16 +9996,10 @@ class NetworkHandler
     this.socket = socket;
     this.remote = remote;
 
-    if (!this.remote)
-    {
-      //Server-side init
-      this.clients = new Map();
-    }
-    else
-    {
-      //Client-side init
-      this.localSocketID = -1;
-    }
+    //Server-side
+    this.clients = new Map();
+    //Client-side
+    this.localSocketID = -1;
   }
 
   async initClient()
@@ -10114,7 +10115,7 @@ CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
 CLIENT sends CURRENT_INPUT_STATE.
 */
 
-//EVENT: 'clientResponse' - called before sending data to server
+//EVENT: 'clientResponse' (in ClientSyncer) - called before sending data to server
 //EVENT: 'serverData' - called on receiving data from server
 //EVENT: 'inputUpdate' - called after polling input
 
@@ -10150,13 +10151,9 @@ class ClientEngine
     const inputState = this.input.poll();
     __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.emit('inputUpdate', inputState);
 
-    const data = {};
-    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.emit('clientResponse', data);
     this.syncer.onUpdate(frame);
     this.renderer.render(this.world);
   }
-
-  /************* Game Implementation *************/
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (ClientEngine);
@@ -10522,7 +10519,7 @@ class EntitySystem
       }
     }
   }
-  
+
   onEntityCreate(entity)
   {
     const event = {};
@@ -15932,7 +15929,11 @@ class ClientSyncer
       this.inputStates.queue(currentInputState);
 
       //CLIENT sends CURRENT_INPUT_STATE.
-      this.sendClientInput(currentInputState);
+      const data = currentInputState;
+      __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].events.emit('clientResponse', data);
+      //FIXME: Force 200ms lag...
+      setTimeout(() => __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].network.sendToServer('clientData', data), 200);
+      //Application.network.sendToServer('clientData', data);
     }
     var targetEntity = currentInputState ? this.playerController.getClientPlayer() : null;
 
@@ -15941,13 +15942,6 @@ class ClientSyncer
     this.world.step(frame, true);
 
     this.playerController.onUpdate(frame);
-  }
-
-  sendClientInput(inputState)
-  {
-    //FIXME: Force 200ms lag...
-    setTimeout(() => __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].network.sendToServer('clientData', inputState), 200);
-    //Application.network.sendToServer('client.inputstate', inputState);
   }
 
   onServerData(server, gameState)

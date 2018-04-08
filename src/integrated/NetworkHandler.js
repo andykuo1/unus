@@ -8,16 +8,10 @@ class NetworkHandler
     this.socket = socket;
     this.remote = remote;
 
-    if (!this.remote)
-    {
-      //Server-side init
-      this.clients = new Map();
-    }
-    else
-    {
-      //Client-side init
-      this.localSocketID = -1;
-    }
+    //Server-side
+    this.clients = new Map();
+    //Client-side
+    this.localSocketID = -1;
   }
 
   async initClient()

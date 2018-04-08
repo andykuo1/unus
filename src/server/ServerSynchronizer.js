@@ -8,7 +8,7 @@ class ServerSynchronizer
   constructor(world)
   {
     this.world = world;
-    this.inputStates = new PriorityQueue((a, b) => {
+    this.clientStates = new PriorityQueue((a, b) => {
       return a.worldTicks - b.worldTicks;
     });
     this.playerManager = new PlayerManager(this.world.entityManager);
@@ -26,12 +26,13 @@ class ServerSynchronizer
 
   onClientConnect(client)
   {
+    this.playerManager.createPlayer(client.id);
   }
 
   onHandshakeResponse(client, data)
   {
     //Insert new player...
-    const clientEntity = this.playerManager.createPlayer(client.id);
+    const clientEntity = this.playerManager.getPlayerByClientID(client.id);
     data.entityID = clientEntity._id;
 
     //Send previous game state...
@@ -50,10 +51,10 @@ class ServerSynchronizer
     const nextFrame = new Frame();
 
     //SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
-    while(this.inputStates.length > 0)
+    while(this.clientStates.length > 0)
     {
       //Get oldest input state (ASSUMES INPUT STATES IS SORTED BY TIME!)
-      const inputState = this.inputStates.dequeue();
+      const inputState = this.clientStates.dequeue();
       const targetEntity = this.playerManager.getPlayerByClientID(inputState.target);
 
       //Update world to just before input...
@@ -75,10 +76,7 @@ class ServerSynchronizer
       nextFrame.delta = dt;
       this.world.step(nextFrame);
     }
-
-    //SERVER sends CURRENT_GAME_STATE to all CLIENTS.
-    this.sendServerUpdate();
-
+    
     this.playerManager.onUpdate(frame);
   }
 
@@ -86,13 +84,7 @@ class ServerSynchronizer
   {
     //SERVER stores CURRENT_INPUT_STATE.
     data.target = client.id;
-    this.inputStates.queue(data);
-  }
-
-  sendServerUpdate()
-  {
-    const gameState = this.world.captureState();
-    Application.network.sendToAll('serverData', gameState);
+    this.clientStates.queue(data);
   }
 }
 

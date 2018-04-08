@@ -125,7 +125,7 @@ class EntitySystem
       }
     }
   }
-  
+
   onEntityCreate(entity)
   {
     const event = {};

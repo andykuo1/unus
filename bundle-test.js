@@ -354,7 +354,7 @@ class EntitySystem
       }
     }
   }
-  
+
   onEntityCreate(entity)
   {
     const event = {};
@@ -656,6 +656,8 @@ class EventHandler
         ++i;
       }
     }
+
+    this.onEventProcessed(eventName, args);
   }
 
   on(eventName, listener)
@@ -669,6 +671,11 @@ class EventHandler
       listener();
       return true;
     });
+  }
+
+  onEventProcessed(eventName, args)
+  {
+    //Do nothing...
   }
 }
 

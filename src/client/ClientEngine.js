@@ -20,7 +20,7 @@ CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
 CLIENT sends CURRENT_INPUT_STATE.
 */
 
-//EVENT: 'clientResponse' - called before sending data to server
+//EVENT: 'clientResponse' (in ClientSyncer) - called before sending data to server
 //EVENT: 'serverData' - called on receiving data from server
 //EVENT: 'inputUpdate' - called after polling input
 
@@ -56,13 +56,9 @@ class ClientEngine
     const inputState = this.input.poll();
     Application.events.emit('inputUpdate', inputState);
 
-    const data = {};
-    Application.events.emit('clientResponse', data);
     this.syncer.onUpdate(frame);
     this.renderer.render(this.world);
   }
-
-  /************* Game Implementation *************/
 }
 
 export default ClientEngine;

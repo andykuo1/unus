@@ -61,7 +61,11 @@ class ClientSyncer
       this.inputStates.queue(currentInputState);
 
       //CLIENT sends CURRENT_INPUT_STATE.
-      this.sendClientInput(currentInputState);
+      const data = currentInputState;
+      Application.events.emit('clientResponse', data);
+      //FIXME: Force 200ms lag...
+      setTimeout(() => Application.network.sendToServer('clientData', data), 200);
+      //Application.network.sendToServer('clientData', data);
     }
     var targetEntity = currentInputState ? this.playerController.getClientPlayer() : null;
 
@@ -70,13 +74,6 @@ class ClientSyncer
     this.world.step(frame, true);
 
     this.playerController.onUpdate(frame);
-  }
-
-  sendClientInput(inputState)
-  {
-    //FIXME: Force 200ms lag...
-    setTimeout(() => Application.network.sendToServer('clientData', inputState), 200);
-    //Application.network.sendToServer('client.inputstate', inputState);
   }
 
   onServerData(server, gameState)
