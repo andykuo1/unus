@@ -27,6 +27,17 @@ class ClientSyncer
     Application.network.events.on('handshakeResult', this.onHandshakeResult.bind(this));
   }
 
+  onHandshakeResult(server, data)
+  {
+    //Setup the world from state...
+    this.world.resetState(data['gameState']);
+
+    //Get this client player...
+    const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
+    if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
+    this.playerController.setClientPlayer(clientEntity);
+  }
+
   onInputUpdate(inputState)
   {
     const vec = ViewPort.getPointFromScreen(
@@ -37,17 +48,6 @@ class ClientSyncer
     inputState.y = vec[1];
     inputState.worldTicks = this.world.ticks;
     this.currentInput = inputState;
-  }
-
-  onHandshakeResult(server, data)
-  {
-    //Setup the world from state...
-    this.world.resetState(data['gameState']);
-
-    //Get this client player...
-    const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
-    if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
-    this.playerController.setClientPlayer(clientEntity);
   }
 
   onUpdate(frame)

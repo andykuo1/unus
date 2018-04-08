@@ -23,7 +23,7 @@ class World
   step(frame)
   {
     this.ticks += frame.delta;
-    Application.events.emit('worldStep', this, frame);
+    Application.events.emit('worldStep', this, frame.delta);
   }
 
   updateInput(inputState, targetEntity)

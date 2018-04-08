@@ -10194,7 +10194,7 @@ class World
   step(frame)
   {
     this.ticks += frame.delta;
-    __WEBPACK_IMPORTED_MODULE_3_Application_js__["a" /* default */].events.emit('worldStep', this, frame);
+    __WEBPACK_IMPORTED_MODULE_3_Application_js__["a" /* default */].events.emit('worldStep', this, frame.delta);
   }
 
   updateInput(inputState, targetEntity)
@@ -15862,6 +15862,17 @@ class ClientSyncer
     __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].network.events.on('handshakeResult', this.onHandshakeResult.bind(this));
   }
 
+  onHandshakeResult(server, data)
+  {
+    //Setup the world from state...
+    this.world.resetState(data['gameState']);
+
+    //Get this client player...
+    const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
+    if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
+    this.playerController.setClientPlayer(clientEntity);
+  }
+
   onInputUpdate(inputState)
   {
     const vec = __WEBPACK_IMPORTED_MODULE_5_client_camera_ViewPort_js__["a" /* default */].getPointFromScreen(
@@ -15872,17 +15883,6 @@ class ClientSyncer
     inputState.y = vec[1];
     inputState.worldTicks = this.world.ticks;
     this.currentInput = inputState;
-  }
-
-  onHandshakeResult(server, data)
-  {
-    //Setup the world from state...
-    this.world.resetState(data['gameState']);
-
-    //Get this client player...
-    const clientEntity = this.world.entityManager.getEntityByID(data.entityID);
-    if (clientEntity == null) throw new Error("cannot find player with id \'" + data.entityID + "\'");
-    this.playerController.setClientPlayer(clientEntity);
   }
 
   onUpdate(frame)
@@ -16106,7 +16106,7 @@ class PlayerController
     this.clientPlayer = entity;
   }
 
-  onUpdate(frame)
+  onUpdate(delta)
   {
     //Smoothly follow the player
     if (this.clientPlayer)

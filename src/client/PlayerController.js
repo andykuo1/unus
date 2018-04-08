@@ -13,7 +13,7 @@ class PlayerController
     this.clientPlayer = entity;
   }
 
-  onUpdate(frame)
+  onUpdate(delta)
   {
     //Smoothly follow the player
     if (this.clientPlayer)

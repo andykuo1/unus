@@ -14,7 +14,7 @@ class ServerSynchronizer
   init()
   {
     this.playerSyncer.init();
-    
+
     Application.events.on('update', this.onUpdate.bind(this));
     Application.network.events.on('handshakeResponse', this.onHandshakeResponse.bind(this));
   }
@@ -30,6 +30,8 @@ class ServerSynchronizer
   {
     const currentTicks = this.world.ticks + delta;
     const nextFrame = new Frame();
+
+    this.playerSyncer.onServerUpdate(delta);
 
     //Update world to current tick...
     const dt = currentTicks - this.world.ticks;

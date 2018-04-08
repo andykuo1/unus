@@ -19,7 +19,7 @@ class PlayerSyncer
   {
     if (!Application.isRemote())
     {
-      Application.events.on('update', this.onServerUpdate.bind(this));
+      //Application.events.on('update', this.onServerUpdate.bind(this));
       Application.events.on('clientData', this.onClientData.bind(this));
       Application.network.events.on('clientConnect', this.onClientConnect.bind(this));
       Application.network.events.on('handshakeResponse', this.onHandshakeResponse.bind(this));
@@ -27,6 +27,7 @@ class PlayerSyncer
     }
     else
     {
+      //Application.events.on('serverData', this.onServerData.bind(this));
     }
   }
 

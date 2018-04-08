@@ -1189,7 +1189,7 @@ class World
   step(frame)
   {
     this.ticks += frame.delta;
-    __WEBPACK_IMPORTED_MODULE_3_Application_js__["a" /* default */].events.emit('worldStep', this, frame);
+    __WEBPACK_IMPORTED_MODULE_3_Application_js__["a" /* default */].events.emit('worldStep', this, frame.delta);
   }
 
   updateInput(inputState, targetEntity)
@@ -1902,7 +1902,7 @@ class ServerSynchronizer
   init()
   {
     this.playerSyncer.init();
-    
+
     __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.on('update', this.onUpdate.bind(this));
     __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.events.on('handshakeResponse', this.onHandshakeResponse.bind(this));
   }
@@ -1918,6 +1918,8 @@ class ServerSynchronizer
   {
     const currentTicks = this.world.ticks + delta;
     const nextFrame = new __WEBPACK_IMPORTED_MODULE_1_util_Frame_js__["a" /* default */]();
+
+    this.playerSyncer.onServerUpdate(delta);
 
     //Update world to current tick...
     const dt = currentTicks - this.world.ticks;
@@ -1962,7 +1964,7 @@ class PlayerSyncer
   {
     if (!__WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].isRemote())
     {
-      __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.on('update', this.onServerUpdate.bind(this));
+      //Application.events.on('update', this.onServerUpdate.bind(this));
       __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.on('clientData', this.onClientData.bind(this));
       __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.events.on('clientConnect', this.onClientConnect.bind(this));
       __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.events.on('handshakeResponse', this.onHandshakeResponse.bind(this));
@@ -1970,6 +1972,7 @@ class PlayerSyncer
     }
     else
     {
+      //Application.events.on('serverData', this.onServerData.bind(this));
     }
   }
 
@@ -2011,6 +2014,9 @@ class PlayerSyncer
       //Get oldest input state (ASSUMES INPUT STATES IS SORTED BY TIME!)
       const clientState = this.clientStates.dequeue();
       const targetEntity = this.playerManager.getPlayerByClientID(clientState.target);
+
+      //Step the world here?
+
       this.onUpdateClientState(targetEntity, clientState);
     }
 
