@@ -10141,6 +10141,7 @@ class ClientEngine
         data => __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].events.emit('serverData', server, data));
     });
 
+    this.world.init();
     this.syncer.init();
 
     await __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.initClient();
@@ -10187,7 +10188,10 @@ class World
 
     this.entitySystem = new __WEBPACK_IMPORTED_MODULE_2_game_EntitySystem_js__["a" /* default */]();
     this.systems = [];
+  }
 
+  init()
+  {
     __WEBPACK_IMPORTED_MODULE_4_game_GameFactory_js__["a" /* default */].init(this);
   }
 

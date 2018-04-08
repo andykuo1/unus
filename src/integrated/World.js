@@ -16,7 +16,10 @@ class World
 
     this.entitySystem = new EntitySystem();
     this.systems = [];
+  }
 
+  init()
+  {
     GameFactory.init(this);
   }
 

@@ -29,6 +29,8 @@ class ServerEngine
   {
     console.log("Loading server...");
 
+    this.world.init();
+
     //Setup console...
     this.onCommandSetup();
 

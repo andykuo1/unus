@@ -1105,6 +1105,8 @@ class ServerEngine
   {
     console.log("Loading server...");
 
+    this.world.init();
+
     //Setup console...
     this.onCommandSetup();
 
@@ -1182,7 +1184,10 @@ class World
 
     this.entitySystem = new __WEBPACK_IMPORTED_MODULE_2_game_EntitySystem_js__["a" /* default */]();
     this.systems = [];
+  }
 
+  init()
+  {
     __WEBPACK_IMPORTED_MODULE_4_game_GameFactory_js__["a" /* default */].init(this);
   }
 

@@ -46,6 +46,7 @@ class ClientEngine
         data => Application.events.emit('serverData', server, data));
     });
 
+    this.world.init();
     this.syncer.init();
 
     await Application.network.initClient();
