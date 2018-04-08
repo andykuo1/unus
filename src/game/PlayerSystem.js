@@ -13,6 +13,7 @@ class PlayerSystem
     this.entityManager = entityManager;
 
     Application.events.on('update', this.onUpdate.bind(this));
+    Application.events.on('inputStep', this.onInputUpdate.bind(this));
   }
 
   onUpdate(delta)
@@ -24,7 +25,7 @@ class PlayerSystem
     }
   }
 
-  onInputUpdate(entity, inputState)
+  onInputUpdate(inputState, entity)
   {
     if (!entity.hasComponent(Player)) return;
     entity.player.nextX = inputState.x;

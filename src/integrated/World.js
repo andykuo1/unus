@@ -2,7 +2,6 @@ import Frame from 'util/Frame.js';
 
 import EntityManager from 'integrated/entity/EntityManager.js';
 import EntitySystem from 'game/EntitySystem.js';
-import SystemManager from 'integrated/entity/SystemManager.js';
 
 import Application from 'Application.js';
 import GameFactory from 'game/GameFactory.js';
@@ -16,24 +15,20 @@ class World
     this.serverState = null;
 
     this.entitySystem = new EntitySystem();
-    this.systemManager = new SystemManager();
+    this.systems = [];
 
     GameFactory.init(this);
   }
 
-  step(frame, predictive=false)
+  step(frame)
   {
     this.ticks += frame.delta;
-
-    //Continue to update the world state
-    this.systemManager.update(this.entityManager, frame, predictive);
-    Application.events.emit('worldStep', this.entityManager, frame, predictive);
+    Application.events.emit('worldStep', this, frame);
   }
 
-  updateInput(inputState, targetEntity, predictive=false)
+  updateInput(inputState, targetEntity)
   {
-    this.systemManager.updateInput(inputState, targetEntity, predictive);
-    Application.events.emit('inputStep', inputState, targetEntity, predictive);
+    Application.events.emit('inputStep', inputState, targetEntity);
   }
 
   captureState()

@@ -25,10 +25,10 @@ class GameFactory
   init(game)
   {
     this.entityManager = game.entityManager;
-    game.systemManager.systems.push(new PlayerSystem(this.entityManager));
-    game.systemManager.systems.push(new MotionSystem(this.entityManager));
-    game.systemManager.systems.push(new BulletSystem(this.entityManager));
-    game.systemManager.systems.push(new RotatingSystem(this.entityManager));
+    game.systems.push(new PlayerSystem(this.entityManager));
+    game.systems.push(new MotionSystem(this.entityManager));
+    game.systems.push(new BulletSystem(this.entityManager));
+    game.systems.push(new RotatingSystem(this.entityManager));
 
     Application.events.on('fireBullet', (owner, direction) => {
       const bulletSpeed = 10;
