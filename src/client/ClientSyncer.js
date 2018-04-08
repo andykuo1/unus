@@ -23,7 +23,7 @@ class ClientSyncer
   init()
   {
     Application.events.on('serverData', this.onServerData.bind(this));
-    Application.events.on('inputUpdate', this.onInputUpdate.bind(this));
+    Application.events.on('inputStep', this.onInputUpdate.bind(this));
     Application.network.events.on('handshakeResult', this.onHandshakeResult.bind(this));
   }
 
@@ -38,15 +38,8 @@ class ClientSyncer
     this.playerController.setClientPlayer(clientEntity);
   }
 
-  onInputUpdate(inputState)
+  onInputUpdate(inputState, targetEntity)
   {
-    const vec = ViewPort.getPointFromScreen(
-      vec3.create(),
-      this.renderer.camera, this.renderer.viewport,
-      inputState.x, inputState.y);
-    inputState.x = vec[0];
-    inputState.y = vec[1];
-    inputState.worldTicks = this.world.ticks;
     this.currentInput = inputState;
   }
 

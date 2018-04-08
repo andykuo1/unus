@@ -24,7 +24,7 @@ class GameEngine
 
   update(frame)
   {
-
+    this.worldTicks = this.world.ticks;
   }
 
   processInput(clientState, targetEntity)

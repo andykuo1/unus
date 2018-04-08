@@ -10,6 +10,11 @@ import GameFactory from 'game/GameFactory.js';
 import ClientSyncer from 'client/ClientSyncer.js';
 import GameEngine from 'integrated/GameEngine.js';
 
+import { vec3 } from 'gl-matrix';
+import Frame from 'util/Frame.js';
+import PriorityQueue from 'util/PriorityQueue.js';
+import ViewPort from 'client/camera/ViewPort.js';
+
 /*
 CLIENT gets CURRENT_GAME_STATE.
 CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
@@ -36,6 +41,10 @@ class ClientEngine
 
     this.gameEngine = new GameEngine(this.world);
     this.inboundMessages = [];
+    this.clientInputDelay = 0;
+    this.clientStates = new PriorityQueue((a, b) => {
+      return a.worldTicks - b.worldTicks;
+    });
   }
 
   async start()
@@ -62,23 +71,47 @@ class ClientEngine
 
   update(frame)
   {
-    //Pre-step
+    //Grab all input this frame...
+    this.checkInput();
 
+    //Process incoming messages from server...
     while(this.inboundMessages.length > 0)
     {
-      //Process incoming messages from server...
       this.gameEngine.handleMessage(this.inboundMessages.pop());
     }
 
-    //FIXME: Where should this be?
-    const inputState = this.input.poll();
-    Application.events.emit('inputUpdate', inputState);
-    //this.applyDelayedInputs(); <- artificial delay on user inputs...
+    //Process inputs with delay...
+    this.applyClientStates();
+
+    //Update the game...
     this.syncer.onUpdate(frame);
     this.gameEngine.step(false, frame.then, frame.delta);
 
-    //Post-step
+    //Render the game...
     this.renderer.render(this.world);
+  }
+
+  applyClientStates()
+  {
+    while(this.clientStates.length > 0)
+    {
+      //FIXME: this.world should be this.gameEngine...
+      if (this.clientStates.peek().worldTicks + this.clientInputDelay > this.world.worldTicks) break;
+      const clientState = this.clientStates.dequeue();
+      this.gameEngine.processInput(clientState, this.syncer.playerController.clientPlayer);
+    }
+  }
+
+  checkInput()
+  {
+    const inputState = this.input.poll();
+    const vec = ViewPort.getPointFromScreen(vec3.create(),
+      this.renderer.camera, this.renderer.viewport,
+      inputState.x, inputState.y);
+    inputState.x = vec[0];
+    inputState.y = vec[1];
+    inputState.worldTicks = this.world.worldTicks;
+    this.clientStates.queue(inputState);
   }
 }
 

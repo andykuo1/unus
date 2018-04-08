@@ -1156,7 +1156,7 @@ class ServerEngine
     //Destroy player...
     const entityPlayer = this.clientPlayers.get(clientID);
     this.gameEngine.events.emit('playerLeft', entityPlayer);
-    this.entityManager.destroyEntity(entity);
+    this.world.entityManager.destroyEntity(entityPlayer);
     this.clientPlayers.delete(clientID);
   }
 
@@ -2022,7 +2022,7 @@ class GameEngine
 
   update(frame)
   {
-
+    this.worldTicks = this.world.ticks;
   }
 
   processInput(clientState, targetEntity)
