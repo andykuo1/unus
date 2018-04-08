@@ -10214,9 +10214,7 @@ class ClientEngine
     var targetEntity = currentInputState ? this.playerController.getClientPlayer() : null;
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
-    __WEBPACK_IMPORTED_MODULE_9_game_GameFactory_js__["a" /* default */].GAMESTATE = currentInputState;
     if (targetEntity) this.world.updateInput(currentInputState, targetEntity, true);
-    __WEBPACK_IMPORTED_MODULE_9_game_GameFactory_js__["a" /* default */].GAMESTATE = null;
     this.world.step(frame, true);
     this.renderer.render(this.world);
   }
@@ -10252,9 +10250,7 @@ class ClientEngine
       }
 
       //Update world to after this input state...
-      __WEBPACK_IMPORTED_MODULE_9_game_GameFactory_js__["a" /* default */].GAMESTATE = inputState;
       this.world.updateInput(inputState, targetEntity, true);
-      __WEBPACK_IMPORTED_MODULE_9_game_GameFactory_js__["a" /* default */].GAMESTATE = null;
       inputState.worldTicks = this.world.ticks;
 
       oldInputStates.push(inputState);
@@ -10272,6 +10268,8 @@ class ClientEngine
       nextFrame.delta = dt;
       this.world.step(nextFrame, true);
     }
+
+    __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].events.emit('serverUpdate', server, gameState);
   }
 
   getCurrentInputState()
@@ -14787,13 +14785,10 @@ class SystemManager
   constructor()
   {
     this.systems = [];
-    this.predictiveEntities = {};
   }
 
   update(entityManager, frame, predictive)
   {
-    this.makePredictiveState(frame, predictive);
-
     for(const system of this.systems)
     {
       system.onUpdate(entityManager, frame.delta);
@@ -14802,23 +14797,10 @@ class SystemManager
 
   updateInput(inputState, targetEntity, predictive)
   {
-    this.makePredictiveState(inputState, predictive);
-
     for(const system of this.systems)
     {
       system.onInputUpdate(targetEntity, inputState);
     }
-  }
-
-  makePredictiveState(state, predictive)
-  {
-    if (predictive || state.hasOwnProperty('predictive'))
-    {
-      state.predictiveFirst = (predictive && !state.predictive);
-      state.predictive = predictive;
-    }
-
-    return state;
   }
 }
 

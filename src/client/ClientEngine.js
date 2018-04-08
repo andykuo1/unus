@@ -87,9 +87,7 @@ class ClientEngine
     var targetEntity = currentInputState ? this.playerController.getClientPlayer() : null;
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
-    GameFactory.GAMESTATE = currentInputState;
     if (targetEntity) this.world.updateInput(currentInputState, targetEntity, true);
-    GameFactory.GAMESTATE = null;
     this.world.step(frame, true);
     this.renderer.render(this.world);
   }
@@ -125,9 +123,7 @@ class ClientEngine
       }
 
       //Update world to after this input state...
-      GameFactory.GAMESTATE = inputState;
       this.world.updateInput(inputState, targetEntity, true);
-      GameFactory.GAMESTATE = null;
       inputState.worldTicks = this.world.ticks;
 
       oldInputStates.push(inputState);
@@ -145,6 +141,8 @@ class ClientEngine
       nextFrame.delta = dt;
       this.world.step(nextFrame, true);
     }
+
+    Application.events.emit('serverUpdate', server, gameState);
   }
 
   getCurrentInputState()
