@@ -8,6 +8,10 @@ import ServerSynchronizer from 'server/ServerSynchronizer.js';
 
 import GameFactory from 'game/GameFactory.js';
 
+import PriorityQueue from 'util/PriorityQueue.js';
+
+import GameEngine from 'integrated/GameEngine.js';
+
 /*
 SERVER stores CURRENT_INPUT_STATE.
 SERVER updates CURRENT_GAME_STATE with all gathered CURRENT_INPUT_STATE.
@@ -19,10 +23,18 @@ SERVER sends CURRENT_GAME_STATE to all CLIENTS.
 
 class ServerEngine
 {
-  constructor()
+  constructor(gameEngine)
   {
     this.world = new World();
+    this.gameEngine = new GameEngine(this.world);
+
+    this.clientStates = new PriorityQueue((a, b) => {
+      return a.worldTicks - b.worldTicks;
+    });
     this.syncer = new ServerSynchronizer(this.world);
+
+    this.shouldFullWorldUpdate = false;
+    this.worldUpdateTicks = 0;
   }
 
   async start()
@@ -40,8 +52,11 @@ class ServerEngine
     console.log("Connecting server...");
 
     Application.network.events.on('clientConnect', client => {
-      client.on('clientData',
-        data => Application.events.emit('clientData', client, data));
+      client.on('clientData', data => {
+          data.target = client.id;
+          this.clientStates.queue(data);
+          Application.events.emit('clientData', client, data);
+        });
     });
 
     this.syncer.init();
@@ -51,11 +66,36 @@ class ServerEngine
 
   update(frame)
   {
-    this.syncer.onUpdate(frame);
+    //For every player, process each input until up to date...
+    while(this.clientStates.length > 0)
+    {
+      //Make sure we have reached these inputs in time...
+      if (this.clientStates.peek().worldTicks > this.gameEngine.worldTicks) break;
 
-    const data = {};
-    Application.events.emit('serverResponse', data);
-    Application.network.sendToAll('serverData', data);
+      //Get oldest input state (ASSUMES INPUT STATES IS SORTED BY TIME!)
+      const clientState = this.clientStates.dequeue();
+      const targetPlayer = clientState.target;
+      const entityPlayer = this.syncer.playerSyncer.playerManager.getPlayerByClientID(targetPlayer);
+
+      //Process input
+      this.gameEngine.processInput(clientState, entityPlayer);
+    }
+
+    //Run the game
+    this.gameEngine.step(false, frame.delta);
+
+    //Update the players...
+    const worldState = {};
+    if (this.shouldFullWorldUpdate)
+    {
+      worldState.isfull = true;
+      this.shouldFullWorldUpdate = false;
+    }
+    worldState.isfull = this.worldUpdateTicks++ % 20 === 0;
+    Application.events.emit('serverResponse', worldState);
+
+    //Send to the players...
+    Application.network.sendToAll('serverData', worldState);
   }
 
   /************* Game Implementation *************/

@@ -32,7 +32,7 @@ class PlayerSystem
     entity.player.nextY = inputState.y;
     entity.player.move = inputState.down;
     //HACK: this will run once on server and client-side, needs a way to keep predicted alive
-    if (inputState.click)
+    if (inputState.click && !Application.isRemote())
     {
       const dx = entity.player.nextX - entity.transform.x;
       const dy = entity.player.nextY - entity.transform.y;

@@ -29,10 +29,10 @@ class World
      data.worldState = this.captureState();
   }
 
-  step(frame)
+  step(delta)
   {
-    this.ticks += frame.delta;
-    Application.events.emit('worldStep', this, frame.delta);
+    this.ticks += delta;
+    Application.events.emit('worldStep', this, delta);
   }
 
   updateInput(inputState, targetEntity)

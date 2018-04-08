@@ -287,8 +287,8 @@ function localstorage() {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Frame_js__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_EventHandler_js__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Frame_js__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_EventHandler_js__ = __webpack_require__(10);
 
 
 
@@ -1360,6 +1360,101 @@ module.exports = function(a, b){
 
 /***/ }),
 /* 10 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class EventHandler
+{
+  constructor()
+  {
+    this.eventMap = new Map();
+  }
+
+  addListener(eventName, listener)
+  {
+    if (!this.eventMap.has(eventName)) this.eventMap.set(eventName, []);
+
+    const listeners = this.eventMap.get(eventName);
+    listeners.push(listener);
+  }
+
+  removeListener(eventName, listener)
+  {
+    if (!this.eventMap.has(eventName)) return;
+
+    const listeners = this.eventMap.get(eventName);
+    listeners.splice(listeners.indexOf(listener), 1);
+  }
+
+  clearListeners(eventName)
+  {
+    if (!this.eventMap.has(eventName)) return;
+
+    const listeners = this.eventMap.get(eventName);
+    listeners.length = 0;
+  }
+
+  countListeners(eventName)
+  {
+    return this.eventMap.has(eventName) ? this.eventMap.get(eventName).length : 0;
+  }
+
+  getListeners(eventName)
+  {
+    return this.eventMap.get(eventName);
+  }
+
+  emit(eventName)
+  {
+    if (!this.eventMap.has(eventName)) return;
+
+    //Can pass additional args to listeners here...
+    const args = Array.prototype.splice.call(arguments, 1);
+    const listeners = this.eventMap.get(eventName);
+    const length = listeners.length;
+    let i = 0;
+    while(i < length)
+    {
+      const listener = listeners[i];
+      const result = listener.apply(null, args);
+      if (result)
+      {
+        listeners.splice(i, 1);
+        --i;
+      }
+      else
+      {
+        ++i;
+      }
+    }
+
+    this.onEventProcessed(eventName, args);
+  }
+
+  on(eventName, listener)
+  {
+    this.addListener(eventName, listener);
+  }
+
+  once(eventName, listener)
+  {
+    this.addListener(eventName, () => {
+      listener();
+      return true;
+    });
+  }
+
+  onEventProcessed(eventName, args)
+  {
+    //Do nothing...
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (EventHandler);
+
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -1765,7 +1860,7 @@ function error() {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {// browser shim for xmlhttprequest module
@@ -1809,7 +1904,7 @@ module.exports = function (opts) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -1972,7 +2067,7 @@ Transport.prototype.onClose = function () {
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2003,101 +2098,6 @@ class Frame
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (Frame);
-
-
-/***/ }),
-/* 14 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class EventHandler
-{
-  constructor()
-  {
-    this.eventMap = new Map();
-  }
-
-  addListener(eventName, listener)
-  {
-    if (!this.eventMap.has(eventName)) this.eventMap.set(eventName, []);
-
-    const listeners = this.eventMap.get(eventName);
-    listeners.push(listener);
-  }
-
-  removeListener(eventName, listener)
-  {
-    if (!this.eventMap.has(eventName)) return;
-
-    const listeners = this.eventMap.get(eventName);
-    listeners.splice(listeners.indexOf(listener), 1);
-  }
-
-  clearListeners(eventName)
-  {
-    if (!this.eventMap.has(eventName)) return;
-
-    const listeners = this.eventMap.get(eventName);
-    listeners.length = 0;
-  }
-
-  countListeners(eventName)
-  {
-    return this.eventMap.has(eventName) ? this.eventMap.get(eventName).length : 0;
-  }
-
-  getListeners(eventName)
-  {
-    return this.eventMap.get(eventName);
-  }
-
-  emit(eventName)
-  {
-    if (!this.eventMap.has(eventName)) return;
-
-    //Can pass additional args to listeners here...
-    const args = Array.prototype.splice.call(arguments, 1);
-    const listeners = this.eventMap.get(eventName);
-    const length = listeners.length;
-    let i = 0;
-    while(i < length)
-    {
-      const listener = listeners[i];
-      const result = listener.apply(null, args);
-      if (result)
-      {
-        listeners.splice(i, 1);
-        --i;
-      }
-      else
-      {
-        ++i;
-      }
-    }
-
-    this.onEventProcessed(eventName, args);
-  }
-
-  on(eventName, listener)
-  {
-    this.addListener(eventName, listener);
-  }
-
-  once(eventName, listener)
-  {
-    this.addListener(eventName, () => {
-      listener();
-      return true;
-    });
-  }
-
-  onEventProcessed(eventName, args)
-  {
-    //Do nothing...
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (EventHandler);
 
 
 /***/ }),
@@ -2442,7 +2442,7 @@ function isBuf(obj) {
 var eio = __webpack_require__(50);
 var Socket = __webpack_require__(27);
 var Emitter = __webpack_require__(5);
-var parser = __webpack_require__(10);
+var parser = __webpack_require__(11);
 var on = __webpack_require__(28);
 var bind = __webpack_require__(29);
 var debug = __webpack_require__(1)('socket.io-client:manager');
@@ -3017,7 +3017,7 @@ Manager.prototype.onreconnect = function () {
  * Module dependencies
  */
 
-var XMLHttpRequest = __webpack_require__(11);
+var XMLHttpRequest = __webpack_require__(12);
 var XHR = __webpack_require__(53);
 var JSONP = __webpack_require__(61);
 var websocket = __webpack_require__(62);
@@ -3077,7 +3077,7 @@ function polling (opts) {
  * Module dependencies.
  */
 
-var Transport = __webpack_require__(12);
+var Transport = __webpack_require__(13);
 var parseqs = __webpack_require__(8);
 var parser = __webpack_require__(6);
 var inherit = __webpack_require__(9);
@@ -3095,7 +3095,7 @@ module.exports = Polling;
  */
 
 var hasXHR2 = (function () {
-  var XMLHttpRequest = __webpack_require__(11);
+  var XMLHttpRequest = __webpack_require__(12);
   var xhr = new XMLHttpRequest({ xdomain: false });
   return null != xhr.responseType;
 })();
@@ -3419,7 +3419,7 @@ module.exports = function(arr, obj){
  * Module dependencies.
  */
 
-var parser = __webpack_require__(10);
+var parser = __webpack_require__(11);
 var Emitter = __webpack_require__(5);
 var toArray = __webpack_require__(64);
 var on = __webpack_require__(28);
@@ -3900,7 +3900,7 @@ module.exports = function(obj, fn){
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Reflection_js__ = __webpack_require__(31);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_uid_js__ = __webpack_require__(32);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_EventHandler_js__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_EventHandler_js__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__EntityRegistry_js__ = __webpack_require__(69);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Entity_js__ = __webpack_require__(15);
 
@@ -6689,7 +6689,7 @@ window.onload = start;
  */
 
 var url = __webpack_require__(45);
-var parser = __webpack_require__(10);
+var parser = __webpack_require__(11);
 var Manager = __webpack_require__(22);
 var debug = __webpack_require__(1)('socket.io-client');
 
@@ -7728,7 +7728,7 @@ Socket.protocol = parser.protocol; // this is an int
  */
 
 Socket.Socket = Socket;
-Socket.Transport = __webpack_require__(12);
+Socket.Transport = __webpack_require__(13);
 Socket.transports = __webpack_require__(23);
 Socket.parser = __webpack_require__(6);
 
@@ -8362,7 +8362,7 @@ try {
  * Module requirements.
  */
 
-var XMLHttpRequest = __webpack_require__(11);
+var XMLHttpRequest = __webpack_require__(12);
 var Polling = __webpack_require__(24);
 var Emitter = __webpack_require__(5);
 var inherit = __webpack_require__(9);
@@ -9579,7 +9579,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
  * Module dependencies.
  */
 
-var Transport = __webpack_require__(12);
+var Transport = __webpack_require__(13);
 var parser = __webpack_require__(6);
 var parseqs = __webpack_require__(8);
 var inherit = __webpack_require__(9);
@@ -9985,7 +9985,7 @@ Backoff.prototype.setJitter = function(jitter){
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_EventHandler_js__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_EventHandler_js__ = __webpack_require__(10);
 
 
 class NetworkHandler
@@ -10093,6 +10093,8 @@ class NetworkHandler
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_client_Renderer_js__ = __webpack_require__(82);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_game_GameFactory_js__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_client_ClientSyncer_js__ = __webpack_require__(89);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_integrated_GameEngine_js__ = __webpack_require__(92);
+
 
 
 
@@ -10126,6 +10128,8 @@ class ClientEngine
     this.world = new __WEBPACK_IMPORTED_MODULE_1_integrated_World_js__["a" /* default */]();
     this.renderer = new __WEBPACK_IMPORTED_MODULE_3_client_Renderer_js__["a" /* default */](canvas);
     this.input = new __WEBPACK_IMPORTED_MODULE_2_client_input_Mouse_js__["a" /* default */](document);
+
+    this.gameEngine = new __WEBPACK_IMPORTED_MODULE_6_integrated_GameEngine_js__["a" /* default */](this.world);
 
     this.syncer = new __WEBPACK_IMPORTED_MODULE_5_client_ClientSyncer_js__["a" /* default */](this.world, this.input, this.renderer);
   }
@@ -10165,7 +10169,7 @@ class ClientEngine
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Frame_js__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Frame_js__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_integrated_entity_EntityManager_js__ = __webpack_require__(30);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_game_EntitySystem_js__ = __webpack_require__(71);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_Application_js__ = __webpack_require__(2);
@@ -10201,10 +10205,10 @@ class World
      data.worldState = this.captureState();
   }
 
-  step(frame)
+  step(delta)
   {
-    this.ticks += frame.delta;
-    __WEBPACK_IMPORTED_MODULE_3_Application_js__["a" /* default */].events.emit('worldStep', this, frame.delta);
+    this.ticks += delta;
+    __WEBPACK_IMPORTED_MODULE_3_Application_js__["a" /* default */].events.emit('worldStep', this, delta);
   }
 
   updateInput(inputState, targetEntity)
@@ -14684,7 +14688,7 @@ class PlayerSystem
     entity.player.nextY = inputState.y;
     entity.player.move = inputState.down;
     //HACK: this will run once on server and client-side, needs a way to keep predicted alive
-    if (inputState.click)
+    if (inputState.click && !__WEBPACK_IMPORTED_MODULE_4_Application_js__["a" /* default */].isRemote())
     {
       const dx = entity.player.nextX - entity.transform.x;
       const dy = entity.player.nextY - entity.transform.y;
@@ -15839,7 +15843,7 @@ class VBO
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_Application_js__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_Frame_js__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_Frame_js__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_util_PriorityQueue_js__ = __webpack_require__(90);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_client_PlayerController_js__ = __webpack_require__(91);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_client_camera_ViewPort_js__ = __webpack_require__(41);
@@ -15916,7 +15920,7 @@ class ClientSyncer
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
     if (targetEntity) this.world.updateInput(currentInputState, targetEntity, true);
-    this.world.step(frame, true);
+    this.world.step(frame.delta, true);
 
     this.playerController.onUpdate(frame);
   }
@@ -15924,7 +15928,7 @@ class ClientSyncer
   onServerData(server, data)
   {
     const gameState = data.worldState;
-    
+
     //CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
     const currentTicks = this.world.ticks;
     this.world.resetState(gameState);
@@ -15949,8 +15953,7 @@ class ClientSyncer
       const dt = inputState.worldTicks - this.world.ticks;
       if (dt > 0)
       {
-        nextFrame.delta = dt;
-        this.world.step(nextFrame, true);
+        this.world.step(dt, true);
       }
 
       //Update world to after this input state...
@@ -15969,8 +15972,7 @@ class ClientSyncer
     const dt = currentTicks - this.world.ticks;
     if (dt > 0)
     {
-      nextFrame.delta = dt;
-      this.world.step(nextFrame, true);
+      this.world.step(dt, true);
     }
 
     __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].events.emit('serverUpdate', server, gameState);
@@ -16140,6 +16142,70 @@ class PlayerController
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (PlayerController);
+
+
+/***/ }),
+/* 92 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_EventHandler_js__ = __webpack_require__(10);
+
+
+class GameEngine
+{
+  constructor(world)
+  {
+    this.events = new __WEBPACK_IMPORTED_MODULE_0_util_EventHandler_js__["a" /* default */]();
+    this.events.onEventProcessed = this.onEventProcessed.bind(this);
+
+    this.synchronizedEvents = [];
+    this.cachedEvents = [];
+
+    this.worldTicks = 0;
+    this.world = world;
+  }
+
+  async start()
+  {
+
+  }
+
+  update(frame)
+  {
+
+  }
+
+  processInput(clientState, targetEntity)
+  {
+    this.world.updateInput(clientState, targetEntity);
+  }
+
+  step(isReenact, t, dt, physicsOnly)
+  {
+    if (physicsOnly)
+    {
+      //Update physics with dt
+      return;
+    }
+
+    const tick = ++this.worldTicks;
+    //TODO: Make sure to ignore physics for predicted entities
+
+    //Update physics with dt
+    this.world.step(dt);
+  }
+
+  onEventProcessed(eventName, args)
+  {
+    if (this.synchronizedEvents.includes(eventName))
+    {
+      this.cachedEvents.push({ name: eventName, args: args });
+    }
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (GameEngine);
 
 
 /***/ })

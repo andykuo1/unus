@@ -8,6 +8,7 @@ import Renderer from 'client/Renderer.js';
 import GameFactory from 'game/GameFactory.js';
 
 import ClientSyncer from 'client/ClientSyncer.js';
+import GameEngine from 'integrated/GameEngine.js';
 
 /*
 CLIENT gets CURRENT_GAME_STATE.
@@ -31,6 +32,8 @@ class ClientEngine
     this.world = new World();
     this.renderer = new Renderer(canvas);
     this.input = new Mouse(document);
+
+    this.gameEngine = new GameEngine(this.world);
 
     this.syncer = new ClientSyncer(this.world, this.input, this.renderer);
   }

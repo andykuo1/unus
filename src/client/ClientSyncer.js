@@ -71,7 +71,7 @@ class ClientSyncer
 
     //CLIENT updates CLIENT_GAME_STATE with CURRENT_INPUT_STATE.
     if (targetEntity) this.world.updateInput(currentInputState, targetEntity, true);
-    this.world.step(frame, true);
+    this.world.step(frame.delta, true);
 
     this.playerController.onUpdate(frame);
   }
@@ -79,7 +79,7 @@ class ClientSyncer
   onServerData(server, data)
   {
     const gameState = data.worldState;
-    
+
     //CLIENT sets CLIENT_GAME_STATE to CURRENT_GAME_STATE.
     const currentTicks = this.world.ticks;
     this.world.resetState(gameState);
@@ -104,8 +104,7 @@ class ClientSyncer
       const dt = inputState.worldTicks - this.world.ticks;
       if (dt > 0)
       {
-        nextFrame.delta = dt;
-        this.world.step(nextFrame, true);
+        this.world.step(dt, true);
       }
 
       //Update world to after this input state...
@@ -124,8 +123,7 @@ class ClientSyncer
     const dt = currentTicks - this.world.ticks;
     if (dt > 0)
     {
-      nextFrame.delta = dt;
-      this.world.step(nextFrame, true);
+      this.world.step(dt, true);
     }
 
     Application.events.emit('serverUpdate', server, gameState);
