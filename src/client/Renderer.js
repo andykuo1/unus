@@ -86,9 +86,6 @@ class Renderer
             drawObject(renderable.x, renderable.y, 0xFFFFFF, this, view, modelview);
           }
         }
-
-        //Test rendering
-        drawObject(0, 0, 0xFFFFFF, this, view, modelview);
 			}
 			this.mesh.unbind();
 		}
@@ -98,7 +95,6 @@ class Renderer
 
 function drawObject(x, y, color, renderer, view, modelview)
 {
-  console.log(renderer.prgm);
   gl.uniform3fv(renderer.prgm.uniforms.uColor,
     [((color >> 16) & 0xFF) / 255.0,
     ((color >> 8) & 0xFF) / 255.0,

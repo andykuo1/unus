@@ -3,6 +3,8 @@ import EntitySynchronizer from 'shared/entity/EntitySynchronizer.js';
 
 import Application from 'Application.js';
 
+import Renderable from 'server/world/ComponentRenderable.js';
+
 class ClientWorld
 {
   constructor()
@@ -13,7 +15,8 @@ class ClientWorld
 
   async initialize()
   {
-
+    const entity = this.entities.spawnEntity(null);
+    entity.addComponent(Renderable);
   }
 
   onClientConnect(client)

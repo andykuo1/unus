@@ -10010,9 +10010,6 @@ class Renderer
             drawObject(renderable.x, renderable.y, 0xFFFFFF, this, view, modelview);
           }
         }
-
-        //Test rendering
-        drawObject(0, 0, 0xFFFFFF, this, view, modelview);
 			}
 			this.mesh.unbind();
 		}
@@ -14746,6 +14743,9 @@ class LocalClient
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_shared_entity_EntityManager_js__ = __webpack_require__(33);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_shared_entity_EntitySynchronizer_js__ = __webpack_require__(76);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_Application_js__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_server_world_ComponentRenderable_js__ = __webpack_require__(77);
+
+
 
 
 
@@ -14761,7 +14761,8 @@ class ClientWorld
 
   async initialize()
   {
-
+    const entity = this.entities.spawnEntity(null);
+    entity.addComponent(__WEBPACK_IMPORTED_MODULE_3_server_world_ComponentRenderable_js__["a" /* default */]);
   }
 
   onClientConnect(client)
@@ -15123,6 +15124,25 @@ function writeProperty(propertyName, propertyData, syncData, dst)
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (EntitySynchronizer);
+
+
+/***/ }),
+/* 77 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+function Renderable()
+{
+  this.x = 0;
+  this.y = 0;
+}
+
+Renderable.sync = {
+  x: { type: 'float' },
+  y: { type: 'float' }
+};
+
+/* harmony default export */ __webpack_exports__["a"] = (Renderable);
 
 
 /***/ })

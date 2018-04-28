@@ -2,6 +2,7 @@ import EntityManager from 'shared/entity/EntityManager.js';
 import EntitySynchronizer from 'shared/entity/EntitySynchronizer.js';
 
 import Application from 'Application.js';
+
 import Renderable from 'server/world/ComponentRenderable.js';
 
 class World
