@@ -1969,6 +1969,8 @@ class GameEngine
 
   processInput(clientState, targetEntity)
   {
+    this.events.emit('processInput', clientState, targetEntity);
+    
     //TODO: Move this game code somewhere else...
 
     const player = targetEntity.player;

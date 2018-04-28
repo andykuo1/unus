@@ -98,6 +98,8 @@ class ClientEngine
     this.syncer.onUpdate(frame);
     this.gameEngine.step(false, frame.then, frame.delta);
 
+    this.gameEngine.events.emit('lateStep');
+
     //Render the game...
     this.renderer.render(this.world);
   }

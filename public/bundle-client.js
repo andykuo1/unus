@@ -10316,6 +10316,8 @@ class ClientEngine
     this.syncer.onUpdate(frame);
     this.gameEngine.step(false, frame.then, frame.delta);
 
+    this.gameEngine.events.emit('lateStep');
+
     //Render the game...
     this.renderer.render(this.world);
   }
@@ -16038,11 +16040,36 @@ class ClientSyncer
     this.renderer = renderer;
 
     this.playerController = new __WEBPACK_IMPORTED_MODULE_4_client_PlayerController_js__["a" /* default */](this.world.entityManager, renderer);
+    this.cachedInputs = [];
   }
 
   init()
   {
     __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].events.on('serverData', this.onServerData.bind(this));
+    __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].game.gameEngine.events.on('processInput', this.onProcessInput.bind(this));
+    __WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].game.gameEngine.events.on('lateStep', this.onLateStep.bind(this));
+  }
+
+  onProcessInput(clientState, targetEntity)
+  {
+    if (targetEntity !== this.playerController.getClientPlayer()) return;
+    this.cachedInputs.push(clientState);
+  }
+
+  onLateStep()
+  {
+    //Apply incremental bending for all objects?
+
+    //Apply required syncs?
+  }
+
+  synchronizeState(state)
+  {
+    //If object has a local shadow, adopt the server object
+
+    //If object exists locally, sync to server object (will re-enact later)
+
+    //If object is new, create it
   }
 
   onUpdate(frame)
@@ -16143,6 +16170,8 @@ class GameEngine
 
   processInput(clientState, targetEntity)
   {
+    this.events.emit('processInput', clientState, targetEntity);
+    
     //TODO: Move this game code somewhere else...
 
     const player = targetEntity.player;

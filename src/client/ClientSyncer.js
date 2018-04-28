@@ -14,11 +14,36 @@ class ClientSyncer
     this.renderer = renderer;
 
     this.playerController = new PlayerController(this.world.entityManager, renderer);
+    this.cachedInputs = [];
   }
 
   init()
   {
     Application.events.on('serverData', this.onServerData.bind(this));
+    Application.game.gameEngine.events.on('processInput', this.onProcessInput.bind(this));
+    Application.game.gameEngine.events.on('lateStep', this.onLateStep.bind(this));
+  }
+
+  onProcessInput(clientState, targetEntity)
+  {
+    if (targetEntity !== this.playerController.getClientPlayer()) return;
+    this.cachedInputs.push(clientState);
+  }
+
+  onLateStep()
+  {
+    //Apply incremental bending for all objects?
+
+    //Apply required syncs?
+  }
+
+  synchronizeState(state)
+  {
+    //If object has a local shadow, adopt the server object
+
+    //If object exists locally, sync to server object (will re-enact later)
+
+    //If object is new, create it
   }
 
   onUpdate(frame)
