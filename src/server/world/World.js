@@ -3,7 +3,7 @@ import EntitySynchronizer from 'shared/entity/EntitySynchronizer.js';
 
 import Application from 'Application.js';
 
-import Renderable from 'server/world/ComponentRenderable.js';
+import * as Components from 'shared/entity/component/Components.js';
 
 class World
 {
@@ -16,8 +16,9 @@ class World
 
   async initialize()
   {
-    this.entity = this.entities.spawnEntity(null);
-    this.entity.addComponent(Renderable);
+    this.entity = this.entities.spawnEntity();
+    this.entity.addComponent(Components.Transform);
+    this.entity.addComponent(Components.Renderable);
   }
 
   onClientConnect(client)
@@ -32,8 +33,8 @@ class World
 
   onUpdate(delta)
   {
-    this.entity.renderable.x += -0.1 + Math.random() * 0.1;
-    this.entity.renderable.y += -0.1 + Math.random() * 0.1;
+    this.entity.Transform.position[0] += -0.1 + Math.random() * 0.2;
+    this.entity.Transform.position[1] += -0.1 + Math.random() * 0.2;
 
     if (--this.entitySyncTimer <= 0)
     {

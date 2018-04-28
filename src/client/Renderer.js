@@ -60,7 +60,7 @@ class Renderer
     console.log("Renderer fully loaded!");
   }
 
-  render(world)
+  render(renderable)
   {
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     this.viewport.update();
@@ -78,12 +78,17 @@ class Renderer
 
 			this.mesh.bind();
 			{
-        if (typeof world.entities != 'undefined')
+        if (typeof renderable.entities != 'undefined')
         {
-          for(const entity of world.entities)
+          for(const entity of renderable.entities)
           {
-            const renderable = entity.renderable;
-            drawObject(renderable.x, renderable.y, 0xFFFFFF, this, view, modelview);
+            if (entity.Renderable && entity.Renderable.visible)
+            {
+              drawObject(entity.Transform.position,
+                entity.Transform.rotation,
+                entity.Transform.scale,
+                entity.Renderable.color, this, view, modelview);
+            }
           }
         }
 			}
@@ -93,7 +98,7 @@ class Renderer
   }
 }
 
-function drawObject(x, y, color, renderer, view, modelview)
+function drawObject(position, rotation, scale, color, renderer, view, modelview)
 {
   gl.uniform3fv(renderer.prgm.uniforms.uColor,
     [((color >> 16) & 0xFF) / 255.0,
@@ -102,9 +107,9 @@ function drawObject(x, y, color, renderer, view, modelview)
 
   //Setting up the Model Matrix
   mat4.fromRotationTranslationScale(modelview,
-    [0, 0, 0, 0],
-    [x, y, 0],
-    [1, 1, 1]);
+    rotation,
+    position,
+    scale);
   mat4.mul(modelview, view, modelview);
   gl.uniformMatrix4fv(renderer.prgm.uniforms.uModelView, false, modelview);
 

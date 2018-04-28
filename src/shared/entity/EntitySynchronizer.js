@@ -1,6 +1,23 @@
+import { vec3, quat } from 'gl-matrix';
 import Reflection from 'util/Reflection.js';
 import EntityManager from './EntityManager.js';
 import Entity from './Entity.js';
+
+import * as Components from 'shared/entity/component/Components.js';
+
+import SerializerRegistry from 'shared/serialization/SerializerRegistry.js';
+
+import BooleanSerializer from 'shared/serialization/BooleanSerializer.js';
+import IntegerSerializer from 'shared/serialization/IntegerSerializer.js';
+import FloatSerializer from 'shared/serialization/FloatSerializer.js';
+import Vec2Serializer from 'shared/serialization/Vec2Serializer.js';
+import Vec3Serializer from 'shared/serialization/Vec3Serializer.js';
+import Vec4Serializer from 'shared/serialization/Vec4Serializer.js';
+import QuatSerializer from 'shared/serialization/QuatSerializer.js';
+import Mat4Serializer from 'shared/serialization/Mat4Serializer.js';
+import StringSerializer from 'shared/serialization/StringSerializer.js';
+import ArraySerializer from 'shared/serialization/ArraySerializer.js';
+import EntityReferenceSerializer from 'shared/serialization/EntityReferenceSerializer.js';
 
 class EntitySynchronizer
 {
@@ -9,6 +26,19 @@ class EntitySynchronizer
     this.manager = entityManager;
     this.manager.on('entityCreate', this.onEntityCreate.bind(this));
     this.manager.on('entityDestroy', this.onEntityDestroy.bind(this));
+
+    this.serializers = new SerializerRegistry();
+    this.serializers.registerSerializableType('boolean', new BooleanSerializer());
+    this.serializers.registerSerializableType('integer', new IntegerSerializer());
+    this.serializers.registerSerializableType('float', new FloatSerializer());
+    this.serializers.registerSerializableType('vec2', new Vec2Serializer());
+    this.serializers.registerSerializableType('vec3', new Vec3Serializer());
+    this.serializers.registerSerializableType('vec4', new Vec4Serializer());
+    this.serializers.registerSerializableType('quat', new QuatSerializer());
+    this.serializers.registerSerializableType('mat4', new Mat4Serializer());
+    this.serializers.registerSerializableType('string', new StringSerializer());
+    this.serializers.registerSerializableType('array', new ArraySerializer());
+    this.serializers.registerSerializableType('entity', new EntityReferenceSerializer(this.manager));
 
     this.cachedEvents = [];
   }
@@ -37,11 +67,11 @@ class EntitySynchronizer
       const components = this.manager.getComponentsByEntity(entity);
       for(const component of components)
       {
-        const componentName = Reflection.getClassVarName(component);
+        const componentName = Reflection.getClassName(component);
         const componentData = componentsData[componentName] = {};
         for(const propName of Object.keys(component.sync))
         {
-          writeProperty(propName, entity[componentName][propName], component.sync[propName], componentData);
+          this.encodeProperty(propName, entity[componentName][propName], component.sync[propName], componentData);
         }
       }
     }
@@ -85,8 +115,12 @@ class EntitySynchronizer
       const componentsData = entityData.components;
       for(const componentName of Object.keys(componentsData))
       {
-        const componentClass = this.manager.getComponentClassByName(componentName);
-        if (componentClass === null) throw new Error("cannot find component class with name \'" + componentName + "\'");
+        const componentClass = this.manager.getComponentClassByName(componentName) || Components[componentName];
+        if (componentClass === null)
+        {
+          throw new Error("cannot find component class with name \'" + componentName + "\'");
+        }
+
         const componentData = componentsData[componentName];
         if (!entity.hasComponent(componentClass))
         {
@@ -96,7 +130,7 @@ class EntitySynchronizer
         const component = entity[componentName];
         for(const propertyName of Object.keys(componentClass.sync))
         {
-          writeProperty(propertyName, componentData[propertyName], componentClass.sync[propertyName], component);
+          this.decodeProperty(propertyName, componentData[propertyName], componentClass.sync[propertyName], component);
         }
       }
     }
@@ -112,6 +146,22 @@ class EntitySynchronizer
         }
       }
     }
+  }
+
+  encodeProperty(propertyName, propertyData, syncOpts, dst)
+  {
+    const propertyType = syncOpts.type;
+    const serializer = this.serializers.getSerializerForType(propertyType);
+    serializer.encode(this, propertyName, propertyData, syncOpts, dst);
+    return dst;
+  }
+
+  decodeProperty(propertyName, propertyData, syncOpts, dst)
+  {
+    const propertyType = syncOpts.type;
+    const serializer = this.serializers.getSerializerForType(propertyType);
+    serializer.decode(this, propertyName, propertyData, syncOpts, dst);
+    return dst;
   }
 
   onEntityCreate(entity)
@@ -131,58 +181,6 @@ class EntitySynchronizer
     event.entityName = entity.name;
     this.cachedEvents.push(event);
   }
-}
-
-function writeProperty(propertyName, propertyData, syncData, dst)
-{
-  const propertyType = syncData.type;
-  if (propertyType === 'array')
-  {
-    const elements = dst[propertyName] = [];
-    const length = propertyData.length;
-    for(let i = 0; i < length; ++i)
-    {
-      elements.push(0);
-      writeProperty(i, propertyData[i], syncData.elements, elements);
-    }
-  }
-  else if (propertyType === 'integer')
-  {
-    dst[propertyName] = Math.trunc(Number(propertyData)) ;
-  }
-  else if (propertyType === 'float')
-  {
-    dst[propertyName] = Number(propertyData);
-  }
-  else if (propertyType === 'boolean')
-  {
-    dst[propertyName] = Boolean(propertyData);
-  }
-  else if (propertyType === 'string')
-  {
-    dst[propertyName] = String(propertyData);
-  }
-  else if (propertyType === 'entity')
-  {
-    if (typeof propertyData === 'string')
-    {
-      dst[propertyName] = String(propertyData);
-    }
-    else if (propertyData instanceof Entity)
-    {
-      dst[propertyName] = propertyData.id;
-    }
-    else
-    {
-      throw new Error("unknown entity type \'" + propertyData + "\'");
-    }
-  }
-  else
-  {
-    throw new Error("unknown data type \'" + propertyType + "\'");
-  }
-
-  return dst;
 }
 
 export default EntitySynchronizer;

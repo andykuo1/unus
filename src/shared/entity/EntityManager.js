@@ -23,7 +23,7 @@ class EntityManager
     return null;
   }
 
-  spawnEntity(name)
+  spawnEntity(name=null)
   {
     const entity = this.registry.createEntity(name);
     this.emit('entityCreate', entity, name);
@@ -58,10 +58,10 @@ class EntityManager
   {
     if (this.hasComponentByEntity(entity, component))
     {
-      throw new Error("entity already includes component \'" + Reflection.getClassVarName(component) + "\'");
+      throw new Error("entity already includes component \'" + Reflection.getClassName(component) + "\'");
     }
 
-    entity[Reflection.getClassVarName(component)] = new component();
+    entity[Reflection.getClassName(component)] = new component();
 
     const list = this.components.get(component) || [];
     list.push(entity);
@@ -74,10 +74,10 @@ class EntityManager
   {
     if (!this.hasComponentByEntity(entity, component))
     {
-      throw new Error("entity does not include component \'" + Reflection.getClassVarName(component) + "\'");
+      throw new Error("entity does not include component \'" + Reflection.getClassName(component) + "\'");
     }
 
-    delete entity[Reflection.getClassVarName(component)];
+    delete entity[Reflection.getClassName(component)];
 
     const list = this.components.get(component);
     if (list)
@@ -94,8 +94,8 @@ class EntityManager
     {
       if (list.includes(entity))
       {
-        const component = entity[Reflection.getClassVarName(key)];
-        delete entity[Reflection.getClassVarName(key)];
+        const component = entity[Reflection.getClassName(key)];
+        delete entity[Reflection.getClassName(key)];
 
         list.splice(list.indexOf(entity), 1);
 
@@ -127,7 +127,7 @@ class EntityManager
   {
     for(const component of this.components.keys())
     {
-      if (Reflection.getClassVarName(component) === componentName)
+      if (Reflection.getClassName(component) === componentName)
       {
         return component;
       }

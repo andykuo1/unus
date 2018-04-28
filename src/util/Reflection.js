@@ -1,9 +1,8 @@
 class Reflection
 {
-  static getClassVarName(T)
+  static getClassName(T)
   {
-    const name = T.name;
-    return name.charAt(0).toLowerCase() + name.slice(1);
+    return T.name;
   }
 }
 
