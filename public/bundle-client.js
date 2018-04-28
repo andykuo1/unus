@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 24);
+/******/ 	return __webpack_require__(__webpack_require__.s = 23);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -100,7 +100,7 @@ module.exports = g;
  * Expose `debug()` as the module.
  */
 
-exports = module.exports = __webpack_require__(27);
+exports = module.exports = __webpack_require__(26);
 exports.log = log;
 exports.formatArgs = formatArgs;
 exports.save = save;
@@ -459,15 +459,15 @@ Emitter.prototype.hasListeners = function(event){
  * Module dependencies.
  */
 
-var keys = __webpack_require__(34);
+var keys = __webpack_require__(33);
 var hasBinary = __webpack_require__(11);
-var sliceBuffer = __webpack_require__(35);
-var after = __webpack_require__(36);
-var utf8 = __webpack_require__(37);
+var sliceBuffer = __webpack_require__(34);
+var after = __webpack_require__(35);
+var utf8 = __webpack_require__(36);
 
 var base64encoder;
 if (global && global.ArrayBuffer) {
-  base64encoder = __webpack_require__(39);
+  base64encoder = __webpack_require__(38);
 }
 
 /**
@@ -525,7 +525,7 @@ var err = { type: 'error', data: 'parser error' };
  * Create a blob api even for blob builder when vendor prefixes exist
  */
 
-var Blob = __webpack_require__(40);
+var Blob = __webpack_require__(39);
 
 /**
  * Encodes a packet.
@@ -1131,7 +1131,7 @@ module.exports = function(a, b){
 var debug = __webpack_require__(1)('socket.io-parser');
 var Emitter = __webpack_require__(2);
 var hasBin = __webpack_require__(11);
-var binary = __webpack_require__(29);
+var binary = __webpack_require__(28);
 var isBuf = __webpack_require__(13);
 
 /**
@@ -1531,7 +1531,7 @@ function error() {
 
 /* WEBPACK VAR INJECTION */(function(global) {// browser shim for xmlhttprequest module
 
-var hasCORS = __webpack_require__(32);
+var hasCORS = __webpack_require__(31);
 
 module.exports = function (opts) {
   var xdomain = opts.xdomain;
@@ -2076,7 +2076,7 @@ function isBuf(obj) {
  * Module dependencies.
  */
 
-var eio = __webpack_require__(30);
+var eio = __webpack_require__(29);
 var Socket = __webpack_require__(19);
 var Emitter = __webpack_require__(2);
 var parser = __webpack_require__(6);
@@ -2084,7 +2084,7 @@ var on = __webpack_require__(20);
 var bind = __webpack_require__(21);
 var debug = __webpack_require__(1)('socket.io-client:manager');
 var indexOf = __webpack_require__(18);
-var Backoff = __webpack_require__(45);
+var Backoff = __webpack_require__(44);
 
 /**
  * IE6+ hasOwnProperty
@@ -2655,9 +2655,9 @@ Manager.prototype.onreconnect = function () {
  */
 
 var XMLHttpRequest = __webpack_require__(7);
-var XHR = __webpack_require__(33);
-var JSONP = __webpack_require__(41);
-var websocket = __webpack_require__(42);
+var XHR = __webpack_require__(32);
+var JSONP = __webpack_require__(40);
+var websocket = __webpack_require__(41);
 
 /**
  * Export transports.
@@ -3058,7 +3058,7 @@ module.exports = function(arr, obj){
 
 var parser = __webpack_require__(6);
 var Emitter = __webpack_require__(2);
-var toArray = __webpack_require__(44);
+var toArray = __webpack_require__(43);
 var on = __webpack_require__(20);
 var bind = __webpack_require__(21);
 var debug = __webpack_require__(1)('socket.io-client:socket');
@@ -3535,143 +3535,6 @@ module.exports = function(obj, fn){
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__ = __webpack_require__(23);
-
-
-const DEBUG_PRINT_FPS = true;
-
-const MILLIS_PER_SECOND = 1000;
-const SECOND_PER_MILLIS = 0.001;
-
-//applicationStart - Called when application starts, before updating
-//applicationUpdate - Called each tick
-//applicationStop - Called when application stops, after updating
-class Application
-{
-  constructor()
-  {
-    this._startTime = -1;
-    this._stopTime = -1;
-    this._now = -1;
-    this._then = -1;
-    this._delta = 0;
-    this._frames = 0;
-
-    this._remote = typeof window != 'undefined' && window.document;
-
-    this._debug_interval = null;
-    this._update_interval = null;
-  }
-
-  start(framerate)
-  {
-    if (this._startTime !== -1)
-    {
-      throw new Error("Application already started");
-    }
-
-    this._stopTime = -1;
-    this._startTime = Date.now();
-    this._now = 0;
-    this._then = 0;
-    this._delta = 0;
-    this._frames = 0;
-
-    if (this._remote && window.requestAnimationFrame)
-    {
-      const callback = () => {
-        this.update();
-        if (this._stopTime !== -1) return;
-        window.requestAnimationFrame(callback);
-      };
-      window.requestAnimationFrame(callback);
-    }
-    else
-    {
-      if (framerate <= 0)
-      {
-        throw new Error("Cannot start application with framerate <= 0");
-      }
-
-      this._update_interval = setInterval(this.update.bind(this), framerate);
-    }
-
-    if (DEBUG_PRINT_FPS)
-    {
-      this._debug_interval = setInterval(() => {
-        console.log("FPS " + this._frames);
-        this._frames = 0;
-      }, MILLIS_PER_SECOND);
-    }
-
-    this.emit('applicationStart');
-  }
-
-  stop()
-  {
-    this._stopTime = this._now;
-
-    if (this._debug_interval !== null)
-    {
-      clearInterval(this._debug_interval);
-      this._debug_interval = null;
-    }
-
-    if (this._update_interval !== null)
-    {
-      clearInterval(this._update_interval);
-      this._update_interval = null;
-    }
-
-    this.emit('applicationStop');
-
-    if (this._remote && window.close)
-    {
-      window.close();
-    }
-    else
-    {
-      process.exit(0);
-    }
-  }
-
-  update()
-  {
-    this._then = this._now;
-    this._now = Date.now() - this._startTime;
-    this._delta = (this._now - this._then) * SECOND_PER_MILLIS;
-    this._frames++;
-
-    this.emit('applicationUpdate', this._delta);
-  }
-
-  getApplicationTime()
-  {
-    return this._now;
-  }
-
-  getFrameTime()
-  {
-    return this._delta;
-  }
-
-  isRemote()
-  {
-    return this._remote;
-  }
-}
-
-Object.assign(Application.prototype, __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__["a" /* default */]);
-
-/* harmony default export */ __webpack_exports__["a"] = (new Application());
-
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(10)))
-
-/***/ }),
-/* 23 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
 const Eventable = {
   __events: new Map(),
   addListener(eventName, listener)
@@ -3750,14 +3613,14 @@ const Eventable = {
 
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_socket_io_client__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_socket_io_client__ = __webpack_require__(24);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_socket_io_client___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_socket_io_client__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_Application_js__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_Application_js__ = __webpack_require__(45);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_client_ClientEngine_js__ = __webpack_require__(46);
 
 
@@ -3786,7 +3649,7 @@ window.onload = onWindowLoad;
 
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -3794,7 +3657,7 @@ window.onload = onWindowLoad;
  * Module dependencies.
  */
 
-var url = __webpack_require__(26);
+var url = __webpack_require__(25);
 var parser = __webpack_require__(6);
 var Manager = __webpack_require__(14);
 var debug = __webpack_require__(1)('socket.io-client');
@@ -3886,7 +3749,7 @@ exports.Socket = __webpack_require__(19);
 
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {
@@ -3968,7 +3831,7 @@ function url (uri, loc) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -3984,7 +3847,7 @@ exports.coerce = coerce;
 exports.disable = disable;
 exports.enable = enable;
 exports.enabled = enabled;
-exports.humanize = __webpack_require__(28);
+exports.humanize = __webpack_require__(27);
 
 /**
  * The currently active debug mode names, and names to skip.
@@ -4176,7 +4039,7 @@ function coerce(val) {
 
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ (function(module, exports) {
 
 /**
@@ -4334,7 +4197,7 @@ function plural(ms, n, name) {
 
 
 /***/ }),
-/* 29 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/*global Blob,File*/
@@ -4482,11 +4345,11 @@ exports.removeBlobs = function(data, callback) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 30 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
-module.exports = __webpack_require__(31);
+module.exports = __webpack_require__(30);
 
 /**
  * Exports parser
@@ -4498,7 +4361,7 @@ module.exports.parser = __webpack_require__(3);
 
 
 /***/ }),
-/* 31 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/**
@@ -5248,7 +5111,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 32 */
+/* 31 */
 /***/ (function(module, exports) {
 
 
@@ -5271,7 +5134,7 @@ try {
 
 
 /***/ }),
-/* 33 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/**
@@ -5691,7 +5554,7 @@ function unloadHandler () {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 34 */
+/* 33 */
 /***/ (function(module, exports) {
 
 
@@ -5716,7 +5579,7 @@ module.exports = Object.keys || function keys (obj){
 
 
 /***/ }),
-/* 35 */
+/* 34 */
 /***/ (function(module, exports) {
 
 /**
@@ -5751,7 +5614,7 @@ module.exports = function(arraybuffer, start, end) {
 
 
 /***/ }),
-/* 36 */
+/* 35 */
 /***/ (function(module, exports) {
 
 module.exports = after
@@ -5785,7 +5648,7 @@ function noop() {}
 
 
 /***/ }),
-/* 37 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module, global) {var __WEBPACK_AMD_DEFINE_RESULT__;/*! https://mths.be/utf8js v2.1.2 by @mathias */
@@ -6043,10 +5906,10 @@ function noop() {}
 
 }(this));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(38)(module), __webpack_require__(0)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(37)(module), __webpack_require__(0)))
 
 /***/ }),
-/* 38 */
+/* 37 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -6074,7 +5937,7 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 39 */
+/* 38 */
 /***/ (function(module, exports) {
 
 /*
@@ -6147,7 +6010,7 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 40 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/**
@@ -6250,7 +6113,7 @@ module.exports = (function() {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 41 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {
@@ -6488,7 +6351,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 42 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/**
@@ -6505,7 +6368,7 @@ var BrowserWebSocket = global.WebSocket || global.MozWebSocket;
 var NodeWebSocket;
 if (typeof window === 'undefined') {
   try {
-    NodeWebSocket = __webpack_require__(43);
+    NodeWebSocket = __webpack_require__(42);
   } catch (e) { }
 }
 
@@ -6781,13 +6644,13 @@ WS.prototype.check = function () {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 43 */
+/* 42 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 44 */
+/* 43 */
 /***/ (function(module, exports) {
 
 module.exports = toArray
@@ -6806,7 +6669,7 @@ function toArray(list, index) {
 
 
 /***/ }),
-/* 45 */
+/* 44 */
 /***/ (function(module, exports) {
 
 
@@ -6897,12 +6760,150 @@ Backoff.prototype.setJitter = function(jitter){
 
 
 /***/ }),
+/* 45 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__ = __webpack_require__(22);
+
+
+const DEBUG_PRINT_FPS = true;
+
+const MILLIS_PER_SECOND = 1000;
+const SECOND_PER_MILLIS = 0.001;
+
+//applicationStart - Called when application starts, before updating
+//applicationUpdate - Called each tick
+//applicationStop - Called when application stops, after updating
+class Application
+{
+  constructor()
+  {
+    this._startTime = -1;
+    this._stopTime = -1;
+    this._now = -1;
+    this._then = -1;
+    this._delta = 0;
+    this._frames = 0;
+
+    this._remote = typeof window != 'undefined' && window.document;
+
+    this._debug_interval = null;
+    this._update_interval = null;
+  }
+
+  start(framerate)
+  {
+    if (this._startTime !== -1)
+    {
+      throw new Error("Application already started");
+    }
+
+    this._stopTime = -1;
+    this._startTime = Date.now();
+    this._now = 0;
+    this._then = 0;
+    this._delta = 0;
+    this._frames = 0;
+
+    if (this._remote && window.requestAnimationFrame)
+    {
+      const callback = () => {
+        this.update();
+        if (this._stopTime !== -1) return;
+        window.requestAnimationFrame(callback);
+      };
+      window.requestAnimationFrame(callback);
+    }
+    else
+    {
+      if (framerate <= 0)
+      {
+        throw new Error("Cannot start application with framerate <= 0");
+      }
+
+      this._update_interval = setInterval(this.update.bind(this), framerate);
+    }
+
+    if (DEBUG_PRINT_FPS)
+    {
+      this._debug_interval = setInterval(() => {
+        console.log("FPS " + this._frames);
+        this._frames = 0;
+      }, MILLIS_PER_SECOND);
+    }
+
+    this.emit('applicationStart');
+  }
+
+  stop()
+  {
+    this._stopTime = this._now;
+
+    if (this._debug_interval !== null)
+    {
+      clearInterval(this._debug_interval);
+      this._debug_interval = null;
+    }
+
+    if (this._update_interval !== null)
+    {
+      clearInterval(this._update_interval);
+      this._update_interval = null;
+    }
+
+    this.emit('applicationStop');
+
+    if (this._remote && window.close)
+    {
+      window.close();
+    }
+    else
+    {
+      process.exit(0);
+    }
+  }
+
+  update()
+  {
+    this._then = this._now;
+    this._now = Date.now() - this._startTime;
+    this._delta = (this._now - this._then) * SECOND_PER_MILLIS;
+    this._frames++;
+
+    this.emit('applicationUpdate', this._delta);
+  }
+
+  getApplicationTime()
+  {
+    return this._now;
+  }
+
+  getFrameTime()
+  {
+    return this._delta;
+  }
+
+  isRemote()
+  {
+    return this._remote;
+  }
+}
+
+Object.assign(Application.prototype, __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__["a" /* default */]);
+
+/* harmony default export */ __webpack_exports__["a"] = (new Application());
+
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(10)))
+
+/***/ }),
 /* 46 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_Application_js__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_Eventable_js__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_client_LocalClient_js__ = __webpack_require__(47);
+
 
 
 
@@ -6910,10 +6911,11 @@ class ClientEngine
 {
   constructor(app, canvas, socket)
   {
+    this._app = app;
     this._canvas = canvas;
     this._socket = socket;
 
-    this._clientID = -1;
+    this._client = new __WEBPACK_IMPORTED_MODULE_1_client_LocalClient_js__["a" /* default */](socket);
 
     app.on('applicationStart', this.onApplicationStart.bind(this));
     app.on('applicationUpdate', this.onApplicationUpdate.bind(this));
@@ -6921,13 +6923,10 @@ class ClientEngine
 
   async initialize()
   {
-    this.emit('serverConnect', this._socket);
-
+    this._client.onConnect();
     this._socket.on('disconnect', () => {
-      console.log("Disconnected from server...");
-      this._clientID = -1;
-      this.emit('serverDisconnect', this._socket);
-      __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].stop();
+      this._client.onDisconnect();
+      this._app.stop();
     });
 
     console.log("Game initialized!");
@@ -6944,9 +6943,35 @@ class ClientEngine
   }
 }
 
-Object.assign(ClientEngine.prototype, __WEBPACK_IMPORTED_MODULE_1_util_Eventable_js__["a" /* default */]);
+Object.assign(ClientEngine.prototype, __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__["a" /* default */]);
 
 /* harmony default export */ __webpack_exports__["a"] = (ClientEngine);
+
+
+/***/ }),
+/* 47 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class LocalClient
+{
+  constructor(socket)
+  {
+    this._socket = socket;
+  }
+
+  onConnect()
+  {
+    console.log("Client connected: " + this._socket.id);
+  }
+
+  onDisconnect()
+  {
+    console.log("Client disconnected: " + this._socket.id);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (LocalClient);
 
 
 /***/ })

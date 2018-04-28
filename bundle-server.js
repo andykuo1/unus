@@ -355,6 +355,8 @@ Object.assign(Application.prototype, __WEBPACK_IMPORTED_MODULE_0_util_Eventable_
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_server_NetworkClient_js__ = __webpack_require__(7);
+
 
 
 class ServerEngine
@@ -372,15 +374,14 @@ class ServerEngine
   async initialize()
   {
     this._socket.on('connection', socket => {
-      console.log("Connection established: " + socket.id);
-      const socketID = socket.id;
-      this._clients.set(socketID, socket);
-      this.emit('clientConnect', socket);
+      //TODO: Validate client before continuing...
+      const client = new __WEBPACK_IMPORTED_MODULE_1_server_NetworkClient_js__["a" /* default */](socket);
+      this._clients.set(socket.id, client);
+      client.onConnect();
 
       socket.on('disconnect', () => {
-        console.log("Connection lost: " + socket.id);
-        this._clients.delete(socketID);
-        this.emit('clientDisconnect', socket);
+        client.onDisconnect();
+        this._clients.delete(socket.id);
       });
     });
 
@@ -396,11 +397,42 @@ class ServerEngine
   {
 
   }
+
+  getClientByID(clientID)
+  {
+    return this._clients.get(clientID);
+  }
 }
 
 Object.assign(ServerEngine.prototype, __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__["a" /* default */]);
 
 /* harmony default export */ __webpack_exports__["a"] = (ServerEngine);
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class NetworkClient
+{
+  constructor(socket)
+  {
+    this._socket = socket;
+  }
+
+  onConnect()
+  {
+    console.log("Client connected: " + this._socket.id);
+  }
+
+  onDisconnect()
+  {
+    console.log("Client disconnected: " + this._socket.id);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (NetworkClient);
 
 
 /***/ })

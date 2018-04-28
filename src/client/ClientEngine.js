@@ -1,14 +1,16 @@
-import Application from 'Application.js';
 import Eventable from 'util/Eventable.js';
+
+import LocalClient from 'client/LocalClient.js';
 
 class ClientEngine
 {
   constructor(app, canvas, socket)
   {
+    this._app = app;
     this._canvas = canvas;
     this._socket = socket;
 
-    this._clientID = -1;
+    this._client = new LocalClient(this._socket);
 
     app.on('applicationStart', this.onApplicationStart.bind(this));
     app.on('applicationUpdate', this.onApplicationUpdate.bind(this));
@@ -16,13 +18,10 @@ class ClientEngine
 
   async initialize()
   {
-    this.emit('serverConnect', this._socket);
-
+    this._client.onConnect();
     this._socket.on('disconnect', () => {
-      console.log("Disconnected from server...");
-      this._clientID = -1;
-      this.emit('serverDisconnect', this._socket);
-      Application.stop();
+      this._client.onDisconnect();
+      this._app.stop();
     });
 
     console.log("Game initialized!");

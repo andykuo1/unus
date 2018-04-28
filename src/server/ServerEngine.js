@@ -1,4 +1,5 @@
 import Eventable from 'util/Eventable.js';
+import NetworkClient from 'server/NetworkClient.js';
 
 class ServerEngine
 {
@@ -15,15 +16,14 @@ class ServerEngine
   async initialize()
   {
     this._socket.on('connection', socket => {
-      console.log("Connection established: " + socket.id);
-      const socketID = socket.id;
-      this._clients.set(socketID, socket);
-      this.emit('clientConnect', socket);
+      //TODO: Validate client before continuing...
+      const client = new NetworkClient(socket);
+      this._clients.set(socket.id, client);
+      client.onConnect();
 
       socket.on('disconnect', () => {
-        console.log("Connection lost: " + socket.id);
-        this._clients.delete(socketID);
-        this.emit('clientDisconnect', socket);
+        client.onDisconnect();
+        this._clients.delete(socket.id);
       });
     });
 
@@ -38,6 +38,11 @@ class ServerEngine
   onApplicationUpdate(delta)
   {
 
+  }
+
+  getClientByID(clientID)
+  {
+    return this._clients.get(clientID);
   }
 }
 
