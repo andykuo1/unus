@@ -4,20 +4,9 @@ import EntityManager from './EntityManager.js';
 import Entity from './Entity.js';
 
 import * as Components from 'shared/entity/component/Components.js';
+import * as Serializables from 'shared/serialization/Serializables.js';
 
 import SerializerRegistry from 'shared/serialization/SerializerRegistry.js';
-
-import BooleanSerializer from 'shared/serialization/BooleanSerializer.js';
-import IntegerSerializer from 'shared/serialization/IntegerSerializer.js';
-import FloatSerializer from 'shared/serialization/FloatSerializer.js';
-import Vec2Serializer from 'shared/serialization/Vec2Serializer.js';
-import Vec3Serializer from 'shared/serialization/Vec3Serializer.js';
-import Vec4Serializer from 'shared/serialization/Vec4Serializer.js';
-import QuatSerializer from 'shared/serialization/QuatSerializer.js';
-import Mat4Serializer from 'shared/serialization/Mat4Serializer.js';
-import StringSerializer from 'shared/serialization/StringSerializer.js';
-import ArraySerializer from 'shared/serialization/ArraySerializer.js';
-import EntityReferenceSerializer from 'shared/serialization/EntityReferenceSerializer.js';
 
 class EntitySynchronizer
 {
@@ -28,17 +17,17 @@ class EntitySynchronizer
     this.manager.on('entityDestroy', this.onEntityDestroy.bind(this));
 
     this.serializers = new SerializerRegistry();
-    this.serializers.registerSerializableType('boolean', new BooleanSerializer());
-    this.serializers.registerSerializableType('integer', new IntegerSerializer());
-    this.serializers.registerSerializableType('float', new FloatSerializer());
-    this.serializers.registerSerializableType('vec2', new Vec2Serializer());
-    this.serializers.registerSerializableType('vec3', new Vec3Serializer());
-    this.serializers.registerSerializableType('vec4', new Vec4Serializer());
-    this.serializers.registerSerializableType('quat', new QuatSerializer());
-    this.serializers.registerSerializableType('mat4', new Mat4Serializer());
-    this.serializers.registerSerializableType('string', new StringSerializer());
-    this.serializers.registerSerializableType('array', new ArraySerializer());
-    this.serializers.registerSerializableType('entity', new EntityReferenceSerializer(this.manager));
+    this.serializers.registerSerializableType('boolean', new Serializables.BooleanSerializer());
+    this.serializers.registerSerializableType('integer', new Serializables.IntegerSerializer());
+    this.serializers.registerSerializableType('float', new Serializables.FloatSerializer());
+    this.serializers.registerSerializableType('vec2', new Serializables.Vec2Serializer());
+    this.serializers.registerSerializableType('vec3', new Serializables.Vec3Serializer());
+    this.serializers.registerSerializableType('vec4', new Serializables.Vec4Serializer());
+    this.serializers.registerSerializableType('quat', new Serializables.QuatSerializer());
+    this.serializers.registerSerializableType('mat4', new Serializables.Mat4Serializer());
+    this.serializers.registerSerializableType('string', new Serializables.StringSerializer());
+    this.serializers.registerSerializableType('array', new Serializables.ArraySerializer());
+    this.serializers.registerSerializableType('entity', new Serializables.EntityReferenceSerializer(this.manager));
 
     this.cachedEvents = [];
   }

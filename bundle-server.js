@@ -951,29 +951,8 @@ class ObjectPool
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__EntityManager_js__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Entity_js__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_shared_entity_component_Components_js__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_shared_serialization_SerializerRegistry_js__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_shared_serialization_BooleanSerializer_js__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_shared_serialization_IntegerSerializer_js__ = __webpack_require__(23);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_shared_serialization_FloatSerializer_js__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_shared_serialization_Vec2Serializer_js__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_shared_serialization_Vec3Serializer_js__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_shared_serialization_Vec4Serializer_js__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_shared_serialization_QuatSerializer_js__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_shared_serialization_Mat4Serializer_js__ = __webpack_require__(29);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_shared_serialization_StringSerializer_js__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_shared_serialization_ArraySerializer_js__ = __webpack_require__(31);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_shared_serialization_EntityReferenceSerializer_js__ = __webpack_require__(32);
-
-
-
-
-
-
-
-
-
-
-
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_shared_serialization_SerializerRegistry_js__ = __webpack_require__(33);
 
 
 
@@ -992,18 +971,18 @@ class EntitySynchronizer
     this.manager.on('entityCreate', this.onEntityCreate.bind(this));
     this.manager.on('entityDestroy', this.onEntityDestroy.bind(this));
 
-    this.serializers = new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_SerializerRegistry_js__["a" /* default */]();
-    this.serializers.registerSerializableType('boolean', new __WEBPACK_IMPORTED_MODULE_6_shared_serialization_BooleanSerializer_js__["a" /* default */]());
-    this.serializers.registerSerializableType('integer', new __WEBPACK_IMPORTED_MODULE_7_shared_serialization_IntegerSerializer_js__["a" /* default */]());
-    this.serializers.registerSerializableType('float', new __WEBPACK_IMPORTED_MODULE_8_shared_serialization_FloatSerializer_js__["a" /* default */]());
-    this.serializers.registerSerializableType('vec2', new __WEBPACK_IMPORTED_MODULE_9_shared_serialization_Vec2Serializer_js__["a" /* default */]());
-    this.serializers.registerSerializableType('vec3', new __WEBPACK_IMPORTED_MODULE_10_shared_serialization_Vec3Serializer_js__["a" /* default */]());
-    this.serializers.registerSerializableType('vec4', new __WEBPACK_IMPORTED_MODULE_11_shared_serialization_Vec4Serializer_js__["a" /* default */]());
-    this.serializers.registerSerializableType('quat', new __WEBPACK_IMPORTED_MODULE_12_shared_serialization_QuatSerializer_js__["a" /* default */]());
-    this.serializers.registerSerializableType('mat4', new __WEBPACK_IMPORTED_MODULE_13_shared_serialization_Mat4Serializer_js__["a" /* default */]());
-    this.serializers.registerSerializableType('string', new __WEBPACK_IMPORTED_MODULE_14_shared_serialization_StringSerializer_js__["a" /* default */]());
-    this.serializers.registerSerializableType('array', new __WEBPACK_IMPORTED_MODULE_15_shared_serialization_ArraySerializer_js__["a" /* default */]());
-    this.serializers.registerSerializableType('entity', new __WEBPACK_IMPORTED_MODULE_16_shared_serialization_EntityReferenceSerializer_js__["a" /* default */](this.manager));
+    this.serializers = new __WEBPACK_IMPORTED_MODULE_6_shared_serialization_SerializerRegistry_js__["a" /* default */]();
+    this.serializers.registerSerializableType('boolean', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["b" /* BooleanSerializer */]());
+    this.serializers.registerSerializableType('integer', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["e" /* IntegerSerializer */]());
+    this.serializers.registerSerializableType('float', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["d" /* FloatSerializer */]());
+    this.serializers.registerSerializableType('vec2', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["i" /* Vec2Serializer */]());
+    this.serializers.registerSerializableType('vec3', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["j" /* Vec3Serializer */]());
+    this.serializers.registerSerializableType('vec4', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["k" /* Vec4Serializer */]());
+    this.serializers.registerSerializableType('quat', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["g" /* QuatSerializer */]());
+    this.serializers.registerSerializableType('mat4', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["f" /* Mat4Serializer */]());
+    this.serializers.registerSerializableType('string', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["h" /* StringSerializer */]());
+    this.serializers.registerSerializableType('array', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["a" /* ArraySerializer */]());
+    this.serializers.registerSerializableType('entity', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["c" /* EntityReferenceSerializer */](this.manager));
 
     this.cachedEvents = [];
   }
@@ -1202,35 +1181,41 @@ Renderable.sync = {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__BooleanSerializer_js__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__IntegerSerializer_js__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__FloatSerializer_js__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Vec2Serializer_js__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Vec3Serializer_js__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__Vec4Serializer_js__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__QuatSerializer_js__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__Mat4Serializer_js__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__StringSerializer_js__ = __webpack_require__(30);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__ArraySerializer_js__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__EntityReferenceSerializer_js__ = __webpack_require__(32);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_0__BooleanSerializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return __WEBPACK_IMPORTED_MODULE_1__IntegerSerializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return __WEBPACK_IMPORTED_MODULE_2__FloatSerializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "i", function() { return __WEBPACK_IMPORTED_MODULE_3__Vec2Serializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return __WEBPACK_IMPORTED_MODULE_4__Vec3Serializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "k", function() { return __WEBPACK_IMPORTED_MODULE_5__Vec4Serializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return __WEBPACK_IMPORTED_MODULE_6__QuatSerializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return __WEBPACK_IMPORTED_MODULE_7__Mat4Serializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return __WEBPACK_IMPORTED_MODULE_8__StringSerializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_9__ArraySerializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_10__EntityReferenceSerializer_js__["a"]; });
 
-class SerializerRegistry
-{
-  constructor()
-  {
-    this._registry = new Map();
-  }
 
-  registerSerializableType(type, serializer)
-  {
-    this._registry.set(type, serializer);
-  }
 
-  unregisterSerializableType(type)
-  {
-    this._registry.delete(type);
-  }
 
-  getSerializerForType(type)
-  {
-    if (!this._registry.has(type))
-    {
-      throw new Error("cannot find serializer for type \'" + type + "\'");
-    }
-    return this._registry.get(type);
-  }
-}
 
-/* harmony default export */ __webpack_exports__["a"] = (SerializerRegistry);
+
+
+
+
+
+
+
+
 
 
 /***/ }),
@@ -1612,6 +1597,42 @@ class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (EntityReferenceSerializer);
+
+
+/***/ }),
+/* 33 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+
+class SerializerRegistry
+{
+  constructor()
+  {
+    this._registry = new Map();
+  }
+
+  registerSerializableType(type, serializer)
+  {
+    this._registry.set(type, serializer);
+  }
+
+  unregisterSerializableType(type)
+  {
+    this._registry.delete(type);
+  }
+
+  getSerializerForType(type)
+  {
+    if (!this._registry.has(type))
+    {
+      throw new Error("cannot find serializer for type \'" + type + "\'");
+    }
+    return this._registry.get(type);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (SerializerRegistry);
 
 
 /***/ })
