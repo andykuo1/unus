@@ -11,12 +11,13 @@ class World
   {
     this.entities = new EntityManager();
     this.synchronizer = new EntitySynchronizer(this.entities);
-    this.entitySyncTimer = 10;
+    this.entitySyncTimer = 20;
   }
 
   async initialize()
   {
-
+    this.entity = this.entities.spawnEntity(null);
+    this.entity.addComponent(Renderable);
   }
 
   onClientConnect(client)
@@ -31,6 +32,9 @@ class World
 
   onUpdate(delta)
   {
+    this.entity.renderable.x += -0.1 + Math.random() * 0.1;
+    this.entity.renderable.y += -0.1 + Math.random() * 0.1;
+
     if (--this.entitySyncTimer <= 0)
     {
       console.log("Sending full world state...");
@@ -41,7 +45,7 @@ class World
         client._socket.emit('serverUpdate', worldData);
       }
 
-      this.entitySyncTimer = 10;
+      this.entitySyncTimer = 20;
     }
   }
 }

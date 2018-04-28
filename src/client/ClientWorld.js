@@ -17,6 +17,8 @@ class ClientWorld
   {
     const entity = this.entities.spawnEntity(null);
     entity.addComponent(Renderable);
+    entity.renderable.x = -10;
+    entity.renderable.y = -10;
   }
 
   onClientConnect(client)
@@ -24,7 +26,7 @@ class ClientWorld
     client._socket.on('serverUpdate', data => {
       console.log("Receiving full world state...");
 
-      //this.synchronizer.deserialize(data);
+      this.synchronizer.deserialize(data);
     });
   }
 

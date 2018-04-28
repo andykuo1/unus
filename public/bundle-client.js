@@ -10019,7 +10019,6 @@ class Renderer
 
 function drawObject(x, y, color, renderer, view, modelview)
 {
-  console.log(renderer.prgm);
   __WEBPACK_IMPORTED_MODULE_1_client_render_mogli_gl_js__["a" /* default */].uniform3fv(renderer.prgm.uniforms.uColor,
     [((color >> 16) & 0xFF) / 255.0,
     ((color >> 8) & 0xFF) / 255.0,
@@ -14763,6 +14762,8 @@ class ClientWorld
   {
     const entity = this.entities.spawnEntity(null);
     entity.addComponent(__WEBPACK_IMPORTED_MODULE_3_server_world_ComponentRenderable_js__["a" /* default */]);
+    entity.renderable.x = -10;
+    entity.renderable.y = -10;
   }
 
   onClientConnect(client)
@@ -14770,7 +14771,7 @@ class ClientWorld
     client._socket.on('serverUpdate', data => {
       console.log("Receiving full world state...");
 
-      //this.synchronizer.deserialize(data);
+      this.synchronizer.deserialize(data);
     });
   }
 

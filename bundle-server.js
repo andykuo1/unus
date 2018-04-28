@@ -715,12 +715,13 @@ class World
   {
     this.entities = new __WEBPACK_IMPORTED_MODULE_0_shared_entity_EntityManager_js__["a" /* default */]();
     this.synchronizer = new __WEBPACK_IMPORTED_MODULE_1_shared_entity_EntitySynchronizer_js__["a" /* default */](this.entities);
-    this.entitySyncTimer = 10;
+    this.entitySyncTimer = 20;
   }
 
   async initialize()
   {
-
+    this.entity = this.entities.spawnEntity(null);
+    this.entity.addComponent(__WEBPACK_IMPORTED_MODULE_3_server_world_ComponentRenderable_js__["a" /* default */]);
   }
 
   onClientConnect(client)
@@ -735,6 +736,9 @@ class World
 
   onUpdate(delta)
   {
+    this.entity.renderable.x += -0.1 + Math.random() * 0.1;
+    this.entity.renderable.y += -0.1 + Math.random() * 0.1;
+
     if (--this.entitySyncTimer <= 0)
     {
       console.log("Sending full world state...");
@@ -745,7 +749,7 @@ class World
         client._socket.emit('serverUpdate', worldData);
       }
 
-      this.entitySyncTimer = 10;
+      this.entitySyncTimer = 20;
     }
   }
 }
@@ -1107,7 +1111,7 @@ Renderable.sync = {
   y: { type: 'float' }
 };
 
-/* unused harmony default export */ var _unused_webpack_default_export = (Renderable);
+/* harmony default export */ __webpack_exports__["a"] = (Renderable);
 
 
 /***/ })
