@@ -9,21 +9,32 @@ class World
 {
   constructor(serverEngine)
   {
-    this.entities = new EntityManager();
-    this.synchronizer = new EntitySynchronizer(this.entities);
+    this.entityManager = new EntityManager();
+    this.synchronizer = new EntitySynchronizer(this.entityManager);
     this.entitySyncTimer = 20;
+    this.worldStates = [];
   }
 
   async initialize()
   {
-    this.entity = this.entities.spawnEntity();
-    this.entity.addComponent(Components.Transform);
-    this.entity.addComponent(Components.Renderable);
+    this.entityManager.registerEntity('player', function() {
+      this.addComponent(Components.Transform);
+      this.addComponent(Components.Renderable);
+    });
   }
 
   onClientConnect(client)
   {
+    const entity = this.entityManager.spawnEntity('player');
 
+    const payload = {};
+    payload.worldData = this.getPreviousWorldState();
+    payload.playerData = {
+      entity: entity.id
+    };
+
+    client._player = entity;
+    client._socket.emit('serverRestart', payload);
   }
 
   onClientDisconnect(client)
@@ -33,21 +44,59 @@ class World
 
   onUpdate(delta)
   {
-    this.entity.Transform.position[0] += -0.1 + Math.random() * 0.2;
-    this.entity.Transform.position[1] += -0.1 + Math.random() * 0.2;
+    //Discard old world states
+    while(this.worldStates.length > 5)
+    {
+      this.worldStates.shift();
+    }
 
+    //DEBUG: Randomly update position...
+    for(const entity of this.entityManager.entities)
+    {
+      if (typeof entity.Transform != 'undefined')
+      {
+        entity.Transform.position[0] += -0.1 + Math.random() * 0.2;
+        entity.Transform.position[1] += -0.1 + Math.random() * 0.2;
+      }
+    }
+
+    //Send full update every few ticks
     if (--this.entitySyncTimer <= 0)
     {
       console.log("Sending full world state...");
 
-      const worldData = this.synchronizer.serialize();
+      const payload = {};
+      payload.worldData = this.getCurrentWorldState();
+
       for(const client of Application.server._clients.values())
       {
-        client._socket.emit('serverUpdate', worldData);
+        client._socket.emit('serverUpdate', payload);
       }
 
       this.entitySyncTimer = 20;
     }
+  }
+
+  captureWorldState()
+  {
+    const worldData = this.synchronizer.serialize();
+    this.worldStates.push(worldData);
+    return worldData;
+  }
+
+  getCurrentWorldState()
+  {
+    return this.captureWorldState();
+  }
+
+  getPreviousWorldState()
+  {
+    if (this.worldStates.length <= 0)
+    {
+      return this.captureWorldState();
+    }
+
+    return this.worldStates[this.worldStates.length - 1];
   }
 }
 

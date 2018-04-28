@@ -1,9 +1,11 @@
 import Eventable from 'util/Eventable.js';
 
-//mouseup
-//mousedown
-//mouseclick
-//mousewheel
+const PREVENT_CONTEXT_MENU = false;
+
+//EVENT: mouseup(mouse, button)
+//EVENT: mousedown(mouse, button)
+//EVENT: mouseclick(mouse, button)
+//EVENT: mousewheel(mouse, dx, dy)
 
 class Mouse
 {
@@ -35,8 +37,12 @@ class Mouse
     this._touchstop = this.onTouchStop.bind(this);
 
     this._contextmenu = event => {
-      event.preventDefault();
-      return false;
+      if (PREVENT_CONTEXT_MENU)
+      {
+        event.preventDefault();
+        return false;
+      }
+      return true;
     };
 
     this._element.addEventListener('contextmenu', this._contextmenu, false);
@@ -112,6 +118,10 @@ class Mouse
     this.onMouseMove(event.touches[0]);
   }
 }
+
+Mouse.BUTTON_LEFT = 0;
+Mouse.BUTTON_MIDDLE = 1;
+Mouse.BUTTON_RIGHT = 2;
 
 Object.assign(Mouse.prototype, Eventable);
 

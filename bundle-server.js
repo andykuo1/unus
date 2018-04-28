@@ -719,6 +719,7 @@ class NetworkClient
   constructor(socket)
   {
     this._socket = socket;
+    this._player = null;
   }
 
   onConnect()
@@ -755,21 +756,32 @@ class World
 {
   constructor(serverEngine)
   {
-    this.entities = new __WEBPACK_IMPORTED_MODULE_0_shared_entity_EntityManager_js__["a" /* default */]();
-    this.synchronizer = new __WEBPACK_IMPORTED_MODULE_1_shared_entity_EntitySynchronizer_js__["a" /* default */](this.entities);
+    this.entityManager = new __WEBPACK_IMPORTED_MODULE_0_shared_entity_EntityManager_js__["a" /* default */]();
+    this.synchronizer = new __WEBPACK_IMPORTED_MODULE_1_shared_entity_EntitySynchronizer_js__["a" /* default */](this.entityManager);
     this.entitySyncTimer = 20;
+    this.worldStates = [];
   }
 
   async initialize()
   {
-    this.entity = this.entities.spawnEntity();
-    this.entity.addComponent(__WEBPACK_IMPORTED_MODULE_3_shared_entity_component_Components_js__["Transform"]);
-    this.entity.addComponent(__WEBPACK_IMPORTED_MODULE_3_shared_entity_component_Components_js__["Renderable"]);
+    this.entityManager.registerEntity('player', function() {
+      this.addComponent(__WEBPACK_IMPORTED_MODULE_3_shared_entity_component_Components_js__["Transform"]);
+      this.addComponent(__WEBPACK_IMPORTED_MODULE_3_shared_entity_component_Components_js__["Renderable"]);
+    });
   }
 
   onClientConnect(client)
   {
+    const entity = this.entityManager.spawnEntity('player');
 
+    const payload = {};
+    payload.worldData = this.getPreviousWorldState();
+    payload.playerData = {
+      entity: entity.id
+    };
+
+    client._player = entity;
+    client._socket.emit('serverRestart', payload);
   }
 
   onClientDisconnect(client)
@@ -779,21 +791,59 @@ class World
 
   onUpdate(delta)
   {
-    this.entity.Transform.position[0] += -0.1 + Math.random() * 0.2;
-    this.entity.Transform.position[1] += -0.1 + Math.random() * 0.2;
+    //Discard old world states
+    while(this.worldStates.length > 5)
+    {
+      this.worldStates.shift();
+    }
 
+    //DEBUG: Randomly update position...
+    for(const entity of this.entityManager.entities)
+    {
+      if (typeof entity.Transform != 'undefined')
+      {
+        entity.Transform.position[0] += -0.1 + Math.random() * 0.2;
+        entity.Transform.position[1] += -0.1 + Math.random() * 0.2;
+      }
+    }
+
+    //Send full update every few ticks
     if (--this.entitySyncTimer <= 0)
     {
       console.log("Sending full world state...");
 
-      const worldData = this.synchronizer.serialize();
+      const payload = {};
+      payload.worldData = this.getCurrentWorldState();
+
       for(const client of __WEBPACK_IMPORTED_MODULE_2_Application_js__["a" /* default */].server._clients.values())
       {
-        client._socket.emit('serverUpdate', worldData);
+        client._socket.emit('serverUpdate', payload);
       }
 
       this.entitySyncTimer = 20;
     }
+  }
+
+  captureWorldState()
+  {
+    const worldData = this.synchronizer.serialize();
+    this.worldStates.push(worldData);
+    return worldData;
+  }
+
+  getCurrentWorldState()
+  {
+    return this.captureWorldState();
+  }
+
+  getPreviousWorldState()
+  {
+    if (this.worldStates.length <= 0)
+    {
+      return this.captureWorldState();
+    }
+
+    return this.worldStates[this.worldStates.length - 1];
   }
 }
 
@@ -1028,7 +1078,16 @@ class EntitySynchronizer
     {
       if (event.type === 'create')
       {
-        const entity = this.manager.spawnEntity(event.entityName);
+        //Try to create with default constructor, otherwise use empty entity template
+        let entity = null;
+        try
+        {
+          entity = this.manager.spawnEntity(event.entityName);
+        }
+        catch (e)
+        {
+          entity = this.manager.spawnEntity();
+        }
         entity._id = event.entityID;
       }
       else if (event.type === 'destroy')
@@ -1048,10 +1107,19 @@ class EntitySynchronizer
     {
       const entityData = entitiesPayload[entityID];
       let entity = this.manager.getEntityByID(entityID);
+
+      //Just create it, maybe a packet was skipped...
       if (entity === null)
       {
-        //Just create it, maybe a packet was skipped...
-        entity = this.manager.spawnEntity(entityData.name);
+        //Try to create with default constructor, otherwise use empty entity template
+        try
+        {
+          entity = this.manager.spawnEntity(entityData.name);
+        }
+        catch (e)
+        {
+          entity = this.manager.spawnEntity();
+        }
         entity._id = entityID;
       }
 

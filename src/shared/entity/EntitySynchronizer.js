@@ -73,7 +73,16 @@ class EntitySynchronizer
     {
       if (event.type === 'create')
       {
-        const entity = this.manager.spawnEntity(event.entityName);
+        //Try to create with default constructor, otherwise use empty entity template
+        let entity = null;
+        try
+        {
+          entity = this.manager.spawnEntity(event.entityName);
+        }
+        catch (e)
+        {
+          entity = this.manager.spawnEntity();
+        }
         entity._id = event.entityID;
       }
       else if (event.type === 'destroy')
@@ -93,10 +102,19 @@ class EntitySynchronizer
     {
       const entityData = entitiesPayload[entityID];
       let entity = this.manager.getEntityByID(entityID);
+
+      //Just create it, maybe a packet was skipped...
       if (entity === null)
       {
-        //Just create it, maybe a packet was skipped...
-        entity = this.manager.spawnEntity(entityData.name);
+        //Try to create with default constructor, otherwise use empty entity template
+        try
+        {
+          entity = this.manager.spawnEntity(entityData.name);
+        }
+        catch (e)
+        {
+          entity = this.manager.spawnEntity();
+        }
         entity._id = entityID;
       }
 

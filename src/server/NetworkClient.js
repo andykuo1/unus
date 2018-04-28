@@ -3,6 +3,7 @@ class NetworkClient
   constructor(socket)
   {
     this._socket = socket;
+    this._player = null;
   }
 
   onConnect()
