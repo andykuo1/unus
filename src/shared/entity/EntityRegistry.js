@@ -10,6 +10,8 @@ class EntityRegistry
     this.entityManager = entityManager;
     this.entityMap = new Map();
     this.entityPool = new ObjectPool(Entity);
+
+    this.register(null, function() {});
   }
 
   register(name, entityGenerator)

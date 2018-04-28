@@ -1,6 +1,6 @@
 import { mat4 } from 'gl-matrix';
 
-import Camera from 'client/camera/Camera.js';
+import Camera from './Camera.js';
 
 class OrthographicCamera extends Camera
 {

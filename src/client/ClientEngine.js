@@ -1,8 +1,8 @@
 import Eventable from 'util/Eventable.js';
-
 import RenderEngine from 'client/render/RenderEngine.js';
-
 import LocalClient from 'client/LocalClient.js';
+
+import ClientWorld from 'client/ClientWorld.js';
 
 class ClientEngine
 {
@@ -11,10 +11,10 @@ class ClientEngine
     this._app = app;
     this._canvas = canvas;
     this._socket = socket;
-
     this._render = new RenderEngine(app, canvas);
-
     this._client = new LocalClient(socket);
+
+    this._world = new ClientWorld();
   }
 
   async initialize()
@@ -23,12 +23,16 @@ class ClientEngine
     this._app.on('applicationUpdate', this.onApplicationUpdate.bind(this));
 
     this._client.onConnect();
+    this._world.onClientConnect(this._client);
+
     this._socket.on('disconnect', () => {
+      this._world.onClientDisconnect(this._client);
       this._client.onDisconnect();
       this._app.stop();
     });
 
     await this._render.initialize();
+    await this._world.initialize();
 
     console.log("Game initialized!");
   }
@@ -40,7 +44,7 @@ class ClientEngine
 
   onApplicationUpdate(delta)
   {
-
+    this._world.onUpdate(delta);
   }
 }
 

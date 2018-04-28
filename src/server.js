@@ -25,7 +25,7 @@ import ServerEngine from 'server/ServerEngine.js';
 //Application Setup
 function onServerLoad()
 {
-  const server = Application.server = new ServerEngine(Application, socketio(server));
+  const server = Application.server = new ServerEngine(Application, socketio(serverApp));
   server.initialize()
     .then(() => Application.start(FRAMERATE));
 }
