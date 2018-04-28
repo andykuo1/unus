@@ -1,5 +1,5 @@
 import AssetManager from 'client/render/AssetManager.js';
-import Renderer from 'client/Renderer.js';
+import Renderer from 'client/render/Renderer.js';
 
 class RenderEngine
 {

@@ -1,8 +1,9 @@
 import Eventable from 'util/Eventable.js';
 import RenderEngine from 'client/render/RenderEngine.js';
+import Mouse from 'client/input/Mouse.js';
 import LocalClient from 'client/LocalClient.js';
 
-import ClientWorld from 'client/ClientWorld.js';
+import ClientWorld from 'client/world/ClientWorld.js';
 
 class ClientEngine
 {
@@ -12,6 +13,7 @@ class ClientEngine
     this._canvas = canvas;
     this._socket = socket;
     this._render = new RenderEngine(app, canvas);
+    this._input = new Mouse(canvas, document);
     this._client = new LocalClient(socket);
 
     this._world = new ClientWorld();
