@@ -14,8 +14,8 @@ app.use('/', express.static(__dirname + '/public'));
 app.get('/', function(request, response) {
   response.sendFile(path.join(__dirname, 'index.html'));
 });
-const server = app.listen(PORT, function() {
-  const port = server.address().port;
+const serverApp = app.listen(PORT, function() {
+  const port = serverApp.address().port;
   console.log("Server is listening on port " + port + "...");
 });
 
@@ -25,8 +25,8 @@ import ServerEngine from 'server/ServerEngine.js';
 //Application Setup
 function onServerLoad()
 {
-  new ServerEngine(Application, socketio(server))
-    .initialize()
+  const server = Application.server = new ServerEngine(Application, socketio(server));
+  server.initialize()
     .then(() => Application.start(FRAMERATE));
 }
 

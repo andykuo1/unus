@@ -5,16 +5,17 @@ class ServerEngine
 {
   constructor(app, socket)
   {
+    this._app = app;
     this._socket = socket;
 
     this._clients = new Map();
-
-    app.on('applicationStart', this.onApplicationStart.bind(this));
-    app.on('applicationUpdate', this.onApplicationUpdate.bind(this));
   }
 
   async initialize()
   {
+    this._app.on('applicationStart', this.onApplicationStart.bind(this));
+    this._app.on('applicationUpdate', this.onApplicationUpdate.bind(this));
+
     this._socket.on('connection', socket => {
       //TODO: Validate client before continuing...
       const client = new NetworkClient(socket);

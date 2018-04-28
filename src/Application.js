@@ -23,6 +23,9 @@ class Application
 
     this._debug_interval = null;
     this._update_interval = null;
+
+    this.client = null;
+    this.server = null;
   }
 
   start(framerate)

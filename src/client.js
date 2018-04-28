@@ -15,8 +15,8 @@ import ClientEngine from 'client/ClientEngine.js';
 //Application Setup
 function onWindowLoad()
 {
-	new ClientEngine(Application, canvas, socketio())
-		.initialize()
+	const client = Application.client = new ClientEngine(Application, canvas, socketio());
+	client.initialize()
 		.then(() => Application.start());
 }
 
