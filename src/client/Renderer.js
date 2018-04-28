@@ -56,6 +56,8 @@ class Renderer
 				0, 1, 2, 3
 			])},
 			gl.GL_STATIC_DRAW);
+
+    console.log("Renderer fully loaded!");
   }
 
   render(world)
@@ -81,9 +83,12 @@ class Renderer
           for(const entity of world.entities)
           {
             const renderable = entity.renderable;
-            drawObject(renderable.x, renderable.y, 0xFFFFFF);
+            drawObject(renderable.x, renderable.y, 0xFFFFFF, this, view, modelview);
           }
         }
+
+        //Test rendering
+        drawObject(0, 0, 0xFFFFFF, this, view, modelview);
 			}
 			this.mesh.unbind();
 		}
@@ -91,9 +96,10 @@ class Renderer
   }
 }
 
-function drawObject(x, y, z, color)
+function drawObject(x, y, color, renderer, view, modelview)
 {
-  gl.uniform3fv(this.prgm.uniforms.uColor,
+  console.log(renderer.prgm);
+  gl.uniform3fv(renderer.prgm.uniforms.uColor,
     [((color >> 16) & 0xFF) / 255.0,
     ((color >> 8) & 0xFF) / 255.0,
     ((color) & 0xFF) / 255.0]);
@@ -104,10 +110,10 @@ function drawObject(x, y, z, color)
     [x, y, 0],
     [1, 1, 1]);
   mat4.mul(modelview, view, modelview);
-  gl.uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
+  gl.uniformMatrix4fv(renderer.prgm.uniforms.uModelView, false, modelview);
 
   //Draw it!
-  Mesh.draw(this.mesh);
+  Mesh.draw(renderer.mesh);
 }
 
 Renderer.RENDER_SERVER_STATE = true;

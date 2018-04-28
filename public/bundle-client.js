@@ -9980,6 +9980,8 @@ class Renderer
 				0, 1, 2, 3
 			])},
 			__WEBPACK_IMPORTED_MODULE_1_client_render_mogli_gl_js__["a" /* default */].GL_STATIC_DRAW);
+
+    console.log("Renderer fully loaded!");
   }
 
   render(world)
@@ -10005,9 +10007,12 @@ class Renderer
           for(const entity of world.entities)
           {
             const renderable = entity.renderable;
-            drawObject(renderable.x, renderable.y, 0xFFFFFF);
+            drawObject(renderable.x, renderable.y, 0xFFFFFF, this, view, modelview);
           }
         }
+
+        //Test rendering
+        drawObject(0, 0, 0xFFFFFF, this, view, modelview);
 			}
 			this.mesh.unbind();
 		}
@@ -10015,9 +10020,10 @@ class Renderer
   }
 }
 
-function drawObject(x, y, z, color)
+function drawObject(x, y, color, renderer, view, modelview)
 {
-  __WEBPACK_IMPORTED_MODULE_1_client_render_mogli_gl_js__["a" /* default */].uniform3fv(this.prgm.uniforms.uColor,
+  console.log(renderer.prgm);
+  __WEBPACK_IMPORTED_MODULE_1_client_render_mogli_gl_js__["a" /* default */].uniform3fv(renderer.prgm.uniforms.uColor,
     [((color >> 16) & 0xFF) / 255.0,
     ((color >> 8) & 0xFF) / 255.0,
     ((color) & 0xFF) / 255.0]);
@@ -10028,10 +10034,10 @@ function drawObject(x, y, z, color)
     [x, y, 0],
     [1, 1, 1]);
   __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].mul(modelview, view, modelview);
-  __WEBPACK_IMPORTED_MODULE_1_client_render_mogli_gl_js__["a" /* default */].uniformMatrix4fv(this.prgm.uniforms.uModelView, false, modelview);
+  __WEBPACK_IMPORTED_MODULE_1_client_render_mogli_gl_js__["a" /* default */].uniformMatrix4fv(renderer.prgm.uniforms.uModelView, false, modelview);
 
   //Draw it!
-  __WEBPACK_IMPORTED_MODULE_7_client_render_mogli_Mesh_js__["a" /* default */].draw(this.mesh);
+  __WEBPACK_IMPORTED_MODULE_7_client_render_mogli_Mesh_js__["a" /* default */].draw(renderer.mesh);
 }
 
 Renderer.RENDER_SERVER_STATE = true;
