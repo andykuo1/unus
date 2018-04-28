@@ -14957,10 +14957,9 @@ class ObjectPool
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_Reflection_js__ = __webpack_require__(35);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__EntityManager_js__ = __webpack_require__(34);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Entity_js__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_shared_entity_component_Components_js__ = __webpack_require__(78);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__ = __webpack_require__(81);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_shared_serialization_SerializerRegistry_js__ = __webpack_require__(93);
-
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__SerializerRegistry_js__ = __webpack_require__(78);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_shared_entity_component_Components_js__ = __webpack_require__(79);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__ = __webpack_require__(82);
 
 
 
@@ -14978,18 +14977,18 @@ class EntitySynchronizer
     this.manager.on('entityCreate', this.onEntityCreate.bind(this));
     this.manager.on('entityDestroy', this.onEntityDestroy.bind(this));
 
-    this.serializers = new __WEBPACK_IMPORTED_MODULE_6_shared_serialization_SerializerRegistry_js__["a" /* default */]();
-    this.serializers.registerSerializableType('boolean', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["b" /* BooleanSerializer */]());
-    this.serializers.registerSerializableType('integer', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["e" /* IntegerSerializer */]());
-    this.serializers.registerSerializableType('float', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["d" /* FloatSerializer */]());
-    this.serializers.registerSerializableType('vec2', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["i" /* Vec2Serializer */]());
-    this.serializers.registerSerializableType('vec3', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["j" /* Vec3Serializer */]());
-    this.serializers.registerSerializableType('vec4', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["k" /* Vec4Serializer */]());
-    this.serializers.registerSerializableType('quat', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["g" /* QuatSerializer */]());
-    this.serializers.registerSerializableType('mat4', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["f" /* Mat4Serializer */]());
-    this.serializers.registerSerializableType('string', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["h" /* StringSerializer */]());
-    this.serializers.registerSerializableType('array', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["a" /* ArraySerializer */]());
-    this.serializers.registerSerializableType('entity', new __WEBPACK_IMPORTED_MODULE_5_shared_serialization_Serializables_js__["c" /* EntityReferenceSerializer */](this.manager));
+    this.serializers = new __WEBPACK_IMPORTED_MODULE_4__SerializerRegistry_js__["a" /* default */]();
+    this.serializers.registerSerializableType('boolean', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["b" /* BooleanSerializer */]());
+    this.serializers.registerSerializableType('integer', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["e" /* IntegerSerializer */]());
+    this.serializers.registerSerializableType('float', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["d" /* FloatSerializer */]());
+    this.serializers.registerSerializableType('vec2', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["i" /* Vec2Serializer */]());
+    this.serializers.registerSerializableType('vec3', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["j" /* Vec3Serializer */]());
+    this.serializers.registerSerializableType('vec4', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["k" /* Vec4Serializer */]());
+    this.serializers.registerSerializableType('quat', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["g" /* QuatSerializer */]());
+    this.serializers.registerSerializableType('mat4', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["f" /* Mat4Serializer */]());
+    this.serializers.registerSerializableType('string', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["h" /* StringSerializer */]());
+    this.serializers.registerSerializableType('array', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["a" /* ArraySerializer */]());
+    this.serializers.registerSerializableType('entity', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["c" /* EntityReferenceSerializer */](this.manager));
 
     this.cachedEvents = [];
   }
@@ -15066,7 +15065,7 @@ class EntitySynchronizer
       const componentsData = entityData.components;
       for(const componentName of Object.keys(componentsData))
       {
-        const componentClass = this.manager.getComponentClassByName(componentName) || __WEBPACK_IMPORTED_MODULE_4_shared_entity_component_Components_js__[componentName];
+        const componentClass = this.manager.getComponentClassByName(componentName) || __WEBPACK_IMPORTED_MODULE_5_shared_entity_component_Components_js__[componentName];
         if (componentClass === null)
         {
           throw new Error("cannot find component class with name \'" + componentName + "\'");
@@ -15142,9 +15141,45 @@ class EntitySynchronizer
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+
+class SerializerRegistry
+{
+  constructor()
+  {
+    this._registry = new Map();
+  }
+
+  registerSerializableType(type, serializer)
+  {
+    this._registry.set(type, serializer);
+  }
+
+  unregisterSerializableType(type)
+  {
+    this._registry.delete(type);
+  }
+
+  getSerializerForType(type)
+  {
+    if (!this._registry.has(type))
+    {
+      throw new Error("cannot find serializer for type \'" + type + "\'");
+    }
+    return this._registry.get(type);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (SerializerRegistry);
+
+
+/***/ }),
+/* 79 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Transform_js__ = __webpack_require__(79);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Renderable_js__ = __webpack_require__(80);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Transform_js__ = __webpack_require__(80);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Renderable_js__ = __webpack_require__(81);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Transform", function() { return __WEBPACK_IMPORTED_MODULE_0__Transform_js__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Renderable", function() { return __WEBPACK_IMPORTED_MODULE_1__Renderable_js__["a"]; });
 
@@ -15154,7 +15189,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 /***/ }),
-/* 79 */
+/* 80 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15178,7 +15213,7 @@ Transform.sync = {
 
 
 /***/ }),
-/* 80 */
+/* 81 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15199,21 +15234,21 @@ Renderable.sync = {
 
 
 /***/ }),
-/* 81 */
+/* 82 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__BooleanSerializer_js__ = __webpack_require__(82);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__IntegerSerializer_js__ = __webpack_require__(83);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__FloatSerializer_js__ = __webpack_require__(84);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Vec2Serializer_js__ = __webpack_require__(85);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Vec3Serializer_js__ = __webpack_require__(86);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__Vec4Serializer_js__ = __webpack_require__(87);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__QuatSerializer_js__ = __webpack_require__(88);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__Mat4Serializer_js__ = __webpack_require__(89);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__StringSerializer_js__ = __webpack_require__(90);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__ArraySerializer_js__ = __webpack_require__(91);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__EntityReferenceSerializer_js__ = __webpack_require__(92);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__BooleanSerializer_js__ = __webpack_require__(83);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__IntegerSerializer_js__ = __webpack_require__(84);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__FloatSerializer_js__ = __webpack_require__(85);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Vec2Serializer_js__ = __webpack_require__(86);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Vec3Serializer_js__ = __webpack_require__(87);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__Vec4Serializer_js__ = __webpack_require__(88);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__QuatSerializer_js__ = __webpack_require__(89);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__Mat4Serializer_js__ = __webpack_require__(90);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__StringSerializer_js__ = __webpack_require__(91);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__ArraySerializer_js__ = __webpack_require__(92);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__EntityReferenceSerializer_js__ = __webpack_require__(93);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_0__BooleanSerializer_js__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return __WEBPACK_IMPORTED_MODULE_1__IntegerSerializer_js__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return __WEBPACK_IMPORTED_MODULE_2__FloatSerializer_js__["a"]; });
@@ -15241,7 +15276,7 @@ Renderable.sync = {
 
 
 /***/ }),
-/* 82 */
+/* 83 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15265,7 +15300,7 @@ class BooleanSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a"
 
 
 /***/ }),
-/* 83 */
+/* 84 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15289,7 +15324,7 @@ class IntegerSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a"
 
 
 /***/ }),
-/* 84 */
+/* 85 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15313,7 +15348,7 @@ class StringSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" 
 
 
 /***/ }),
-/* 85 */
+/* 86 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15351,7 +15386,7 @@ class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_
 
 
 /***/ }),
-/* 86 */
+/* 87 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15389,7 +15424,7 @@ class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_
 
 
 /***/ }),
-/* 87 */
+/* 88 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15427,7 +15462,7 @@ class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_
 
 
 /***/ }),
-/* 88 */
+/* 89 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15465,7 +15500,7 @@ class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_
 
 
 /***/ }),
-/* 89 */
+/* 90 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15503,7 +15538,7 @@ class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_
 
 
 /***/ }),
-/* 90 */
+/* 91 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15527,7 +15562,7 @@ class FloatSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /
 
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15575,7 +15610,7 @@ class ArraySerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /
 
 
 /***/ }),
-/* 92 */
+/* 93 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15614,42 +15649,6 @@ class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (EntityReferenceSerializer);
-
-
-/***/ }),
-/* 93 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-
-class SerializerRegistry
-{
-  constructor()
-  {
-    this._registry = new Map();
-  }
-
-  registerSerializableType(type, serializer)
-  {
-    this._registry.set(type, serializer);
-  }
-
-  unregisterSerializableType(type)
-  {
-    this._registry.delete(type);
-  }
-
-  getSerializerForType(type)
-  {
-    if (!this._registry.has(type))
-    {
-      throw new Error("cannot find serializer for type \'" + type + "\'");
-    }
-    return this._registry.get(type);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (SerializerRegistry);
 
 
 /***/ })

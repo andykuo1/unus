@@ -2,11 +2,10 @@ import { vec3, quat } from 'gl-matrix';
 import Reflection from 'util/Reflection.js';
 import EntityManager from './EntityManager.js';
 import Entity from './Entity.js';
+import SerializerRegistry from './SerializerRegistry.js';
 
 import * as Components from 'shared/entity/component/Components.js';
-import * as Serializables from 'shared/serialization/Serializables.js';
-
-import SerializerRegistry from 'shared/serialization/SerializerRegistry.js';
+import * as Serializables from 'shared/serializable/Serializables.js';
 
 class EntitySynchronizer
 {
