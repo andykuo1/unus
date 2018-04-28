@@ -2,10 +2,14 @@ import socketio from 'socket.io';
 import express from 'express';
 import path from 'path';
 
+import Application from './Application.js';
+import NetworkHandler from 'integrated/NetworkHandler.js';
+import ServerEngine from 'server/ServerEngine.js';
+
 const __dirname = path.resolve();
 const DEVMODE = process.argv.indexOf('--dev') != -1;
+const TIMESTEP = 1000/10;
 const PORT = process.env.PORT || 8082;
-const FRAMERATE = 1000/10;
 
 //Server Setup
 const app = express();
@@ -14,21 +18,28 @@ app.use('/', express.static(__dirname + '/public'));
 app.get('/', function(request, response) {
   response.sendFile(path.join(__dirname, 'index.html'));
 });
+app.get('/gl-matrix/gl-matrix.js', function(request, response) {
+  response.sendFile(path.join(__dirname, 'node_modules/gl-matrix/dist/gl-matrix.js'));
+});
 const server = app.listen(PORT, function() {
   const port = server.address().port;
   console.log("Server is listening on port " + port + "...");
 });
 
-import Application from 'Application.js';
-import ServerEngine from 'server/ServerEngine.js';
-
 //Application Setup
-function onServerLoad()
+function start()
 {
-  new ServerEngine(Application, socketio(server))
-    .initialize()
-    .then(() => Application.start(FRAMERATE));
+	const socket = socketio(server);
+	const network = new NetworkHandler(socket, false);
+	const game = new ServerEngine();
+	Application.init(network, game)
+		.then(() => setInterval(onInterval, TIMESTEP));
+}
+
+function onInterval()
+{
+  Application.update();
 }
 
 //Start the server...
-onServerLoad();
+start();

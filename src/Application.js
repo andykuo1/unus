@@ -1,52 +1,110 @@
-import Frame from 'util/Frame.js';
-import EventHandler from 'util/EventHandler.js';
+import Eventable from 'util/Eventable.js';
 
+const DEBUG_PRINT_FPS = true;
+
+const MILLIS_PER_SECOND = 1000;
+const SECOND_PER_MILLIS = 0.001;
+
+//applicationStart - Called when application starts, before updating
+//applicationUpdate - Called each tick
+//applicationStop - Called when application stops, after updating
 class Application
 {
   constructor()
   {
-    this._frame = new Frame();
-    this._events = new EventHandler();
+    this._startTime = -1;
+    this._stopTime = -1;
+    this._now = -1;
+    this._then = -1;
+    this._delta = 0;
+    this._frames = 0;
+
+    this._remote = typeof window != 'undefined' && window.document;
+
+    this._debug_interval = null;
+    this._update_interval = null;
   }
 
-  async init(network, game)
+  start(framerate)
   {
-    this._network = network;
-    this._game = game;
+    if (this._startTime !== -1)
+    {
+      throw new Error("Application already started");
+    }
 
+    this._stopTime = -1;
     this._startTime = Date.now();
-
     this._now = 0;
     this._then = 0;
     this._delta = 0;
     this._frames = 0;
 
-    //Display frames per second
-    setInterval(() => {
-      console.log("FPS " + this._frames);
-      this._frames = 0;
-    }, 1000);
+    if (this._remote && window.requestAnimationFrame)
+    {
+      const callback = () => {
+        this.update();
+        if (this._stopTime !== -1) return;
+        window.requestAnimationFrame(callback);
+      };
+      window.requestAnimationFrame(callback);
+    }
+    else
+    {
+      if (framerate <= 0)
+      {
+        throw new Error("Cannot start application with framerate <= 0");
+      }
 
-    await this._game.start();
+      this._update_interval = setInterval(this.update.bind(this), framerate);
+    }
+
+    if (DEBUG_PRINT_FPS)
+    {
+      this._debug_interval = setInterval(() => {
+        console.log("FPS " + this._frames);
+        this._frames = 0;
+      }, MILLIS_PER_SECOND);
+    }
+
+    this.emit('applicationStart');
+  }
+
+  stop()
+  {
+    this._stopTime = this._now;
+
+    if (this._debug_interval !== null)
+    {
+      clearInterval(this._debug_interval);
+      this._debug_interval = null;
+    }
+
+    if (this._update_interval !== null)
+    {
+      clearInterval(this._update_interval);
+      this._update_interval = null;
+    }
+
+    this.emit('applicationStop');
+
+    if (this._remote && window.close)
+    {
+      window.close();
+    }
+    else
+    {
+      process.exit(0);
+    }
   }
 
   update()
   {
     this._then = this._now;
     this._now = Date.now() - this._startTime;
-    this._delta = (this._now - this._then) * 0.001;
+    this._delta = (this._now - this._then) * SECOND_PER_MILLIS;
     this._frames++;
 
-    //TODO: slowly get rid of frame and use this._delta
-    this._frame.next(this._now);
-    this._game.update(this._frame);
-
-    this._events.emit('update', this._delta);
-  }
-
-  getFrameTime()
-  {
-    return this._delta;
+    this.emit('applicationUpdate', this._delta);
   }
 
   getApplicationTime()
@@ -54,16 +112,17 @@ class Application
     return this._now;
   }
 
-  isRemote()
+  getFrameTime()
   {
-    return this._network.remote;
+    return this._delta;
   }
 
-  get network() { return this._network; }
-
-  get game() { return this._game; }
-
-  get events() { return this._events; }
+  isRemote()
+  {
+    return this._remote;
+  }
 }
+
+Object.assign(Application.prototype, Eventable);
 
 export default new Application();
