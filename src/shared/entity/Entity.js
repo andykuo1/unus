@@ -24,6 +24,11 @@ class Entity
     return this;
   }
 
+  getComponents()
+  {
+    return this._manager.getComponentsByEntity(this);
+  }
+
   clearComponents()
   {
     this._manager.clearComponentsFromEntity(this);

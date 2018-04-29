@@ -1,5 +1,4 @@
 import { vec3, quat } from 'gl-matrix';
-import Reflection from 'util/Reflection.js';
 import EntityManager from './EntityManager.js';
 import Entity from './Entity.js';
 import SerializerRegistry from './SerializerRegistry.js';
@@ -27,6 +26,7 @@ class EntitySynchronizer
     this.serializers.registerSerializableType('string', new Serializables.StringSerializer());
     this.serializers.registerSerializableType('array', new Serializables.ArraySerializer());
     this.serializers.registerSerializableType('entity', new Serializables.EntityReferenceSerializer(this.manager));
+    this.serializers.registerSerializableType('entityData', new Serializables.EntityDataSerializer(this.manager));
 
     this.cachedEvents = [];
   }
@@ -48,20 +48,7 @@ class EntitySynchronizer
     const entitiesPayload = payload.entities = {};
     for(const entity of this.manager.entities)
     {
-      const entityData = entitiesPayload[entity.id] = {};
-      entityData.name = entity.name;
-
-      const componentsData = entityData.components = {};
-      const components = this.manager.getComponentsByEntity(entity);
-      for(const component of components)
-      {
-        const componentName = Reflection.getClassName(component);
-        const componentData = componentsData[componentName] = {};
-        for(const propName of Object.keys(component.sync))
-        {
-          this.encodeProperty(propName, entity[componentName][propName], component.sync[propName], componentData);
-        }
-      }
+      this.encodeProperty(entity.id, entity, { type: 'entityData' }, entitiesPayload);
     }
     return payload;
   }
@@ -100,46 +87,7 @@ class EntitySynchronizer
     const entitiesPayload = payload.entities;
     for(const entityID of Object.keys(entitiesPayload))
     {
-      const entityData = entitiesPayload[entityID];
-      let entity = this.manager.getEntityByID(entityID);
-
-      //Just create it, maybe a packet was skipped...
-      if (entity === null)
-      {
-        console.log("WARNING! - Creating missing entity...");
-
-        //Try to create with default constructor, otherwise use empty entity template
-        try
-        {
-          entity = this.manager.spawnEntity(entityData.name);
-        }
-        catch (e)
-        {
-          entity = this.manager.spawnEntity();
-        }
-        entity._id = entityID;
-      }
-
-      const componentsData = entityData.components;
-      for(const componentName of Object.keys(componentsData))
-      {
-        const componentClass = this.manager.getComponentClassByName(componentName) || Components[componentName];
-        if (componentClass === null)
-        {
-          throw new Error("cannot find component class with name \'" + componentName + "\'");
-        }
-
-        const componentData = componentsData[componentName];
-        if (!entity.hasComponent(componentClass))
-        {
-          entity.addComponent(componentClass);
-        }
-        const component = entity[componentName];
-        for(const propertyName of Object.keys(componentClass.sync))
-        {
-          this.decodeProperty(propertyName, componentData[propertyName], componentClass.sync[propertyName], component);
-        }
-      }
+      this.decodeProperty(entityID, entitiesPayload, { type: 'entityData' }, null);
     }
 
     if (payload.isComplete)
