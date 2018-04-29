@@ -9,6 +9,9 @@ import * as Serializables from 'shared/serializable/Serializables.js';
 
 const MAX_CACHED_STATES = 10;
 
+//HACK: whether should interpolate
+const INTERPOLATE = true;
+
 class EntitySynchronizer
 {
   constructor(entityManager)

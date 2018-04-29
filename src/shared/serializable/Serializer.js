@@ -11,4 +11,6 @@ class Serializer
   }
 }
 
+Serializer.INTERPOLATE = true;
+
 export default Serializer;

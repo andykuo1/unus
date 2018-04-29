@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -80,6 +80,8 @@ class Serializer
     dst[propertyName] = propertyData;
   }
 }
+
+Serializer.INTERPOLATE = true;
 
 /* harmony default export */ __webpack_exports__["a"] = (Serializer);
 
@@ -172,7 +174,7 @@ class Reflection
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Reflection_js__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_UID_js__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_Eventable_js__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_Eventable_js__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__EntityRegistry_js__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Entity_js__ = __webpack_require__(2);
 
@@ -350,9 +352,81 @@ function generate()
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_test_TestEntitySynchronizer_js__ = __webpack_require__(7);
+const Eventable = {
+  __events: new Map(),
+  addListener(eventName, listener)
+  {
+    if (!this.__events.has(eventName)) this.__events.set(eventName, []);
 
+    const listeners = this.__events.get(eventName);
+    listeners.push(listener);
+  },
+  removeListener(eventName, listener)
+  {
+    if (!this.__events.has(eventName)) return;
+
+    const listeners = this.__events.get(eventName);
+    listeners.splice(listeners.indexOf(listener), 1);
+  },
+  clearListeners(eventName)
+  {
+    if (!this.__events.has(eventName)) return;
+
+    const listeners = this.__events.get(eventName);
+    listeners.length = 0;
+  },
+  countListeners(eventName)
+  {
+    return this.__events.has(eventName) ? this.__events.get(eventName).length : 0;
+  },
+  getListeners(eventName)
+  {
+    return this.__events.get(eventName);
+  },
+  emit(eventName)
+  {
+    if (!this.__events.has(eventName)) return;
+
+    //Can pass additional args to listeners here...
+    const args = Array.prototype.splice.call(arguments, 1);
+    const listeners = this.__events.get(eventName);
+    const length = listeners.length;
+    let i = 0;
+    while(i < length)
+    {
+      const listener = listeners[i];
+      const result = listener.apply(null, args);
+      if (result)
+      {
+        listeners.splice(i, 1);
+        --i;
+      }
+      else
+      {
+        ++i;
+      }
+    }
+
+    this.onEventProcessed(eventName, args);
+  },
+  on(eventName, listener)
+  {
+    this.addListener(eventName, listener);
+  },
+  once(eventName, listener)
+  {
+    this.addListener(eventName, () => {
+      listener();
+      return true;
+    });
+  },
+  onEventProcessed(eventName, args)
+  {
+    //Do nothing...
+  }
+};
+
+/* harmony default export */ __webpack_exports__["a"] = (Eventable);
 
 
 /***/ }),
@@ -360,7 +434,17 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_shared_entity_EntitySynchronizer_js__ = __webpack_require__(8);
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_test_TestEntitySynchronizer_js__ = __webpack_require__(8);
+
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_shared_entity_EntitySynchronizer_js__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_shared_entity_EntityManager_js__ = __webpack_require__(4);
 
 
@@ -489,7 +573,7 @@ function checkCurrentWorldState(entityManager)
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -500,7 +584,7 @@ function checkCurrentWorldState(entityManager)
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Entity_js__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__SerializerRegistry_js__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_shared_entity_component_Components_js__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__ = __webpack_require__(17);
 
 
 
@@ -511,6 +595,9 @@ function checkCurrentWorldState(entityManager)
 
 
 const MAX_CACHED_STATES = 10;
+
+//HACK: whether should interpolate
+const INTERPOLATE = true;
 
 class EntitySynchronizer
 {
@@ -877,88 +964,6 @@ class EntitySynchronizer
 
 
 /***/ }),
-/* 9 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-const Eventable = {
-  __events: new Map(),
-  addListener(eventName, listener)
-  {
-    if (!this.__events.has(eventName)) this.__events.set(eventName, []);
-
-    const listeners = this.__events.get(eventName);
-    listeners.push(listener);
-  },
-  removeListener(eventName, listener)
-  {
-    if (!this.__events.has(eventName)) return;
-
-    const listeners = this.__events.get(eventName);
-    listeners.splice(listeners.indexOf(listener), 1);
-  },
-  clearListeners(eventName)
-  {
-    if (!this.__events.has(eventName)) return;
-
-    const listeners = this.__events.get(eventName);
-    listeners.length = 0;
-  },
-  countListeners(eventName)
-  {
-    return this.__events.has(eventName) ? this.__events.get(eventName).length : 0;
-  },
-  getListeners(eventName)
-  {
-    return this.__events.get(eventName);
-  },
-  emit(eventName)
-  {
-    if (!this.__events.has(eventName)) return;
-
-    //Can pass additional args to listeners here...
-    const args = Array.prototype.splice.call(arguments, 1);
-    const listeners = this.__events.get(eventName);
-    const length = listeners.length;
-    let i = 0;
-    while(i < length)
-    {
-      const listener = listeners[i];
-      const result = listener.apply(null, args);
-      if (result)
-      {
-        listeners.splice(i, 1);
-        --i;
-      }
-      else
-      {
-        ++i;
-      }
-    }
-
-    this.onEventProcessed(eventName, args);
-  },
-  on(eventName, listener)
-  {
-    this.addListener(eventName, listener);
-  },
-  once(eventName, listener)
-  {
-    this.addListener(eventName, () => {
-      listener();
-      return true;
-    });
-  },
-  onEventProcessed(eventName, args)
-  {
-    //Do nothing...
-  }
-};
-
-/* harmony default export */ __webpack_exports__["a"] = (Eventable);
-
-
-/***/ }),
 /* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1141,7 +1146,7 @@ class SerializerRegistry
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Transform_js__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Renderable_js__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Renderable_js__ = __webpack_require__(16);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Transform", function() { return __WEBPACK_IMPORTED_MODULE_0__Transform_js__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Renderable", function() { return __WEBPACK_IMPORTED_MODULE_1__Renderable_js__["a"]; });
 
@@ -1157,6 +1162,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_Application_js__ = __webpack_require__(15);
+
 
 
 function Transform()
@@ -1164,10 +1171,20 @@ function Transform()
   this.position = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["vec3"].create();
   this.rotation = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["quat"].create();
   this.scale = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["vec3"].fromValues(1, 1, 1);
+
+  if (__WEBPACK_IMPORTED_MODULE_1_Application_js__["a" /* default */].isRemote())
+  {
+    this.nextPosition = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["vec3"].create();
+    this.prevPosition = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["vec3"].create();
+  }
 }
 
 Transform.sync = {
-  position: { type: 'vec3' },
+  position: { type: 'vec3' ,
+    blend: { mode: 'interpolate',
+      next: 'nextPosition',
+      prev: 'prevPosition'
+    }},
   rotation: { type: 'quat' },
   scale: { type: 'vec3' }
 };
@@ -1177,6 +1194,145 @@ Transform.sync = {
 
 /***/ }),
 /* 15 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__ = __webpack_require__(6);
+
+
+const DEBUG_PRINT_FPS = true;
+
+const MILLIS_PER_SECOND = 1000;
+const SECOND_PER_MILLIS = 0.001;
+
+//applicationStart - Called when application starts, before updating
+//applicationUpdate - Called each tick
+//applicationStop - Called when application stops, after updating
+class Application
+{
+  constructor()
+  {
+    this._startTime = -1;
+    this._stopTime = -1;
+    this._now = -1;
+    this._then = -1;
+    this._delta = 0;
+    this._frames = 0;
+
+    this._remote = typeof window != 'undefined' && window.document;
+
+    this._debug_interval = null;
+    this._update_interval = null;
+
+    this.client = null;
+    this.server = null;
+  }
+
+  start(framerate)
+  {
+    if (this._startTime !== -1)
+    {
+      throw new Error("Application already started");
+    }
+
+    this._stopTime = -1;
+    this._startTime = Date.now();
+    this._now = 0;
+    this._then = 0;
+    this._delta = 0;
+    this._frames = 0;
+
+    if (this._remote && window.requestAnimationFrame)
+    {
+      const callback = () => {
+        this.update();
+        if (this._stopTime !== -1) return;
+        window.requestAnimationFrame(callback);
+      };
+      window.requestAnimationFrame(callback);
+    }
+    else
+    {
+      if (framerate <= 0)
+      {
+        throw new Error("Cannot start application with framerate <= 0");
+      }
+
+      this._update_interval = setInterval(this.update.bind(this), framerate);
+    }
+
+    if (DEBUG_PRINT_FPS)
+    {
+      this._debug_interval = setInterval(() => {
+        console.log("FPS " + this._frames);
+        this._frames = 0;
+      }, MILLIS_PER_SECOND);
+    }
+
+    this.emit('applicationStart');
+  }
+
+  stop()
+  {
+    this._stopTime = this._now;
+
+    if (this._debug_interval !== null)
+    {
+      clearInterval(this._debug_interval);
+      this._debug_interval = null;
+    }
+
+    if (this._update_interval !== null)
+    {
+      clearInterval(this._update_interval);
+      this._update_interval = null;
+    }
+
+    this.emit('applicationStop');
+
+    if (this._remote && window.close)
+    {
+      window.close();
+    }
+    else
+    {
+      process.exit(0);
+    }
+  }
+
+  update()
+  {
+    this._then = this._now;
+    this._now = Date.now() - this._startTime;
+    this._delta = (this._now - this._then) * SECOND_PER_MILLIS;
+    this._frames++;
+
+    this.emit('applicationUpdate', this._delta);
+  }
+
+  getApplicationTime()
+  {
+    return this._now;
+  }
+
+  getFrameTime()
+  {
+    return this._delta;
+  }
+
+  isRemote()
+  {
+    return this._remote;
+  }
+}
+
+Object.assign(Application.prototype, __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__["a" /* default */]);
+
+/* harmony default export */ __webpack_exports__["a"] = (new Application());
+
+
+/***/ }),
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1197,21 +1353,21 @@ Renderable.sync = {
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__BooleanSerializer_js__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__IntegerSerializer_js__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__FloatSerializer_js__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Vec2Serializer_js__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Vec3Serializer_js__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__Vec4Serializer_js__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__QuatSerializer_js__ = __webpack_require__(23);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__Mat4Serializer_js__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__StringSerializer_js__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__ArraySerializer_js__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__EntityReferenceSerializer_js__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__BooleanSerializer_js__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__IntegerSerializer_js__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__FloatSerializer_js__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Vec2Serializer_js__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Vec3Serializer_js__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__Vec4Serializer_js__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__QuatSerializer_js__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__Mat4Serializer_js__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__StringSerializer_js__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__ArraySerializer_js__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__EntityReferenceSerializer_js__ = __webpack_require__(29);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_0__BooleanSerializer_js__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return __WEBPACK_IMPORTED_MODULE_1__IntegerSerializer_js__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return __WEBPACK_IMPORTED_MODULE_2__FloatSerializer_js__["a"]; });
@@ -1239,7 +1395,7 @@ Renderable.sync = {
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1263,7 +1419,7 @@ class BooleanSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a"
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1287,7 +1443,7 @@ class IntegerSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a"
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1311,7 +1467,7 @@ class FloatSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1350,13 +1506,15 @@ class Vec2Serializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /*
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Serializer_js__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_MathHelper_js__ = __webpack_require__(23);
+
 
 
 
@@ -1381,7 +1539,39 @@ class Vec3Serializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /*
       dst[propertyName] = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["vec3"].create();
     }
 
+    if (__WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /* default */].INTERPOLATE && syncOpts.hasOwnProperty('blend'))
+    {
+      switch (syncOpts.blend.mode)
+      {
+        case 'interpolate':
+          const nextPropertyName = syncOpts.blend.next;
+          __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["vec3"].copy(dst[syncOpts.blend.prev], dst[nextPropertyName]);
+          __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["vec3"].copy(dst[propertyName], dst[nextPropertyName]);
+          propertyName = nextPropertyName;
+          break;
+        default:
+          throw new Error("unknown blend mode to sync for property \'" + propertyName + "\'");
+      }
+    }
+
     __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["vec3"].copy(dst[propertyName], propertyData);
+  }
+
+  interpolate(propertyName, syncOpts, delta, componentData)
+  {
+
+    const prevData = componentData[syncOpts.blend.prev];
+    const nextData = componentData[syncOpts.blend.next];
+    componentData[propertyName][0] = __WEBPACK_IMPORTED_MODULE_2_util_MathHelper_js__["a" /* lerp */](prevData[0], nextData[0], delta);
+    componentData[propertyName][1] = __WEBPACK_IMPORTED_MODULE_2_util_MathHelper_js__["a" /* lerp */](prevData[1], nextData[1], delta);
+    componentData[propertyName][2] = __WEBPACK_IMPORTED_MODULE_2_util_MathHelper_js__["a" /* lerp */](prevData[2], nextData[2], delta);
+    
+    if (delta >= 1)
+    {
+      prevData[0] = nextData[0];
+      prevData[1] = nextData[1];
+      prevData[2] = nextData[2];
+    }
   }
 }
 
@@ -1389,7 +1579,41 @@ class Vec3Serializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /*
 
 
 /***/ }),
-/* 22 */
+/* 23 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = lerp;
+/* unused harmony export clamp */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__);
+
+
+function lerp(a, b, dt)
+{
+  if (typeof a == 'number' && typeof b == 'number')
+  {
+    return a * (1 - dt) + b * dt;
+  }
+  else
+  {
+    throw new Error("unable to lerp object \'" + a + "\' and \'" + b + "\'");
+  }
+}
+
+function clamp(a, min, max)
+{
+  return Math.min(Math.max(value, min), max);
+}
+
+/*
+Math.lerp = lerp;
+Math.clamp = clamp;
+*/
+
+
+/***/ }),
+/* 24 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1428,7 +1652,7 @@ class Vec4Serializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /*
 
 
 /***/ }),
-/* 23 */
+/* 25 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1467,7 +1691,7 @@ class QuatSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /*
 
 
 /***/ }),
-/* 24 */
+/* 26 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1506,7 +1730,7 @@ class Mat4Serializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /*
 
 
 /***/ }),
-/* 25 */
+/* 27 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1530,7 +1754,7 @@ class StringSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" 
 
 
 /***/ }),
-/* 26 */
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1572,13 +1796,43 @@ class ArraySerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /
       serializer.decodeProperty(i, propertyData[i], syncOpts.elements, elements);
     }
   }
+
+  interpolate(serializer, prevPropertyName, nextPropertyName, propertyName, propertyData, dst)
+  {
+    if (!prevPropertyName) prevPropertyName = propertyName;
+    if (!nextPropertyName) nextPropertyName = propertyName;
+
+    //Create if it does not exist...
+    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
+    {
+      dst[propertyName] = [];
+    }
+
+    let prevElements = dst[prevPropertyName];
+    let elements = dst[propertyName];
+    let nextElements = dst[nextPropertyName];
+
+    let length = nextElements.length;
+    for(let i = 0; i < length; ++i)
+    {
+
+    }
+
+    elements = dst[nextPropertyName];
+    length = propertyData.length;
+    for(let i = 0; i < length; ++i)
+    {
+      elements.push(0);
+      serializer.decodeProperty(i, propertyData[i], syncOpts.elements, elements);
+    }
+  }
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (ArraySerializer);
 
 
 /***/ }),
-/* 27 */
+/* 29 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
