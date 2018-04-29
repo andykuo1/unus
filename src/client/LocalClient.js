@@ -4,6 +4,7 @@ import { vec3 } from 'gl-matrix';
 import Mouse from 'client/input/Mouse.js';
 import ViewPort from 'client/render/camera/ViewPort.js';
 
+const CAMERA_FOLLOW = false;
 const CAMERA_DAMPING_FACTOR = 0.1;
 
 class LocalClient
@@ -48,7 +49,7 @@ class LocalClient
   onUpdate(delta)
   {
     //Smoothly follow the player
-    if (this._player)
+    if (CAMERA_FOLLOW && this._player)
     {
       const playerTransform = this._player.Transform;
       //TODO: Get camera some other way...
