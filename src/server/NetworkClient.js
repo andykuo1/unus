@@ -1,3 +1,5 @@
+import * as MathHelper from 'util/MathHelper.js';
+
 class NetworkClient
 {
   constructor(socket)
@@ -7,6 +9,7 @@ class NetworkClient
 
     this.targetX = 0;
     this.targetY = 0;
+    this.speed = 1;
   }
 
   onPlayerCreate(entityPlayer)
@@ -39,8 +42,15 @@ class NetworkClient
   {
     if (this._player)
     {
-      this._player.Transform.position[0] = this.targetX;
-      this._player.Transform.position[1] = this.targetY;
+      let dx = this.targetX - this._player.Transform.position[0];
+      let dy = this.targetY - this._player.Transform.position[1];
+      const dist = dx * dx + dy * dy;
+      if (dist > 1)
+      {
+        const angle = Math.atan2(dy, dx);
+        this._player.Motion.motionX = Math.cos(angle) * this.speed;
+        this._player.Motion.motionY = Math.sin(angle) * this.speed;
+      }
     }
   }
 

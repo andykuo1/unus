@@ -1,4 +1,5 @@
 import Serializer from './Serializer.js';
+import * as MathHelper from 'util/MathHelper.js';
 
 class FloatSerializer extends Serializer
 {
@@ -9,8 +10,10 @@ class FloatSerializer extends Serializer
 
   decode(serializer, propertyName, propertyData, syncOpts, dst)
   {
-    if (Serializer.INTERPOLATE && syncOpts.hasOwnProperty('blend'))
+    if (serializer.shouldInterpolate && syncOpts.hasOwnProperty('blend'))
     {
+      if (serializer.isInitial) dst[propertyName] = propertyData;
+
       switch (syncOpts.blend.mode)
       {
         case 'interpolate':

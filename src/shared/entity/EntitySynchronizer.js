@@ -1,16 +1,16 @@
 import { vec3, quat } from 'gl-matrix';
 import Reflection from 'util/Reflection.js';
+import Application from 'Application.js';
+
 import EntityManager from './EntityManager.js';
 import Entity from './Entity.js';
 import SerializerRegistry from './SerializerRegistry.js';
 
+import Serializer from 'shared/serializable/Serializer.js';
 import * as Components from 'shared/entity/component/Components.js';
 import * as Serializables from 'shared/serializable/Serializables.js';
 
 const MAX_CACHED_STATES = 10;
-
-//HACK: whether should interpolate
-const INTERPOLATE = true;
 
 class EntitySynchronizer
 {
@@ -35,6 +35,10 @@ class EntitySynchronizer
     this.customComponents = {};
 
     this.cachedStates = [];
+
+    //States that are read by serializers...
+    this.isInitial = true;
+    this.shouldInterpolate = Application.isRemote();
   }
 
   serialize(isComplete=true)
@@ -121,6 +125,11 @@ class EntitySynchronizer
         {
           this._entityManager.destroyEntity(entity);
         }
+      }
+
+      if (this.isInitial)
+      {
+        this.isInitial = false;
       }
     }
   }

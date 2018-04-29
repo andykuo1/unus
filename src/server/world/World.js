@@ -2,6 +2,7 @@ import EntityManager from 'shared/entity/EntityManager.js';
 import EntitySynchronizer from 'shared/entity/EntitySynchronizer.js';
 
 import Application from 'Application.js';
+import * as MathHelper from 'util/MathHelper.js';
 
 import * as Components from 'shared/entity/component/Components.js';
 
@@ -21,6 +22,7 @@ class World
     this.entityManager.registerEntity('player', function() {
       this.addComponent(Components.Transform);
       this.addComponent(Components.Renderable);
+      this.addComponent(Components.Motion);
     });
   }
 
@@ -47,6 +49,14 @@ class World
   onUpdate(delta)
   {
     //Do regular logic here...
+    let entities = this.entityManager.getEntitiesByComponent(Components.Motion);
+    for(const entity of entities)
+    {
+      entity.Transform.position[0] += entity.Motion.motionX;
+      entity.Transform.position[1] += entity.Motion.motionY;
+      entity.Motion.motionX *= 1 - entity.Motion.friction;
+      entity.Motion.motionY *= 1 - entity.Motion.friction;
+    }
 
     //Send full update every few ticks
     if (this.forceUpdateRestart || --this.entitySyncTimer <= 0)

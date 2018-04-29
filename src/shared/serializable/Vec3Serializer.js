@@ -23,14 +23,15 @@ class Vec3Serializer extends Serializer
       dst[propertyName] = vec3.create();
     }
 
-    if (Serializer.INTERPOLATE && syncOpts.hasOwnProperty('blend'))
+    if (serializer.shouldInterpolate && syncOpts.hasOwnProperty('blend'))
     {
+      if (serializer.isInitial) vec3.copy(dst[propertyName], propertyData);
+
       switch (syncOpts.blend.mode)
       {
         case 'interpolate':
           const nextPropertyName = syncOpts.blend.next;
           vec3.copy(dst[syncOpts.blend.prev], dst[nextPropertyName]);
-          //vec3.copy(dst[propertyName], dst[nextPropertyName]);
           propertyName = nextPropertyName;
           break;
         default:

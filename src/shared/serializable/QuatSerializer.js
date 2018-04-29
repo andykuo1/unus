@@ -1,5 +1,6 @@
 import { quat } from 'gl-matrix';
 import Serializer from './Serializer.js';
+import * as MathHelper from 'util/MathHelper.js';
 
 class QuatSerializer extends Serializer
 {
@@ -22,8 +23,10 @@ class QuatSerializer extends Serializer
       dst[propertyName] = quat.create();
     }
 
-    if (Serializer.INTERPOLATE && syncOpts.hasOwnProperty('blend'))
+    if (serializer.shouldInterpolate && syncOpts.hasOwnProperty('blend'))
     {
+      if (serializer.isInitial) quat.copy(dst[propertyName], propertyData);
+
       switch (syncOpts.blend.mode)
       {
         case 'interpolate':

@@ -17,6 +17,11 @@ export function clamp(a, min, max)
   return Math.min(Math.max(value, min), max);
 }
 
+export function sign(a)
+{
+  return a > 0 ? 1 : a < 0 ? -1 : 0;
+}
+
 /*
 Math.lerp = lerp;
 Math.clamp = clamp;
