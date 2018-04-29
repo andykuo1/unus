@@ -13,6 +13,8 @@ class World
     this.synchronizer = new EntitySynchronizer(this.entityManager);
     this.entitySyncTimer = 20;
     this.worldStates = [];
+
+    this.forceUpdateRestart = false;
   }
 
   async initialize()
@@ -25,21 +27,22 @@ class World
 
   onClientConnect(client)
   {
+    console.log("Preparing environment for client...");
+
     const entity = this.entityManager.spawnEntity('player');
+    client.onPlayerCreate(entity);
 
-    const payload = {};
-    payload.worldData = this.getPreviousWorldState();
-    payload.playerData = {
-      entity: entity.id
-    };
-
+    this.forceUpdateRestart = true;
     client._player = entity;
-    client._socket.emit('serverRestart', payload);
   }
 
   onClientDisconnect(client)
   {
+    console.log("Resetting environment for client...");
 
+    const entityPlayer = client.player;
+    client.onPlayerDestroy();
+    this.entityManager.destroyEntity(entityPlayer);
   }
 
   onUpdate(delta)
@@ -61,7 +64,7 @@ class World
     }
 
     //Send full update every few ticks
-    if (--this.entitySyncTimer <= 0)
+    if (this.forceUpdateRestart || --this.entitySyncTimer <= 0)
     {
       console.log("Sending full world state...");
 
@@ -70,10 +73,15 @@ class World
 
       for(const client of Application.server._clients.values())
       {
-        client._socket.emit('serverUpdate', payload);
+        payload.playerData = {
+          entity: client.player.id
+        };
+
+        client._socket.emit(this.forceUpdateRestart ? 'serverRestart' : 'serverUpdate', payload);
       }
 
       this.entitySyncTimer = 20;
+      this.forceUpdateRestart = false;
     }
   }
 

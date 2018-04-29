@@ -6565,7 +6565,7 @@ class Shader
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Reflection_js__ = __webpack_require__(36);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_UID_js__ = __webpack_require__(37);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_Eventable_js__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__EntityRegistry_js__ = __webpack_require__(75);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__EntityRegistry_js__ = __webpack_require__(76);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Entity_js__ = __webpack_require__(15);
 
 
@@ -9903,7 +9903,7 @@ Backoff.prototype.setJitter = function(jitter){
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_client_render_RenderEngine_js__ = __webpack_require__(61);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_client_LocalClient_js__ = __webpack_require__(73);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_client_world_ClientWorld_js__ = __webpack_require__(74);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_client_world_ClientWorld_js__ = __webpack_require__(75);
 
 
 
@@ -9917,8 +9917,9 @@ class ClientEngine
     this._app = app;
     this._canvas = canvas;
     this._socket = socket;
+
     this._render = new __WEBPACK_IMPORTED_MODULE_1_client_render_RenderEngine_js__["a" /* default */](app, canvas);
-    this._client = new __WEBPACK_IMPORTED_MODULE_2_client_LocalClient_js__["a" /* default */](socket);
+    this._client = new __WEBPACK_IMPORTED_MODULE_2_client_LocalClient_js__["a" /* default */](socket, canvas);
 
     this._world = new __WEBPACK_IMPORTED_MODULE_3_client_world_ClientWorld_js__["a" /* default */]();
   }
@@ -14739,961 +14740,9 @@ class VBO
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-class LocalClient
-{
-  constructor(socket)
-  {
-    this._socket = socket;
-  }
-
-  onConnect()
-  {
-    console.log("Client connected: " + this._socket.id);
-  }
-
-  onDisconnect()
-  {
-    console.log("Client disconnected: " + this._socket.id);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (LocalClient);
-
-
-/***/ }),
-/* 74 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_Application_js__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_shared_entity_EntityManager_js__ = __webpack_require__(35);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_shared_entity_EntitySynchronizer_js__ = __webpack_require__(77);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_client_world_PlayerController_js__ = __webpack_require__(94);
-
-
-
-
-
-
-
-class ClientWorld
-{
-  constructor()
-  {
-    this.entityManager = new __WEBPACK_IMPORTED_MODULE_1_shared_entity_EntityManager_js__["a" /* default */]();
-    this.synchronizer = new __WEBPACK_IMPORTED_MODULE_2_shared_entity_EntitySynchronizer_js__["a" /* default */](this.entityManager);
-    this.player = new __WEBPACK_IMPORTED_MODULE_3_client_world_PlayerController_js__["a" /* default */](canvas);
-  }
-
-  async initialize()
-  {
-    await this.player.initialize();
-  }
-
-  onClientConnect(client)
-  {
-    client._socket.on('serverRestart', data => {
-      console.log("Getting world start state...");
-
-      this.synchronizer.deserialize(data.worldData);
-
-      const entityPlayer = this.entityManager.getEntityByID(data.playerData.entity);
-      if (entityPlayer === null) throw new Error("unable to find player entity");
-
-      this.player.entityPlayer = entityPlayer;
-    });
-
-    client._socket.on('serverUpdate', data => {
-      console.log("Receiving full world state...");
-
-      this.synchronizer.deserialize(data.worldData);
-    });
-  }
-
-  onClientDisconnect(client)
-  {
-
-  }
-
-  onUpdate(delta)
-  {
-    this.player.onUpdate(delta);
-    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].client._render.requestRender(this.entityManager);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (ClientWorld);
-
-
-/***/ }),
-/* 75 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_ObjectPool_js__ = __webpack_require__(76);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_UID_js__ = __webpack_require__(37);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Entity_js__ = __webpack_require__(15);
-
-
-
-
-
-class EntityRegistry
-{
-  constructor(entityManager)
-  {
-    this.entityManager = entityManager;
-    this.entityMap = new Map();
-    this.entityPool = new __WEBPACK_IMPORTED_MODULE_0_util_ObjectPool_js__["a" /* default */](__WEBPACK_IMPORTED_MODULE_2__Entity_js__["a" /* default */]);
-
-    this.register(null, function() {});
-  }
-
-  register(name, entityGenerator)
-  {
-    this.entityMap.set(name, entityGenerator);
-  }
-
-  unregister(name)
-  {
-    this.entityMap.delete(name);
-  }
-
-  createEntity(name)
-  {
-    const generator = this.entityMap.get(name);
-    if (!generator) throw new Error("entity \'" + name + "\' is not registered");
-    const entity = this._createEntity();
-    entity._manager = this.entityManager;
-    entity._name = name;
-    this.entityManager.entities.push(entity);
-    generator.apply(entity);
-    return entity;
-  }
-
-  deleteEntity(entity)
-  {
-    entity.clearComponents();
-    this.entityManager.entities.splice(this.entityManager.entities.indexOf(entity), 1);
-    this.entityPool.release(entity);
-  }
-
-  _createEntity()
-  {
-    const entity = this.entityPool.obtain();
-    entity._manager = this.entityManager;
-    entity._id = this._nextAvailableEntityID();
-    return entity;
-  }
-
-  _nextAvailableEntityID()
-  {
-    let iters = 100;
-    let id = Object(__WEBPACK_IMPORTED_MODULE_1_util_UID_js__["a" /* default */])();
-    while (this.entityManager.entities[id])
-    {
-      id = Object(__WEBPACK_IMPORTED_MODULE_1_util_UID_js__["a" /* default */])();
-
-      if (--iters <= 0)
-        throw new Error("cannot find another unique entity id");
-    }
-    return id;
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (EntityRegistry);
-
-
-/***/ }),
-/* 76 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class ObjectPool
-{
-  constructor(T)
-  {
-    this._freeList = [];
-    this.size = 0;
-    this.T = T;
-  }
-
-  obtain()
-  {
-    if (this._freeList.length <= 0)
-    {
-      this.expand(Math.round(this.size * 0.2) + 1);
-    }
-
-    var item = this._freeList.pop();
-    if (item.__init)
-    {
-      item.__init();
-    }
-    else
-    {
-      this.T.call(item);
-    }
-    return item;
-  }
-
-  release(item)
-  {
-    this._freeList.push(item);
-  }
-
-  expand(count)
-  {
-    for(let i = 0; i < count; ++i)
-    {
-      this._freeList.push(new this.T());
-    }
-    this.size += count;
-  }
-
-  getTotalObjectsFree()
-  {
-    return this._freeList.length;
-  }
-
-  getTotalObjectsUsed()
-  {
-    return this._count - this._freeList.length;
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (ObjectPool);
-
-
-/***/ }),
-/* 77 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_Reflection_js__ = __webpack_require__(36);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__EntityManager_js__ = __webpack_require__(35);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Entity_js__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__SerializerRegistry_js__ = __webpack_require__(78);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_shared_entity_component_Components_js__ = __webpack_require__(79);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__ = __webpack_require__(82);
-
-
-
-
-
-
-
-
-
-class EntitySynchronizer
-{
-  constructor(entityManager)
-  {
-    this.manager = entityManager;
-    this.manager.on('entityCreate', this.onEntityCreate.bind(this));
-    this.manager.on('entityDestroy', this.onEntityDestroy.bind(this));
-
-    this.serializers = new __WEBPACK_IMPORTED_MODULE_4__SerializerRegistry_js__["a" /* default */]();
-    this.serializers.registerSerializableType('boolean', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["b" /* BooleanSerializer */]());
-    this.serializers.registerSerializableType('integer', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["e" /* IntegerSerializer */]());
-    this.serializers.registerSerializableType('float', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["d" /* FloatSerializer */]());
-    this.serializers.registerSerializableType('vec2', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["i" /* Vec2Serializer */]());
-    this.serializers.registerSerializableType('vec3', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["j" /* Vec3Serializer */]());
-    this.serializers.registerSerializableType('vec4', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["k" /* Vec4Serializer */]());
-    this.serializers.registerSerializableType('quat', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["g" /* QuatSerializer */]());
-    this.serializers.registerSerializableType('mat4', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["f" /* Mat4Serializer */]());
-    this.serializers.registerSerializableType('string', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["h" /* StringSerializer */]());
-    this.serializers.registerSerializableType('array', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["a" /* ArraySerializer */]());
-    this.serializers.registerSerializableType('entity', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["c" /* EntityReferenceSerializer */](this.manager));
-
-    this.cachedEvents = [];
-  }
-
-  serialize()
-  {
-    const payload = {};
-    payload.isComplete = true;
-
-    //Write events...
-    const eventsPayload = payload.events = [];
-    for(const event of this.cachedEvents)
-    {
-      eventsPayload.push(event);
-    }
-    this.cachedEvents.length = 0;
-
-    //Write entities...
-    const entitiesPayload = payload.entities = {};
-    for(const entity of this.manager.entities)
-    {
-      const entityData = entitiesPayload[entity.id] = {};
-      entityData.name = entity.name;
-
-      const componentsData = entityData.components = {};
-      const components = this.manager.getComponentsByEntity(entity);
-      for(const component of components)
-      {
-        const componentName = __WEBPACK_IMPORTED_MODULE_1_util_Reflection_js__["a" /* default */].getClassName(component);
-        const componentData = componentsData[componentName] = {};
-        for(const propName of Object.keys(component.sync))
-        {
-          this.encodeProperty(propName, entity[componentName][propName], component.sync[propName], componentData);
-        }
-      }
-    }
-    return payload;
-  }
-
-  deserialize(payload)
-  {
-    const eventsPayload = payload.events;
-    for(const event of payload.events)
-    {
-      if (event.type === 'create')
-      {
-        //Try to create with default constructor, otherwise use empty entity template
-        let entity = null;
-        try
-        {
-          entity = this.manager.spawnEntity(event.entityName);
-        }
-        catch (e)
-        {
-          entity = this.manager.spawnEntity();
-        }
-        entity._id = event.entityID;
-      }
-      else if (event.type === 'destroy')
-      {
-        const entity = this.manager.getEntityByID(event.entityID);
-        if (entity === null) continue;
-        this.manager.destroyEntity(entity);
-      }
-      else
-      {
-        throw new Error("unknown event type \'" + event.type + "\'");
-      }
-    }
-
-    const entitiesPayload = payload.entities;
-    for(const entityID of Object.keys(entitiesPayload))
-    {
-      const entityData = entitiesPayload[entityID];
-      let entity = this.manager.getEntityByID(entityID);
-
-      //Just create it, maybe a packet was skipped...
-      if (entity === null)
-      {
-        //Try to create with default constructor, otherwise use empty entity template
-        try
-        {
-          entity = this.manager.spawnEntity(entityData.name);
-        }
-        catch (e)
-        {
-          entity = this.manager.spawnEntity();
-        }
-        entity._id = entityID;
-      }
-
-      const componentsData = entityData.components;
-      for(const componentName of Object.keys(componentsData))
-      {
-        const componentClass = this.manager.getComponentClassByName(componentName) || __WEBPACK_IMPORTED_MODULE_5_shared_entity_component_Components_js__[componentName];
-        if (componentClass === null)
-        {
-          throw new Error("cannot find component class with name \'" + componentName + "\'");
-        }
-
-        const componentData = componentsData[componentName];
-        if (!entity.hasComponent(componentClass))
-        {
-          //Just create it, maybe a packet was skipped...
-          entity.addComponent(componentClass);
-        }
-        const component = entity[componentName];
-        for(const propertyName of Object.keys(componentClass.sync))
-        {
-          this.decodeProperty(propertyName, componentData[propertyName], componentClass.sync[propertyName], component);
-        }
-      }
-    }
-
-    if (payload.isComplete)
-    {
-      //Destroy any that do not belong...
-      for(const entity of this.manager.entities)
-      {
-        if (!entitiesPayload.hasOwnProperty(entity.id)) //&& !entity.tracker
-        {
-          this.manager.destroyEntity(entity);
-        }
-      }
-    }
-  }
-
-  encodeProperty(propertyName, propertyData, syncOpts, dst)
-  {
-    const propertyType = syncOpts.type;
-    const serializer = this.serializers.getSerializerForType(propertyType);
-    serializer.encode(this, propertyName, propertyData, syncOpts, dst);
-    return dst;
-  }
-
-  decodeProperty(propertyName, propertyData, syncOpts, dst)
-  {
-    const propertyType = syncOpts.type;
-    const serializer = this.serializers.getSerializerForType(propertyType);
-    serializer.decode(this, propertyName, propertyData, syncOpts, dst);
-    return dst;
-  }
-
-  onEntityCreate(entity)
-  {
-    const event = {};
-    event.type = 'create';
-    event.entityID = entity.id;
-    event.entityName = entity.name;
-    this.cachedEvents.push(event);
-  }
-
-  onEntityDestroy(entity)
-  {
-    const event = {};
-    event.type = 'destroy';
-    event.entityID = entity.id;
-    event.entityName = entity.name;
-    this.cachedEvents.push(event);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (EntitySynchronizer);
-
-
-/***/ }),
-/* 78 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-
-class SerializerRegistry
-{
-  constructor()
-  {
-    this._registry = new Map();
-  }
-
-  registerSerializableType(type, serializer)
-  {
-    this._registry.set(type, serializer);
-  }
-
-  unregisterSerializableType(type)
-  {
-    this._registry.delete(type);
-  }
-
-  getSerializerForType(type)
-  {
-    if (!this._registry.has(type))
-    {
-      throw new Error("cannot find serializer for type \'" + type + "\'");
-    }
-    return this._registry.get(type);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (SerializerRegistry);
-
-
-/***/ }),
-/* 79 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Transform_js__ = __webpack_require__(80);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Renderable_js__ = __webpack_require__(81);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Transform", function() { return __WEBPACK_IMPORTED_MODULE_0__Transform_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Renderable", function() { return __WEBPACK_IMPORTED_MODULE_1__Renderable_js__["a"]; });
-
-
-
-
-
-
-/***/ }),
-/* 80 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
-
-
-function Transform()
-{
-  this.position = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec3 */].create();
-  this.rotation = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].create();
-  this.scale = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec3 */].fromValues(1, 1, 1);
-}
-
-Transform.sync = {
-  position: { type: 'vec3' },
-  rotation: { type: 'quat' },
-  scale: { type: 'vec3' }
-};
-
-/* harmony default export */ __webpack_exports__["a"] = (Transform);
-
-
-/***/ }),
-/* 81 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-function Renderable()
-{
-  this.renderType = 'box';
-  this.visible = true;
-  this.color = 0xFFFFFF;
-}
-
-Renderable.sync = {
-  renderType: { type: 'string' },
-  visible: { type: 'boolean' },
-  color: { type: 'integer' }
-};
-
-/* harmony default export */ __webpack_exports__["a"] = (Renderable);
-
-
-/***/ }),
-/* 82 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__BooleanSerializer_js__ = __webpack_require__(83);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__IntegerSerializer_js__ = __webpack_require__(84);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__FloatSerializer_js__ = __webpack_require__(85);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Vec2Serializer_js__ = __webpack_require__(86);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Vec3Serializer_js__ = __webpack_require__(87);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__Vec4Serializer_js__ = __webpack_require__(88);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__QuatSerializer_js__ = __webpack_require__(89);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__Mat4Serializer_js__ = __webpack_require__(90);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__StringSerializer_js__ = __webpack_require__(91);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__ArraySerializer_js__ = __webpack_require__(92);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__EntityReferenceSerializer_js__ = __webpack_require__(93);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_0__BooleanSerializer_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return __WEBPACK_IMPORTED_MODULE_1__IntegerSerializer_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return __WEBPACK_IMPORTED_MODULE_2__FloatSerializer_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "i", function() { return __WEBPACK_IMPORTED_MODULE_3__Vec2Serializer_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return __WEBPACK_IMPORTED_MODULE_4__Vec3Serializer_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "k", function() { return __WEBPACK_IMPORTED_MODULE_5__Vec4Serializer_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return __WEBPACK_IMPORTED_MODULE_6__QuatSerializer_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return __WEBPACK_IMPORTED_MODULE_7__Mat4Serializer_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return __WEBPACK_IMPORTED_MODULE_8__StringSerializer_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_9__ArraySerializer_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_10__EntityReferenceSerializer_js__["a"]; });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***/ }),
-/* 83 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Serializer_js__ = __webpack_require__(2);
-
-
-class BooleanSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /* default */]
-{
-  encode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    dst[propertyName] = Boolean(propertyData);
-  }
-
-  decode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    dst[propertyName] = Boolean(propertyData);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (BooleanSerializer);
-
-
-/***/ }),
-/* 84 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Serializer_js__ = __webpack_require__(2);
-
-
-class IntegerSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /* default */]
-{
-  encode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    dst[propertyName] = Math.trunc(Number(propertyData));
-  }
-
-  decode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    dst[propertyName] = Math.trunc(Number(propertyData));
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (IntegerSerializer);
-
-
-/***/ }),
-/* 85 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Serializer_js__ = __webpack_require__(2);
-
-
-class StringSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /* default */]
-{
-  encode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    dst[propertyName] = String(propertyData);
-  }
-
-  decode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    dst[propertyName] = String(propertyData);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (StringSerializer);
-
-
-/***/ }),
-/* 86 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Serializer_js__ = __webpack_require__(2);
-
-
-
-class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /* default */]
-{
-  encode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    //Create if it does not exist...
-    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
-    {
-      dst[propertyName] = [];
-    }
-
-    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec2 */].copy(dst[propertyName], propertyData);
-  }
-
-  decode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    //Create if it does not exist...
-    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
-    {
-      dst[propertyName] = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec2 */].create();
-    }
-
-    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec2 */].copy(dst[propertyName], propertyData);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (EntityReferenceSerializer);
-
-
-/***/ }),
-/* 87 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Serializer_js__ = __webpack_require__(2);
-
-
-
-class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /* default */]
-{
-  encode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    //Create if it does not exist...
-    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
-    {
-      dst[propertyName] = [];
-    }
-
-    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec3 */].copy(dst[propertyName], propertyData);
-  }
-
-  decode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    //Create if it does not exist...
-    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
-    {
-      dst[propertyName] = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec3 */].create();
-    }
-
-    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec3 */].copy(dst[propertyName], propertyData);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (EntityReferenceSerializer);
-
-
-/***/ }),
-/* 88 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Serializer_js__ = __webpack_require__(2);
-
-
-
-class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /* default */]
-{
-  encode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    //Create if it does not exist...
-    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
-    {
-      dst[propertyName] = [];
-    }
-
-    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec4 */].copy(dst[propertyName], propertyData);
-  }
-
-  decode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    //Create if it does not exist...
-    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
-    {
-      dst[propertyName] = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec4 */].create();
-    }
-
-    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec4 */].copy(dst[propertyName], propertyData);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (EntityReferenceSerializer);
-
-
-/***/ }),
-/* 89 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Serializer_js__ = __webpack_require__(2);
-
-
-
-class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /* default */]
-{
-  encode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    //Create if it does not exist...
-    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
-    {
-      dst[propertyName] = [];
-    }
-
-    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].copy(dst[propertyName], propertyData);
-  }
-
-  decode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    //Create if it does not exist...
-    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
-    {
-      dst[propertyName] = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].create();
-    }
-
-    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].copy(dst[propertyName], propertyData);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (EntityReferenceSerializer);
-
-
-/***/ }),
-/* 90 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Serializer_js__ = __webpack_require__(2);
-
-
-
-class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /* default */]
-{
-  encode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    //Create if it does not exist...
-    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
-    {
-      dst[propertyName] = [];
-    }
-
-    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].copy(dst[propertyName], propertyData);
-  }
-
-  decode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    //Create if it does not exist...
-    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
-    {
-      dst[propertyName] = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
-    }
-
-    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].copy(dst[propertyName], propertyData);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (EntityReferenceSerializer);
-
-
-/***/ }),
-/* 91 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Serializer_js__ = __webpack_require__(2);
-
-
-class FloatSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /* default */]
-{
-  encode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    dst[propertyName] = Number(propertyData);
-  }
-
-  decode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    dst[propertyName] = Number(propertyData);
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (FloatSerializer);
-
-
-/***/ }),
-/* 92 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Serializer_js__ = __webpack_require__(2);
-
-
-class ArraySerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /* default */]
-{
-  encode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    //Create if it does not exist...
-    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
-    {
-      dst[propertyName] = [];
-    }
-
-    const elements = dst[propertyName];
-    const length = propertyData.length;
-    for(let i = 0; i < length; ++i)
-    {
-      elements.push(0);
-      serializer.encodeProperty(i, propertyData[i], syncData.elements, elements);
-    }
-  }
-
-  decode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    //Create if it does not exist...
-    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
-    {
-      dst[propertyName] = [];
-    }
-
-    const elements = dst[propertyName];
-    const length = propertyData.length;
-    for(let i = 0; i < length; ++i)
-    {
-      elements.push(0);
-      serializer.decodeProperty(i, propertyData[i], syncData.elements, elements);
-    }
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (ArraySerializer);
-
-
-/***/ }),
-/* 93 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Serializer_js__ = __webpack_require__(2);
-
-
-class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /* default */]
-{
-  constructor(entityManager)
-  {
-    super();
-    this._entityManager = entityManager;
-  }
-
-  encode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    if (propertyData instanceof Entity)
-    {
-      dst[propertyName] = propertyData.id;
-    }
-    else
-    {
-      throw new Error("unknown entity type \'" + propertyData + "\' for encoding");
-    }
-  }
-
-  decode(serializer, propertyName, propertyData, syncOpts, dst)
-  {
-    let entity = this._entityManager.getEntityByID(propertyData);
-    if (entity === null)
-    {
-      throw new Error("cannot find entity with id \'" + propertyData + "\'");
-    }
-    dst[propertyName] = entity;
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (EntityReferenceSerializer);
-
-
-/***/ }),
-/* 94 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_Application_js__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_gl_matrix__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_client_input_Mouse_js__ = __webpack_require__(95);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_client_input_Mouse_js__ = __webpack_require__(74);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_client_render_camera_ViewPort_js__ = __webpack_require__(33);
 
 
@@ -15701,29 +14750,53 @@ class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_
 
 
 
-class PlayerController
+class LocalClient
 {
-  constructor(canvas)
+  constructor(socket, canvas)
   {
+    this._socket = socket;
+    this._player = null;
+
     this._input = new __WEBPACK_IMPORTED_MODULE_2_client_input_Mouse_js__["a" /* default */](canvas, document);
 
     this.nextX = 0;
     this.nextY = 0;
-    this.entityPlayer = null;
   }
 
-  async initialize()
+  onPlayerCreate(entityPlayer)
   {
+    console.log("Creating player...");
+
+    this._player = entityPlayer;
+
     this._input.on('mousedown', this.onMouseDown.bind(this));
+  }
+
+  onPlayerDestroy()
+  {
+    console.log("Destroying player...");
+
+    this._player = null;
+  }
+
+  onConnect()
+  {
+    console.log("Connecting client: " + this._socket.id);
+  }
+
+  onDisconnect()
+  {
+    console.log("Disconnecting client: " + this._socket.id);
   }
 
   onUpdate(delta)
   {
     //Smoothly follow the player
-    if (this.entityPlayer)
+    if (this._player)
     {
       const dampingFactor = 0.3;
-      const playerTransform = this.entityPlayer.Transform;
+      const playerTransform = this._player.Transform;
+      //TODO: Get camera some other way...
       const cameraTransform = __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].client._render._renderer.camera.transform;
       const dx = playerTransform.position[0] - cameraTransform.position[0];
       const dy = playerTransform.position[1] - cameraTransform.position[1];
@@ -15735,18 +14808,24 @@ class PlayerController
   onMouseDown(mouse, button)
   {
     const vec = __WEBPACK_IMPORTED_MODULE_3_client_render_camera_ViewPort_js__["a" /* default */].getPointFromScreen(__WEBPACK_IMPORTED_MODULE_1_gl_matrix__["d" /* vec3 */].create(),
-      __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].client._render._renderer.camera, __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].client._render._renderer.viewport,
+      __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].client._render._renderer.camera,
+      __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].client._render._renderer.viewport,
       mouse.x, mouse.y);
     this.nextX = vec[0];
     this.nextY = vec[1];
   }
+
+  get player()
+  {
+    return this._player;
+  }
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (PlayerController);
+/* harmony default export */ __webpack_exports__["a"] = (LocalClient);
 
 
 /***/ }),
-/* 95 */
+/* 74 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15879,6 +14958,939 @@ Mouse.BUTTON_RIGHT = 2;
 Object.assign(Mouse.prototype, __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__["a" /* default */]);
 
 /* harmony default export */ __webpack_exports__["a"] = (Mouse);
+
+
+/***/ }),
+/* 75 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_Application_js__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_shared_entity_EntityManager_js__ = __webpack_require__(35);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_shared_entity_EntitySynchronizer_js__ = __webpack_require__(78);
+
+
+
+
+
+class ClientWorld
+{
+  constructor()
+  {
+    this.entityManager = new __WEBPACK_IMPORTED_MODULE_1_shared_entity_EntityManager_js__["a" /* default */]();
+    this.synchronizer = new __WEBPACK_IMPORTED_MODULE_2_shared_entity_EntitySynchronizer_js__["a" /* default */](this.entityManager);
+
+    this.player = null;
+  }
+
+  async initialize()
+  {
+
+  }
+
+  onClientConnect(client)
+  {
+    console.log("Preparing environment for client...");
+
+    this.player = client;
+
+    client._socket.on('serverRestart', data => {
+      console.log("Getting world start state...");
+      console.log(data);
+
+      this.synchronizer.deserialize(data.worldData);
+
+      const entityPlayer = this.entityManager.getEntityByID(data.playerData.entity);
+      if (entityPlayer === null) throw new Error("unable to find player entity");
+
+      this.player.onPlayerCreate(entityPlayer);
+    });
+
+    client._socket.on('serverUpdate', data => {
+      console.log("Receiving full world state...");
+
+      this.synchronizer.deserialize(data.worldData);
+    });
+  }
+
+  onClientDisconnect(client)
+  {
+    console.log("Resetting environment for client...");
+
+    const entityPlayer = client.player;
+    this.player.onPlayerDestroy();
+  }
+
+  onUpdate(delta)
+  {
+    this.player.onUpdate(delta);
+    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].client._render.requestRender(this.entityManager);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (ClientWorld);
+
+
+/***/ }),
+/* 76 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_ObjectPool_js__ = __webpack_require__(77);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_UID_js__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Entity_js__ = __webpack_require__(15);
+
+
+
+
+
+class EntityRegistry
+{
+  constructor(entityManager)
+  {
+    this.entityManager = entityManager;
+    this.entityMap = new Map();
+    this.entityPool = new __WEBPACK_IMPORTED_MODULE_0_util_ObjectPool_js__["a" /* default */](__WEBPACK_IMPORTED_MODULE_2__Entity_js__["a" /* default */]);
+
+    this.register(null, function() {});
+  }
+
+  register(name, entityGenerator)
+  {
+    this.entityMap.set(name, entityGenerator);
+  }
+
+  unregister(name)
+  {
+    this.entityMap.delete(name);
+  }
+
+  createEntity(name)
+  {
+    const generator = this.entityMap.get(name);
+    if (!generator) throw new Error("entity \'" + name + "\' is not registered");
+    const entity = this._createEntity();
+    entity._manager = this.entityManager;
+    entity._name = name;
+    this.entityManager.entities.push(entity);
+    generator.apply(entity);
+    return entity;
+  }
+
+  deleteEntity(entity)
+  {
+    entity.clearComponents();
+    this.entityManager.entities.splice(this.entityManager.entities.indexOf(entity), 1);
+    this.entityPool.release(entity);
+  }
+
+  _createEntity()
+  {
+    const entity = this.entityPool.obtain();
+    entity._manager = this.entityManager;
+    entity._id = this._nextAvailableEntityID();
+    return entity;
+  }
+
+  _nextAvailableEntityID()
+  {
+    let iters = 100;
+    let id = Object(__WEBPACK_IMPORTED_MODULE_1_util_UID_js__["a" /* default */])();
+    while (this.entityManager.entities[id])
+    {
+      id = Object(__WEBPACK_IMPORTED_MODULE_1_util_UID_js__["a" /* default */])();
+
+      if (--iters <= 0)
+        throw new Error("cannot find another unique entity id");
+    }
+    return id;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (EntityRegistry);
+
+
+/***/ }),
+/* 77 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class ObjectPool
+{
+  constructor(T)
+  {
+    this._freeList = [];
+    this.size = 0;
+    this.T = T;
+  }
+
+  obtain()
+  {
+    if (this._freeList.length <= 0)
+    {
+      this.expand(Math.round(this.size * 0.2) + 1);
+    }
+
+    var item = this._freeList.pop();
+    if (item.__init)
+    {
+      item.__init();
+    }
+    else
+    {
+      this.T.call(item);
+    }
+    return item;
+  }
+
+  release(item)
+  {
+    this._freeList.push(item);
+  }
+
+  expand(count)
+  {
+    for(let i = 0; i < count; ++i)
+    {
+      this._freeList.push(new this.T());
+    }
+    this.size += count;
+  }
+
+  getTotalObjectsFree()
+  {
+    return this._freeList.length;
+  }
+
+  getTotalObjectsUsed()
+  {
+    return this._count - this._freeList.length;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (ObjectPool);
+
+
+/***/ }),
+/* 78 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_Reflection_js__ = __webpack_require__(36);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__EntityManager_js__ = __webpack_require__(35);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Entity_js__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__SerializerRegistry_js__ = __webpack_require__(79);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_shared_entity_component_Components_js__ = __webpack_require__(80);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__ = __webpack_require__(83);
+
+
+
+
+
+
+
+
+
+class EntitySynchronizer
+{
+  constructor(entityManager)
+  {
+    this.manager = entityManager;
+    this.manager.on('entityCreate', this.onEntityCreate.bind(this));
+    this.manager.on('entityDestroy', this.onEntityDestroy.bind(this));
+
+    this.serializers = new __WEBPACK_IMPORTED_MODULE_4__SerializerRegistry_js__["a" /* default */]();
+    this.serializers.registerSerializableType('boolean', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["b" /* BooleanSerializer */]());
+    this.serializers.registerSerializableType('integer', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["e" /* IntegerSerializer */]());
+    this.serializers.registerSerializableType('float', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["d" /* FloatSerializer */]());
+    this.serializers.registerSerializableType('vec2', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["i" /* Vec2Serializer */]());
+    this.serializers.registerSerializableType('vec3', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["j" /* Vec3Serializer */]());
+    this.serializers.registerSerializableType('vec4', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["k" /* Vec4Serializer */]());
+    this.serializers.registerSerializableType('quat', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["g" /* QuatSerializer */]());
+    this.serializers.registerSerializableType('mat4', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["f" /* Mat4Serializer */]());
+    this.serializers.registerSerializableType('string', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["h" /* StringSerializer */]());
+    this.serializers.registerSerializableType('array', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["a" /* ArraySerializer */]());
+    this.serializers.registerSerializableType('entity', new __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializables_js__["c" /* EntityReferenceSerializer */](this.manager));
+
+    this.cachedEvents = [];
+  }
+
+  serialize()
+  {
+    const payload = {};
+    payload.isComplete = true;
+
+    //Write events...
+    const eventsPayload = payload.events = [];
+    for(const event of this.cachedEvents)
+    {
+      eventsPayload.push(event);
+    }
+    this.cachedEvents.length = 0;
+
+    //Write entities...
+    const entitiesPayload = payload.entities = {};
+    for(const entity of this.manager.entities)
+    {
+      const entityData = entitiesPayload[entity.id] = {};
+      entityData.name = entity.name;
+
+      const componentsData = entityData.components = {};
+      const components = this.manager.getComponentsByEntity(entity);
+      for(const component of components)
+      {
+        const componentName = __WEBPACK_IMPORTED_MODULE_1_util_Reflection_js__["a" /* default */].getClassName(component);
+        const componentData = componentsData[componentName] = {};
+        for(const propName of Object.keys(component.sync))
+        {
+          this.encodeProperty(propName, entity[componentName][propName], component.sync[propName], componentData);
+        }
+      }
+    }
+    return payload;
+  }
+
+  deserialize(payload)
+  {
+    const eventsPayload = payload.events;
+    for(const event of payload.events)
+    {
+      if (event.type === 'create')
+      {
+        //Try to create with default constructor, otherwise use empty entity template
+        let entity = null;
+        try
+        {
+          entity = this.manager.spawnEntity(event.entityName);
+        }
+        catch (e)
+        {
+          entity = this.manager.spawnEntity();
+        }
+        entity._id = event.entityID;
+      }
+      else if (event.type === 'destroy')
+      {
+        const entity = this.manager.getEntityByID(event.entityID);
+        if (entity === null) continue;
+        this.manager.destroyEntity(entity);
+      }
+      else
+      {
+        throw new Error("unknown event type \'" + event.type + "\'");
+      }
+    }
+
+    const entitiesPayload = payload.entities;
+    for(const entityID of Object.keys(entitiesPayload))
+    {
+      const entityData = entitiesPayload[entityID];
+      let entity = this.manager.getEntityByID(entityID);
+
+      //Just create it, maybe a packet was skipped...
+      if (entity === null)
+      {
+        console.log("WARNING! - Creating missing entity...");
+
+        //Try to create with default constructor, otherwise use empty entity template
+        try
+        {
+          entity = this.manager.spawnEntity(entityData.name);
+        }
+        catch (e)
+        {
+          entity = this.manager.spawnEntity();
+        }
+        entity._id = entityID;
+      }
+
+      const componentsData = entityData.components;
+      for(const componentName of Object.keys(componentsData))
+      {
+        const componentClass = this.manager.getComponentClassByName(componentName) || __WEBPACK_IMPORTED_MODULE_5_shared_entity_component_Components_js__[componentName];
+        if (componentClass === null)
+        {
+          throw new Error("cannot find component class with name \'" + componentName + "\'");
+        }
+
+        const componentData = componentsData[componentName];
+        if (!entity.hasComponent(componentClass))
+        {
+          entity.addComponent(componentClass);
+        }
+        const component = entity[componentName];
+        for(const propertyName of Object.keys(componentClass.sync))
+        {
+          this.decodeProperty(propertyName, componentData[propertyName], componentClass.sync[propertyName], component);
+        }
+      }
+    }
+
+    if (payload.isComplete)
+    {
+      //Destroy any that do not belong...
+      for(const entity of this.manager.entities)
+      {
+        if (!entitiesPayload.hasOwnProperty(entity.id)) //&& !entity.tracker
+        {
+          this.manager.destroyEntity(entity);
+        }
+      }
+    }
+  }
+
+  encodeProperty(propertyName, propertyData, syncOpts, dst)
+  {
+    const propertyType = syncOpts.type;
+    const serializer = this.serializers.getSerializerForType(propertyType);
+    serializer.encode(this, propertyName, propertyData, syncOpts, dst);
+    return dst;
+  }
+
+  decodeProperty(propertyName, propertyData, syncOpts, dst)
+  {
+    const propertyType = syncOpts.type;
+    const serializer = this.serializers.getSerializerForType(propertyType);
+    serializer.decode(this, propertyName, propertyData, syncOpts, dst);
+    return dst;
+  }
+
+  onEntityCreate(entity)
+  {
+    const event = {};
+    event.type = 'create';
+    event.entityID = entity.id;
+    event.entityName = entity.name;
+    this.cachedEvents.push(event);
+  }
+
+  onEntityDestroy(entity)
+  {
+    const event = {};
+    event.type = 'destroy';
+    event.entityID = entity.id;
+    event.entityName = entity.name;
+    this.cachedEvents.push(event);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (EntitySynchronizer);
+
+
+/***/ }),
+/* 79 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+
+class SerializerRegistry
+{
+  constructor()
+  {
+    this._registry = new Map();
+  }
+
+  registerSerializableType(type, serializer)
+  {
+    this._registry.set(type, serializer);
+  }
+
+  unregisterSerializableType(type)
+  {
+    this._registry.delete(type);
+  }
+
+  getSerializerForType(type)
+  {
+    if (!this._registry.has(type))
+    {
+      throw new Error("cannot find serializer for type \'" + type + "\'");
+    }
+    return this._registry.get(type);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (SerializerRegistry);
+
+
+/***/ }),
+/* 80 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Transform_js__ = __webpack_require__(81);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Renderable_js__ = __webpack_require__(82);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Transform", function() { return __WEBPACK_IMPORTED_MODULE_0__Transform_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Renderable", function() { return __WEBPACK_IMPORTED_MODULE_1__Renderable_js__["a"]; });
+
+
+
+
+
+
+/***/ }),
+/* 81 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
+
+
+function Transform()
+{
+  this.position = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec3 */].create();
+  this.rotation = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].create();
+  this.scale = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec3 */].fromValues(1, 1, 1);
+}
+
+Transform.sync = {
+  position: { type: 'vec3' },
+  rotation: { type: 'quat' },
+  scale: { type: 'vec3' }
+};
+
+/* harmony default export */ __webpack_exports__["a"] = (Transform);
+
+
+/***/ }),
+/* 82 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+function Renderable()
+{
+  this.renderType = 'box';
+  this.visible = true;
+  this.color = 0xFFFFFF;
+}
+
+Renderable.sync = {
+  renderType: { type: 'string' },
+  visible: { type: 'boolean' },
+  color: { type: 'integer' }
+};
+
+/* harmony default export */ __webpack_exports__["a"] = (Renderable);
+
+
+/***/ }),
+/* 83 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__BooleanSerializer_js__ = __webpack_require__(84);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__IntegerSerializer_js__ = __webpack_require__(85);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__FloatSerializer_js__ = __webpack_require__(86);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Vec2Serializer_js__ = __webpack_require__(87);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Vec3Serializer_js__ = __webpack_require__(88);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__Vec4Serializer_js__ = __webpack_require__(89);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__QuatSerializer_js__ = __webpack_require__(90);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__Mat4Serializer_js__ = __webpack_require__(91);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__StringSerializer_js__ = __webpack_require__(92);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__ArraySerializer_js__ = __webpack_require__(93);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__EntityReferenceSerializer_js__ = __webpack_require__(94);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_0__BooleanSerializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return __WEBPACK_IMPORTED_MODULE_1__IntegerSerializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return __WEBPACK_IMPORTED_MODULE_2__FloatSerializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "i", function() { return __WEBPACK_IMPORTED_MODULE_3__Vec2Serializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return __WEBPACK_IMPORTED_MODULE_4__Vec3Serializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "k", function() { return __WEBPACK_IMPORTED_MODULE_5__Vec4Serializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return __WEBPACK_IMPORTED_MODULE_6__QuatSerializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return __WEBPACK_IMPORTED_MODULE_7__Mat4Serializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return __WEBPACK_IMPORTED_MODULE_8__StringSerializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_9__ArraySerializer_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_10__EntityReferenceSerializer_js__["a"]; });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***/ }),
+/* 84 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Serializer_js__ = __webpack_require__(2);
+
+
+class BooleanSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /* default */]
+{
+  encode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    dst[propertyName] = Boolean(propertyData);
+  }
+
+  decode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    dst[propertyName] = Boolean(propertyData);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (BooleanSerializer);
+
+
+/***/ }),
+/* 85 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Serializer_js__ = __webpack_require__(2);
+
+
+class IntegerSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /* default */]
+{
+  encode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    dst[propertyName] = Math.trunc(Number(propertyData));
+  }
+
+  decode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    dst[propertyName] = Math.trunc(Number(propertyData));
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (IntegerSerializer);
+
+
+/***/ }),
+/* 86 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Serializer_js__ = __webpack_require__(2);
+
+
+class StringSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /* default */]
+{
+  encode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    dst[propertyName] = String(propertyData);
+  }
+
+  decode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    dst[propertyName] = String(propertyData);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (StringSerializer);
+
+
+/***/ }),
+/* 87 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Serializer_js__ = __webpack_require__(2);
+
+
+
+class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /* default */]
+{
+  encode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    //Create if it does not exist...
+    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
+    {
+      dst[propertyName] = [];
+    }
+
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec2 */].copy(dst[propertyName], propertyData);
+  }
+
+  decode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    //Create if it does not exist...
+    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
+    {
+      dst[propertyName] = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec2 */].create();
+    }
+
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* vec2 */].copy(dst[propertyName], propertyData);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (EntityReferenceSerializer);
+
+
+/***/ }),
+/* 88 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Serializer_js__ = __webpack_require__(2);
+
+
+
+class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /* default */]
+{
+  encode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    //Create if it does not exist...
+    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
+    {
+      dst[propertyName] = [];
+    }
+
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec3 */].copy(dst[propertyName], propertyData);
+  }
+
+  decode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    //Create if it does not exist...
+    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
+    {
+      dst[propertyName] = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec3 */].create();
+    }
+
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec3 */].copy(dst[propertyName], propertyData);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (EntityReferenceSerializer);
+
+
+/***/ }),
+/* 89 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Serializer_js__ = __webpack_require__(2);
+
+
+
+class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /* default */]
+{
+  encode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    //Create if it does not exist...
+    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
+    {
+      dst[propertyName] = [];
+    }
+
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec4 */].copy(dst[propertyName], propertyData);
+  }
+
+  decode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    //Create if it does not exist...
+    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
+    {
+      dst[propertyName] = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec4 */].create();
+    }
+
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec4 */].copy(dst[propertyName], propertyData);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (EntityReferenceSerializer);
+
+
+/***/ }),
+/* 90 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Serializer_js__ = __webpack_require__(2);
+
+
+
+class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /* default */]
+{
+  encode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    //Create if it does not exist...
+    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
+    {
+      dst[propertyName] = [];
+    }
+
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].copy(dst[propertyName], propertyData);
+  }
+
+  decode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    //Create if it does not exist...
+    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
+    {
+      dst[propertyName] = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].create();
+    }
+
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].copy(dst[propertyName], propertyData);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (EntityReferenceSerializer);
+
+
+/***/ }),
+/* 91 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Serializer_js__ = __webpack_require__(2);
+
+
+
+class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /* default */]
+{
+  encode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    //Create if it does not exist...
+    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
+    {
+      dst[propertyName] = [];
+    }
+
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].copy(dst[propertyName], propertyData);
+  }
+
+  decode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    //Create if it does not exist...
+    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
+    {
+      dst[propertyName] = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].create();
+    }
+
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["a" /* mat4 */].copy(dst[propertyName], propertyData);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (EntityReferenceSerializer);
+
+
+/***/ }),
+/* 92 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Serializer_js__ = __webpack_require__(2);
+
+
+class FloatSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /* default */]
+{
+  encode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    dst[propertyName] = Number(propertyData);
+  }
+
+  decode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    dst[propertyName] = Number(propertyData);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (FloatSerializer);
+
+
+/***/ }),
+/* 93 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Serializer_js__ = __webpack_require__(2);
+
+
+class ArraySerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /* default */]
+{
+  encode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    //Create if it does not exist...
+    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
+    {
+      dst[propertyName] = [];
+    }
+
+    const elements = dst[propertyName];
+    const length = propertyData.length;
+    for(let i = 0; i < length; ++i)
+    {
+      elements.push(0);
+      serializer.encodeProperty(i, propertyData[i], syncData.elements, elements);
+    }
+  }
+
+  decode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    //Create if it does not exist...
+    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
+    {
+      dst[propertyName] = [];
+    }
+
+    const elements = dst[propertyName];
+    const length = propertyData.length;
+    for(let i = 0; i < length; ++i)
+    {
+      elements.push(0);
+      serializer.decodeProperty(i, propertyData[i], syncData.elements, elements);
+    }
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (ArraySerializer);
+
+
+/***/ }),
+/* 94 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Serializer_js__ = __webpack_require__(2);
+
+
+class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /* default */]
+{
+  constructor(entityManager)
+  {
+    super();
+    this._entityManager = entityManager;
+  }
+
+  encode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    if (propertyData instanceof Entity)
+    {
+      dst[propertyName] = propertyData.id;
+    }
+    else
+    {
+      throw new Error("unknown entity type \'" + propertyData + "\' for encoding");
+    }
+  }
+
+  decode(serializer, propertyName, propertyData, syncOpts, dst)
+  {
+    let entity = this._entityManager.getEntityByID(propertyData);
+    if (entity === null)
+    {
+      throw new Error("cannot find entity with id \'" + propertyData + "\'");
+    }
+    dst[propertyName] = entity;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (EntityReferenceSerializer);
 
 
 /***/ })

@@ -3,33 +3,37 @@ import Application from 'Application.js';
 import EntityManager from 'shared/entity/EntityManager.js';
 import EntitySynchronizer from 'shared/entity/EntitySynchronizer.js';
 
-import PlayerController from 'client/world/PlayerController.js';
-
 class ClientWorld
 {
   constructor()
   {
     this.entityManager = new EntityManager();
     this.synchronizer = new EntitySynchronizer(this.entityManager);
-    this.player = new PlayerController(canvas);
+
+    this.player = null;
   }
 
   async initialize()
   {
-    await this.player.initialize();
+
   }
 
   onClientConnect(client)
   {
+    console.log("Preparing environment for client...");
+
+    this.player = client;
+
     client._socket.on('serverRestart', data => {
       console.log("Getting world start state...");
+      console.log(data);
 
       this.synchronizer.deserialize(data.worldData);
 
       const entityPlayer = this.entityManager.getEntityByID(data.playerData.entity);
       if (entityPlayer === null) throw new Error("unable to find player entity");
 
-      this.player.entityPlayer = entityPlayer;
+      this.player.onPlayerCreate(entityPlayer);
     });
 
     client._socket.on('serverUpdate', data => {
@@ -41,7 +45,10 @@ class ClientWorld
 
   onClientDisconnect(client)
   {
+    console.log("Resetting environment for client...");
 
+    const entityPlayer = client.player;
+    this.player.onPlayerDestroy();
   }
 
   onUpdate(delta)

@@ -6,14 +6,33 @@ class NetworkClient
     this._player = null;
   }
 
+  onPlayerCreate(entityPlayer)
+  {
+    console.log("Creating player...");
+
+    this._player = entityPlayer;
+  }
+
+  onPlayerDestroy()
+  {
+    console.log("Destroying player...");
+
+    this._player = null;
+  }
+
   onConnect()
   {
-    console.log("Client connected: " + this._socket.id);
+    console.log("Connecting client: " + this._socket.id);
   }
 
   onDisconnect()
   {
-    console.log("Client disconnected: " + this._socket.id);
+    console.log("Disconnecting client: " + this._socket.id);
+  }
+
+  get player()
+  {
+    return this._player;
   }
 }
 

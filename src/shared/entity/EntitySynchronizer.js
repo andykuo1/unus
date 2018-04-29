@@ -106,6 +106,8 @@ class EntitySynchronizer
       //Just create it, maybe a packet was skipped...
       if (entity === null)
       {
+        console.log("WARNING! - Creating missing entity...");
+
         //Try to create with default constructor, otherwise use empty entity template
         try
         {
@@ -130,7 +132,6 @@ class EntitySynchronizer
         const componentData = componentsData[componentName];
         if (!entity.hasComponent(componentClass))
         {
-          //Just create it, maybe a packet was skipped...
           entity.addComponent(componentClass);
         }
         const component = entity[componentName];

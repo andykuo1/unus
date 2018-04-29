@@ -722,14 +722,33 @@ class NetworkClient
     this._player = null;
   }
 
+  onPlayerCreate(entityPlayer)
+  {
+    console.log("Creating player...");
+
+    this._player = entityPlayer;
+  }
+
+  onPlayerDestroy()
+  {
+    console.log("Destroying player...");
+
+    this._player = null;
+  }
+
   onConnect()
   {
-    console.log("Client connected: " + this._socket.id);
+    console.log("Connecting client: " + this._socket.id);
   }
 
   onDisconnect()
   {
-    console.log("Client disconnected: " + this._socket.id);
+    console.log("Disconnecting client: " + this._socket.id);
+  }
+
+  get player()
+  {
+    return this._player;
   }
 }
 
@@ -760,6 +779,8 @@ class World
     this.synchronizer = new __WEBPACK_IMPORTED_MODULE_1_shared_entity_EntitySynchronizer_js__["a" /* default */](this.entityManager);
     this.entitySyncTimer = 20;
     this.worldStates = [];
+
+    this.forceUpdateRestart = false;
   }
 
   async initialize()
@@ -772,21 +793,22 @@ class World
 
   onClientConnect(client)
   {
+    console.log("Preparing environment for client...");
+
     const entity = this.entityManager.spawnEntity('player');
+    client.onPlayerCreate(entity);
 
-    const payload = {};
-    payload.worldData = this.getPreviousWorldState();
-    payload.playerData = {
-      entity: entity.id
-    };
-
+    this.forceUpdateRestart = true;
     client._player = entity;
-    client._socket.emit('serverRestart', payload);
   }
 
   onClientDisconnect(client)
   {
+    console.log("Resetting environment for client...");
 
+    const entityPlayer = client.player;
+    client.onPlayerDestroy();
+    this.entityManager.destroyEntity(entityPlayer);
   }
 
   onUpdate(delta)
@@ -808,7 +830,7 @@ class World
     }
 
     //Send full update every few ticks
-    if (--this.entitySyncTimer <= 0)
+    if (this.forceUpdateRestart || --this.entitySyncTimer <= 0)
     {
       console.log("Sending full world state...");
 
@@ -817,10 +839,15 @@ class World
 
       for(const client of __WEBPACK_IMPORTED_MODULE_2_Application_js__["a" /* default */].server._clients.values())
       {
-        client._socket.emit('serverUpdate', payload);
+        payload.playerData = {
+          entity: client.player.id
+        };
+
+        client._socket.emit(this.forceUpdateRestart ? 'serverRestart' : 'serverUpdate', payload);
       }
 
       this.entitySyncTimer = 20;
+      this.forceUpdateRestart = false;
     }
   }
 
@@ -1111,6 +1138,8 @@ class EntitySynchronizer
       //Just create it, maybe a packet was skipped...
       if (entity === null)
       {
+        console.log("WARNING! - Creating missing entity...");
+
         //Try to create with default constructor, otherwise use empty entity template
         try
         {
@@ -1135,7 +1164,6 @@ class EntitySynchronizer
         const componentData = componentsData[componentName];
         if (!entity.hasComponent(componentClass))
         {
-          //Just create it, maybe a packet was skipped...
           entity.addComponent(componentClass);
         }
         const component = entity[componentName];
