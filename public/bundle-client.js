@@ -15075,6 +15075,8 @@ Object.assign(Mouse.prototype, __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__["
 
 
 
+const INTERPOLATION_DELTA_FACTOR = 10;
+
 class ClientWorld
 {
   constructor()
@@ -15083,7 +15085,6 @@ class ClientWorld
     this.synchronizer = new __WEBPACK_IMPORTED_MODULE_3_shared_entity_EntitySynchronizer_js__["a" /* default */](this.entityManager);
 
     this.player = null;
-    this.interpolationTime = 0;
   }
 
   async initialize()
@@ -15101,10 +15102,6 @@ class ClientWorld
       console.log("Getting world start state...");
       console.log(data);
 
-      //Interpolation here...
-      this.interpolationTime = 0;
-
-      //TODO: how to store this so i can interpolate?
       this.synchronizer.deserialize(data.worldData);
 
       const entityPlayer = this.entityManager.getEntityByID(data.playerData.entity);
@@ -15122,9 +15119,6 @@ class ClientWorld
         console.log("Receiving world state...");
       }
 
-      //Interpolation here...
-      this.interpolationTime = 0;
-
       this.synchronizer.deserialize(data.worldData);
     });
   }
@@ -15139,8 +15133,7 @@ class ClientWorld
 
   onUpdate(delta)
   {
-    //Interpolate here...
-    this.interpolationTime += delta;
+    //Interpolate properties...
     for(const [componentClass, entityList] of this.entityManager.components)
     {
       if (!componentClass.hasOwnProperty('sync')) continue;
@@ -15160,7 +15153,7 @@ class ClientWorld
             {
               throw new Error("serializer \'" + propertyType + "\' does not support interpolation");
             }
-            serializer.interpolate(propertyName, syncOpts, this.interpolationTime * 10, component);
+            serializer.interpolate(propertyName, syncOpts, delta * INTERPOLATION_DELTA_FACTOR, component);
           }
         }
       }
@@ -15880,7 +15873,28 @@ class FloatSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /
 
   decode(serializer, propertyName, propertyData, syncOpts, dst)
   {
+    if (__WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /* default */].INTERPOLATE && syncOpts.hasOwnProperty('blend'))
+    {
+      switch (syncOpts.blend.mode)
+      {
+        case 'interpolate':
+          const nextPropertyName = syncOpts.blend.next;
+          dst[syncOpts.blend.prev] = dst[nextPropertyName];
+          propertyName = nextPropertyName;
+          break;
+        default:
+          throw new Error("unknown blend mode to sync for property \'" + propertyName + "\'");
+      }
+    }
+
     dst[propertyName] = Number(propertyData);
+  }
+
+  interpolate(propertyName, syncOpts, delta, componentData)
+  {
+    const prevData = componentData[propertyName];
+    const nextData = componentData[syncOpts.blend.next];
+    componentData[propertyName] = MathHelper.lerp(prevData, nextData, delta);
   }
 }
 
@@ -15965,7 +15979,7 @@ class Vec3Serializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /*
         case 'interpolate':
           const nextPropertyName = syncOpts.blend.next;
           __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec3 */].copy(dst[syncOpts.blend.prev], dst[nextPropertyName]);
-          __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec3 */].copy(dst[propertyName], dst[nextPropertyName]);
+          //vec3.copy(dst[propertyName], dst[nextPropertyName]);
           propertyName = nextPropertyName;
           break;
         default:
@@ -15978,19 +15992,23 @@ class Vec3Serializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /*
 
   interpolate(propertyName, syncOpts, delta, componentData)
   {
-
-    const prevData = componentData[syncOpts.blend.prev];
+    //TODO: if using this, change delta to be interpolationTime
+    //const prevData = componentData[syncOpts.blend.prev];
+    const prevData = componentData[propertyName];
     const nextData = componentData[syncOpts.blend.next];
     componentData[propertyName][0] = __WEBPACK_IMPORTED_MODULE_2_util_MathHelper_js__["a" /* lerp */](prevData[0], nextData[0], delta);
     componentData[propertyName][1] = __WEBPACK_IMPORTED_MODULE_2_util_MathHelper_js__["a" /* lerp */](prevData[1], nextData[1], delta);
     componentData[propertyName][2] = __WEBPACK_IMPORTED_MODULE_2_util_MathHelper_js__["a" /* lerp */](prevData[2], nextData[2], delta);
-    
+
+    //HACK: this is to make sure the property does not reset when delta resets...
+    /*
     if (delta >= 1)
     {
       prevData[0] = nextData[0];
       prevData[1] = nextData[1];
       prevData[2] = nextData[2];
     }
+    */
   }
 }
 
@@ -16066,7 +16084,31 @@ class QuatSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /*
       dst[propertyName] = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].create();
     }
 
+    if (__WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /* default */].INTERPOLATE && syncOpts.hasOwnProperty('blend'))
+    {
+      switch (syncOpts.blend.mode)
+      {
+        case 'interpolate':
+          const nextPropertyName = syncOpts.blend.next;
+          __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].copy(dst[syncOpts.blend.prev], dst[nextPropertyName]);
+          propertyName = nextPropertyName;
+          break;
+        default:
+          throw new Error("unknown blend mode to sync for property \'" + propertyName + "\'");
+      }
+    }
+
     __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* quat */].copy(dst[propertyName], propertyData);
+  }
+
+  interpolate(propertyName, syncOpts, delta, componentData)
+  {
+    const prevData = componentData[propertyName];
+    const nextData = componentData[syncOpts.blend.next];
+    componentData[propertyName][0] = MathHelper.lerp(prevData[0], nextData[0], delta);
+    componentData[propertyName][1] = MathHelper.lerp(prevData[1], nextData[1], delta);
+    componentData[propertyName][2] = MathHelper.lerp(prevData[2], nextData[2], delta);
+    componentData[propertyName][3] = MathHelper.lerp(prevData[3], nextData[3], delta);
   }
 }
 
@@ -16172,36 +16214,6 @@ class ArraySerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /
 
     const elements = dst[propertyName];
     const length = propertyData.length;
-    for(let i = 0; i < length; ++i)
-    {
-      elements.push(0);
-      serializer.decodeProperty(i, propertyData[i], syncOpts.elements, elements);
-    }
-  }
-
-  interpolate(serializer, prevPropertyName, nextPropertyName, propertyName, propertyData, dst)
-  {
-    if (!prevPropertyName) prevPropertyName = propertyName;
-    if (!nextPropertyName) nextPropertyName = propertyName;
-
-    //Create if it does not exist...
-    if (!dst.hasOwnProperty(propertyName) || dst[propertyName] === null)
-    {
-      dst[propertyName] = [];
-    }
-
-    let prevElements = dst[prevPropertyName];
-    let elements = dst[propertyName];
-    let nextElements = dst[nextPropertyName];
-
-    let length = nextElements.length;
-    for(let i = 0; i < length; ++i)
-    {
-
-    }
-
-    elements = dst[nextPropertyName];
-    length = propertyData.length;
     for(let i = 0; i < length; ++i)
     {
       elements.push(0);

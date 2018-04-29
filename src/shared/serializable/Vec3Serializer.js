@@ -30,7 +30,7 @@ class Vec3Serializer extends Serializer
         case 'interpolate':
           const nextPropertyName = syncOpts.blend.next;
           vec3.copy(dst[syncOpts.blend.prev], dst[nextPropertyName]);
-          vec3.copy(dst[propertyName], dst[nextPropertyName]);
+          //vec3.copy(dst[propertyName], dst[nextPropertyName]);
           propertyName = nextPropertyName;
           break;
         default:
@@ -43,20 +43,23 @@ class Vec3Serializer extends Serializer
 
   interpolate(propertyName, syncOpts, delta, componentData)
   {
-
-    const prevData = componentData[syncOpts.blend.prev];
+    //TODO: if using this, change delta to be interpolationTime
+    //const prevData = componentData[syncOpts.blend.prev];
+    const prevData = componentData[propertyName];
     const nextData = componentData[syncOpts.blend.next];
     componentData[propertyName][0] = MathHelper.lerp(prevData[0], nextData[0], delta);
     componentData[propertyName][1] = MathHelper.lerp(prevData[1], nextData[1], delta);
     componentData[propertyName][2] = MathHelper.lerp(prevData[2], nextData[2], delta);
 
     //HACK: this is to make sure the property does not reset when delta resets...
+    /*
     if (delta >= 1)
     {
       prevData[0] = nextData[0];
       prevData[1] = nextData[1];
       prevData[2] = nextData[2];
     }
+    */
   }
 }
 

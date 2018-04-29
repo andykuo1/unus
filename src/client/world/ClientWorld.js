@@ -7,6 +7,8 @@ import EntitySynchronizer from 'shared/entity/EntitySynchronizer.js';
 import * as Serializables from 'shared/serializable/Serializables.js';
 import * as MathHelper from 'util/MathHelper.js';
 
+const INTERPOLATION_DELTA_FACTOR = 10;
+
 class ClientWorld
 {
   constructor()
@@ -15,7 +17,6 @@ class ClientWorld
     this.synchronizer = new EntitySynchronizer(this.entityManager);
 
     this.player = null;
-    this.interpolationTime = 0;
   }
 
   async initialize()
@@ -33,10 +34,6 @@ class ClientWorld
       console.log("Getting world start state...");
       console.log(data);
 
-      //Interpolation here...
-      this.interpolationTime = 0;
-
-      //TODO: how to store this so i can interpolate?
       this.synchronizer.deserialize(data.worldData);
 
       const entityPlayer = this.entityManager.getEntityByID(data.playerData.entity);
@@ -54,9 +51,6 @@ class ClientWorld
         console.log("Receiving world state...");
       }
 
-      //Interpolation here...
-      this.interpolationTime = 0;
-
       this.synchronizer.deserialize(data.worldData);
     });
   }
@@ -71,8 +65,7 @@ class ClientWorld
 
   onUpdate(delta)
   {
-    //Interpolate here...
-    this.interpolationTime += delta;
+    //Interpolate properties...
     for(const [componentClass, entityList] of this.entityManager.components)
     {
       if (!componentClass.hasOwnProperty('sync')) continue;
@@ -92,7 +85,7 @@ class ClientWorld
             {
               throw new Error("serializer \'" + propertyType + "\' does not support interpolation");
             }
-            serializer.interpolate(propertyName, syncOpts, this.interpolationTime * 10, component);
+            serializer.interpolate(propertyName, syncOpts, delta * INTERPOLATION_DELTA_FACTOR, component);
           }
         }
       }
