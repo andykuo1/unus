@@ -14760,6 +14760,8 @@ class VBO
 
 
 
+const CAMERA_DAMPING_FACTOR = 0.2;
+
 class LocalClient
 {
   constructor(socket, canvas)
@@ -14769,8 +14771,8 @@ class LocalClient
 
     this._input = new __WEBPACK_IMPORTED_MODULE_2_client_input_Mouse_js__["a" /* default */](canvas, document);
 
-    this.nextX = 0;
-    this.nextY = 0;
+    this.targetX = 0;
+    this.targetY = 0;
   }
 
   onPlayerCreate(entityPlayer)
@@ -14804,15 +14806,20 @@ class LocalClient
     //Smoothly follow the player
     if (this._player)
     {
-      const dampingFactor = 0.3;
       const playerTransform = this._player.Transform;
       //TODO: Get camera some other way...
       const cameraTransform = __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].client._render._renderer.camera.transform;
       const dx = playerTransform.position[0] - cameraTransform.position[0];
       const dy = playerTransform.position[1] - cameraTransform.position[1];
-      cameraTransform.position[0] += dx * dampingFactor;
-      cameraTransform.position[1] += dy * dampingFactor;
+      cameraTransform.position[0] += dx * CAMERA_DAMPING_FACTOR;
+      cameraTransform.position[1] += dy * CAMERA_DAMPING_FACTOR;
     }
+
+    //Send client input
+    this._socket.emit('clientInput', {
+      targetX: this.targetX,
+      targetY: this.targetY
+    });
   }
 
   onMouseDown(mouse, button)
@@ -14821,8 +14828,8 @@ class LocalClient
       __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].client._render._renderer.camera,
       __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].client._render._renderer.viewport,
       mouse.x, mouse.y);
-    this.nextX = vec[0];
-    this.nextY = vec[1];
+    this.targetX = vec[0];
+    this.targetY = vec[1];
   }
 
   get player()

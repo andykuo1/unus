@@ -45,6 +45,11 @@ class ServerEngine
 
   onApplicationUpdate(delta)
   {
+    for(const client of this._clients.values())
+    {
+      client.onUpdate(delta);
+    }
+    
     this._world.onUpdate(delta);
   }
 
