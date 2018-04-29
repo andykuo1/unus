@@ -4,7 +4,7 @@ import { vec3 } from 'gl-matrix';
 import Mouse from 'client/input/Mouse.js';
 import ViewPort from 'client/render/camera/ViewPort.js';
 
-const CAMERA_DAMPING_FACTOR = 0.2;
+const CAMERA_DAMPING_FACTOR = 0.1;
 
 class LocalClient
 {

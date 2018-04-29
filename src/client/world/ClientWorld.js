@@ -28,6 +28,7 @@ class ClientWorld
       console.log("Getting world start state...");
       console.log(data);
 
+      //TODO: how to store this so i can interpolate?
       this.synchronizer.deserialize(data.worldData);
 
       const entityPlayer = this.entityManager.getEntityByID(data.playerData.entity);
@@ -53,7 +54,11 @@ class ClientWorld
 
   onUpdate(delta)
   {
+    //Interpolate here...
+
+    //Continue to extrapolate here...
     this.player.onUpdate(delta);
+
     Application.client._render.requestRender(this.entityManager);
   }
 }

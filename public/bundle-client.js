@@ -14760,7 +14760,7 @@ class VBO
 
 
 
-const CAMERA_DAMPING_FACTOR = 0.2;
+const CAMERA_DAMPING_FACTOR = 0.1;
 
 class LocalClient
 {

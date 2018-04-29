@@ -847,15 +847,7 @@ class World
 
   onUpdate(delta)
   {
-    //DEBUG: Randomly update position...
-    for(const entity of this.entityManager.entities)
-    {
-      if (typeof entity.Transform != 'undefined')
-      {
-        entity.Transform.position[0] += -0.1 + Math.random() * 0.2;
-        entity.Transform.position[1] += -0.1 + Math.random() * 0.2;
-      }
-    }
+    //Do regular logic here...
 
     //Send full update every few ticks
     if (this.forceUpdateRestart || --this.entitySyncTimer <= 0)
