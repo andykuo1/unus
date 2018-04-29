@@ -9,7 +9,6 @@ import Mat4Serializer from './Mat4Serializer.js';
 import StringSerializer from './StringSerializer.js';
 import ArraySerializer from './ArraySerializer.js';
 import EntityReferenceSerializer from './EntityReferenceSerializer.js';
-import EntityDataSerializer from './EntityDataSerializer.js';
 
 export {
   BooleanSerializer,
@@ -22,6 +21,5 @@ export {
   Mat4Serializer,
   StringSerializer,
   ArraySerializer,
-  EntityReferenceSerializer,
-  EntityDataSerializer
+  EntityReferenceSerializer
 };

@@ -15,7 +15,7 @@ class ArraySerializer extends Serializer
     for(let i = 0; i < length; ++i)
     {
       elements.push(0);
-      serializer.encodeProperty(i, propertyData[i], syncData.elements, elements);
+      serializer.encodeProperty(i, propertyData[i], syncOpts.elements, elements);
     }
   }
 
@@ -32,7 +32,7 @@ class ArraySerializer extends Serializer
     for(let i = 0; i < length; ++i)
     {
       elements.push(0);
-      serializer.decodeProperty(i, propertyData[i], syncData.elements, elements);
+      serializer.decodeProperty(i, propertyData[i], syncOpts.elements, elements);
     }
   }
 }

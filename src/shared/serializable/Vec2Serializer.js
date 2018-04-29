@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix';
 import Serializer from './Serializer.js';
 
-class EntityReferenceSerializer extends Serializer
+class Vec2Serializer extends Serializer
 {
   encode(serializer, propertyName, propertyData, syncOpts, dst)
   {
@@ -26,4 +26,4 @@ class EntityReferenceSerializer extends Serializer
   }
 }
 
-export default EntityReferenceSerializer;
+export default Vec2Serializer;

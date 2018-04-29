@@ -61,6 +61,11 @@ class EntityManager
       throw new Error("entity already includes component \'" + Reflection.getClassName(component) + "\'");
     }
 
+    if (!component)
+    {
+      throw new Error("cannot add undefined component to entity");
+    }
+
     entity[Reflection.getClassName(component)] = new component();
 
     const list = this.components.get(component) || [];

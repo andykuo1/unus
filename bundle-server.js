@@ -1724,7 +1724,7 @@ class EntityDataSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__[
     }
   }
 
-  decode(serializer, propertyName, propertyData, syncOpts, dst)
+  decode(serializer, propertyName, propertyData, syncOpts, dst=null)
   {
     const entityData = propertyData[propertyName];
     const entityID = propertyName;
