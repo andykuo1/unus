@@ -12,9 +12,8 @@ class World
     this.entityManager = new EntityManager();
     this.synchronizer = new EntitySynchronizer(this.entityManager);
     this.entitySyncTimer = 20;
-    this.worldStates = [];
 
-    this.forceUpdateRestart = false;
+    this.forceUpdateRestart = true;
   }
 
   async initialize()
@@ -47,12 +46,6 @@ class World
 
   onUpdate(delta)
   {
-    //Discard old world states
-    while(this.worldStates.length > 5)
-    {
-      this.worldStates.shift();
-    }
-
     //DEBUG: Randomly update position...
     for(const entity of this.entityManager.entities)
     {
@@ -66,10 +59,10 @@ class World
     //Send full update every few ticks
     if (this.forceUpdateRestart || --this.entitySyncTimer <= 0)
     {
-      console.log("Sending full world state...");
+      console.log("Sending complete world state...");
 
       const payload = {};
-      payload.worldData = this.getCurrentWorldState();
+      payload.worldData = this.synchronizer.serialize(true);
 
       for(const client of Application.server._clients.values())
       {
@@ -83,28 +76,22 @@ class World
       this.entitySyncTimer = 20;
       this.forceUpdateRestart = false;
     }
-  }
-
-  captureWorldState()
-  {
-    const worldData = this.synchronizer.serialize();
-    this.worldStates.push(worldData);
-    return worldData;
-  }
-
-  getCurrentWorldState()
-  {
-    return this.captureWorldState();
-  }
-
-  getPreviousWorldState()
-  {
-    if (this.worldStates.length <= 0)
+    else
     {
-      return this.captureWorldState();
-    }
+      //console.log("Sending differential world state...");
 
-    return this.worldStates[this.worldStates.length - 1];
+      const payload = {};
+      payload.worldData = this.synchronizer.serialize(false);
+
+      for(const client of Application.server._clients.values())
+      {
+        payload.playerData = {
+          entity: client.player.id
+        };
+
+        client._socket.emit('serverUpdate', payload);
+      }
+    }
   }
 }
 
