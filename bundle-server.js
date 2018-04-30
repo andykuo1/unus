@@ -615,9 +615,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Transform_js__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Renderable_js__ = __webpack_require__(22);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Motion_js__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__DecayOverTime_js__ = __webpack_require__(24);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Transform", function() { return __WEBPACK_IMPORTED_MODULE_0__Transform_js__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Renderable", function() { return __WEBPACK_IMPORTED_MODULE_1__Renderable_js__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Motion", function() { return __WEBPACK_IMPORTED_MODULE_2__Motion_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "DecayOverTime", function() { return __WEBPACK_IMPORTED_MODULE_3__DecayOverTime_js__["a"]; });
+
 
 
 
@@ -724,7 +727,7 @@ class ServerEngine
 
     this._socket.on('connection', socket => {
       //TODO: Validate client before continuing...
-      const client = new __WEBPACK_IMPORTED_MODULE_1_server_NetworkClient_js__["a" /* default */](socket);
+      const client = new __WEBPACK_IMPORTED_MODULE_1_server_NetworkClient_js__["a" /* default */](socket, this._world);
       this._clients.set(socket.id, client);
       client.onConnect();
       this._world.onClientConnect(client);
@@ -752,7 +755,7 @@ class ServerEngine
     {
       client.onUpdate(delta);
     }
-    
+
     this._world.onUpdate(delta);
   }
 
@@ -777,8 +780,9 @@ Object.assign(ServerEngine.prototype, __WEBPACK_IMPORTED_MODULE_0_util_Eventable
 
 class NetworkClient
 {
-  constructor(socket)
+  constructor(socket, world)
   {
+    this._world = world;
     this._socket = socket;
     this._player = null;
 
@@ -833,6 +837,16 @@ class NetworkClient
   {
     this.targetX = data.targetX;
     this.targetY = data.targetY;
+
+    if (data.fireBullet)
+    {
+      const bullet = this._world.entityManager.spawnEntity('bullet');
+      bullet.Transform.position[0] = this._player.Transform.position[0];
+      bullet.Transform.position[1] = this._player.Transform.position[1];
+      bullet.Motion.motionX = this.targetX - this._player.Transform.position[0];
+      bullet.Motion.motionY = this.targetY - this._player.Transform.position[1];
+      bullet.Motion.friction = 0;
+    }
   }
 
   get player()
@@ -880,6 +894,13 @@ class World
       this.addComponent(__WEBPACK_IMPORTED_MODULE_4_shared_entity_component_Components_js__["Renderable"]);
       this.addComponent(__WEBPACK_IMPORTED_MODULE_4_shared_entity_component_Components_js__["Motion"]);
     });
+
+    this.entityManager.registerEntity('bullet', function() {
+      this.addComponent(__WEBPACK_IMPORTED_MODULE_4_shared_entity_component_Components_js__["Transform"]);
+      this.addComponent(__WEBPACK_IMPORTED_MODULE_4_shared_entity_component_Components_js__["Renderable"]);
+      this.addComponent(__WEBPACK_IMPORTED_MODULE_4_shared_entity_component_Components_js__["Motion"]);
+      this.addComponent(__WEBPACK_IMPORTED_MODULE_4_shared_entity_component_Components_js__["DecayOverTime"]);
+    });
   }
 
   onClientConnect(client)
@@ -905,6 +926,8 @@ class World
   onUpdate(delta)
   {
     //Do regular logic here...
+
+    //Update motion logic
     let entities = this.entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_4_shared_entity_component_Components_js__["Motion"]);
     for(const entity of entities)
     {
@@ -912,6 +935,19 @@ class World
       entity.Transform.position[1] += entity.Motion.motionY;
       entity.Motion.motionX *= 1 - entity.Motion.friction;
       entity.Motion.motionY *= 1 - entity.Motion.friction;
+    }
+
+    //Update decay over time logic
+    entities = this.entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_4_shared_entity_component_Components_js__["DecayOverTime"]);
+    let i = entities.length;
+    while(i--)
+    {
+      const entity = entities[i];
+      if (entity.DecayOverTime.age-- <= 0)
+      {
+        this.entityManager.destroyEntity(entity);
+        continue;
+      }
     }
 
     //Send full update every few ticks
@@ -1111,7 +1147,7 @@ class ObjectPool
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__SerializerRegistry_js__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializer_js__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_shared_entity_component_Components_js__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_shared_serializable_Serializables_js__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_shared_serializable_Serializables_js__ = __webpack_require__(25);
 
 
 
@@ -1209,7 +1245,11 @@ class EntitySynchronizer
             entity = this._entityManager.spawnEntity();
           }
           entity._id = event.entityID;
+
+          const prevInitial = this.isInitial;
+          this.isInitial = true;
           this.deserializeEntity(entity._id, event.entityData, true);
+          this.isInitial = prevInitial;
         }
         else if (event.type === 'destroy')
         {
@@ -1461,7 +1501,7 @@ class EntitySynchronizer
       if (oldPropertyData.length != newPropertyData.length) return true;
 
       let i = oldPropertyData.length;
-      while(--i)
+      while(i--)
       {
         if (this.isPropertyChanged(newPropertyData[i], oldPropertyData[i]))
         {
@@ -1638,17 +1678,34 @@ Motion.sync = {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__BooleanSerializer_js__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__IntegerSerializer_js__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__FloatSerializer_js__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Vec2Serializer_js__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Vec3Serializer_js__ = __webpack_require__(29);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__Vec4Serializer_js__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__QuatSerializer_js__ = __webpack_require__(31);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__Mat4Serializer_js__ = __webpack_require__(32);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__StringSerializer_js__ = __webpack_require__(33);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__ArraySerializer_js__ = __webpack_require__(34);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__EntityReferenceSerializer_js__ = __webpack_require__(35);
+function DecayOverTime()
+{
+  this.age = 10;
+}
+
+DecayOverTime.sync = {
+  age: { type: 'integer' }
+};
+
+/* harmony default export */ __webpack_exports__["a"] = (DecayOverTime);
+
+
+/***/ }),
+/* 25 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__BooleanSerializer_js__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__IntegerSerializer_js__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__FloatSerializer_js__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Vec2Serializer_js__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Vec3Serializer_js__ = __webpack_require__(30);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__Vec4Serializer_js__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__QuatSerializer_js__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__Mat4Serializer_js__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__StringSerializer_js__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__ArraySerializer_js__ = __webpack_require__(35);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__EntityReferenceSerializer_js__ = __webpack_require__(36);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_0__BooleanSerializer_js__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return __WEBPACK_IMPORTED_MODULE_1__IntegerSerializer_js__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return __WEBPACK_IMPORTED_MODULE_2__FloatSerializer_js__["a"]; });
@@ -1676,7 +1733,7 @@ Motion.sync = {
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1700,7 +1757,7 @@ class BooleanSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a"
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1724,7 +1781,7 @@ class IntegerSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a"
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1773,7 +1830,7 @@ class FloatSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1812,7 +1869,7 @@ class Vec2Serializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /*
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1890,7 +1947,7 @@ class Vec3Serializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /*
 
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1929,7 +1986,7 @@ class Vec4Serializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /*
 
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1996,7 +2053,7 @@ class QuatSerializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /*
 
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2035,7 +2092,7 @@ class Mat4Serializer extends __WEBPACK_IMPORTED_MODULE_1__Serializer_js__["a" /*
 
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2059,7 +2116,7 @@ class StringSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" 
 
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2107,7 +2164,7 @@ class ArraySerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_js__["a" /
 
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

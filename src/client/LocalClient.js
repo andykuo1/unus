@@ -9,8 +9,9 @@ const CAMERA_DAMPING_FACTOR = 0.1;
 
 class LocalClient
 {
-  constructor(socket, canvas)
+  constructor(socket, canvas, world)
   {
+    this._world = world;
     this._socket = socket;
     this._player = null;
 
@@ -18,6 +19,7 @@ class LocalClient
 
     this.targetX = 0;
     this.targetY = 0;
+    this.fireBullet = false;
   }
 
   onPlayerCreate(entityPlayer)
@@ -27,6 +29,7 @@ class LocalClient
     this._player = entityPlayer;
 
     this._input.on('mousedown', this.onMouseDown.bind(this));
+    this._input.on('mouseup', this.onMouseUp.bind(this));
   }
 
   onPlayerDestroy()
@@ -61,7 +64,9 @@ class LocalClient
     }
 
     //DEBUG: Send client input... with lag!
-    setTimeout(() => this._socket.emit('clientInput', { targetX: this.targetX, targetY: this.targetY }), 200 + 50 * Math.random());
+    setTimeout(() => this._socket.emit('clientInput', { targetX: this.targetX, targetY: this.targetY, fireBullet: this.fireBullet }), 200 + 50 * Math.random());
+
+    this.fireBullet = false;
   }
 
   onMouseDown(mouse, button)
@@ -72,6 +77,11 @@ class LocalClient
       mouse.x, mouse.y);
     this.targetX = vec[0];
     this.targetY = vec[1];
+  }
+
+  onMouseUp(mouse, button)
+  {
+    this.fireBullet = true;
   }
 
   get player()

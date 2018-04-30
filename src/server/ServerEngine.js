@@ -21,7 +21,7 @@ class ServerEngine
 
     this._socket.on('connection', socket => {
       //TODO: Validate client before continuing...
-      const client = new NetworkClient(socket);
+      const client = new NetworkClient(socket, this._world);
       this._clients.set(socket.id, client);
       client.onConnect();
       this._world.onClientConnect(client);
@@ -49,7 +49,7 @@ class ServerEngine
     {
       client.onUpdate(delta);
     }
-    
+
     this._world.onUpdate(delta);
   }
 

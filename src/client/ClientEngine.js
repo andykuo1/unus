@@ -13,9 +13,9 @@ class ClientEngine
     this._socket = socket;
 
     this._render = new RenderEngine(app, canvas);
-    this._client = new LocalClient(socket, canvas);
-
     this._world = new ClientWorld();
+
+    this._client = new LocalClient(socket, canvas, this._world);
   }
 
   async initialize()

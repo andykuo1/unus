@@ -2,8 +2,9 @@ import * as MathHelper from 'util/MathHelper.js';
 
 class NetworkClient
 {
-  constructor(socket)
+  constructor(socket, world)
   {
+    this._world = world;
     this._socket = socket;
     this._player = null;
 
@@ -58,6 +59,16 @@ class NetworkClient
   {
     this.targetX = data.targetX;
     this.targetY = data.targetY;
+
+    if (data.fireBullet)
+    {
+      const bullet = this._world.entityManager.spawnEntity('bullet');
+      bullet.Transform.position[0] = this._player.Transform.position[0];
+      bullet.Transform.position[1] = this._player.Transform.position[1];
+      bullet.Motion.motionX = this.targetX - this._player.Transform.position[0];
+      bullet.Motion.motionY = this.targetY - this._player.Transform.position[1];
+      bullet.Motion.friction = 0;
+    }
   }
 
   get player()
