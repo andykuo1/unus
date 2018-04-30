@@ -95,7 +95,11 @@ class EntitySynchronizer
             entity = this._entityManager.spawnEntity();
           }
           entity._id = event.entityID;
+
+          const prevInitial = this.isInitial;
+          this.isInitial = true;
           this.deserializeEntity(entity._id, event.entityData, true);
+          this.isInitial = prevInitial;
         }
         else if (event.type === 'destroy')
         {
@@ -347,7 +351,7 @@ class EntitySynchronizer
       if (oldPropertyData.length != newPropertyData.length) return true;
 
       let i = oldPropertyData.length;
-      while(--i)
+      while(i--)
       {
         if (this.isPropertyChanged(newPropertyData[i], oldPropertyData[i]))
         {
