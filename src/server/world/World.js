@@ -113,8 +113,8 @@ class World
           entity: client.player.id
         };
 
-        //DEBUG: Send server update... with lag!
-        setTimeout(() => client._socket.emit('serverUpdate', payload), 200 + 50 * Math.random());
+        //Send server update
+        Application.network.sendTo(client._socket, 'serverUpdate', payload);
       }
     }
   }

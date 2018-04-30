@@ -1,4 +1,5 @@
 import Eventable from 'util/Eventable.js';
+import NetworkHandler from 'shared/NetworkHandler.js';
 
 const DEBUG_PRINT_FPS = true;
 
@@ -26,6 +27,7 @@ class Application
 
     this.client = null;
     this.server = null;
+    this.network = new NetworkHandler();
   }
 
   start(framerate)

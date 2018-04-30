@@ -63,8 +63,13 @@ class LocalClient
       cameraTransform.position[1] += dy * CAMERA_DAMPING_FACTOR;
     }
 
-    //DEBUG: Send client input... with lag!
-    setTimeout(() => this._socket.emit('clientInput', { targetX: this.targetX, targetY: this.targetY, fireBullet: this.fireBullet }), 200 + 50 * Math.random());
+    //Send client input...
+    Application.network.sendTo(this._socket,
+      'clientInput', {
+        targetX: this.targetX,
+        targetY: this.targetY,
+        fireBullet: this.fireBullet
+      });
 
     this.fireBullet = false;
   }
