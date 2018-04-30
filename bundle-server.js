@@ -947,7 +947,8 @@ class World
           entity: client.player.id
         };
 
-        client._socket.emit('serverUpdate', payload);
+        //DEBUG: Send server update... with lag!
+        setTimeout(() => client._socket.emit('serverUpdate', payload), 200 + 50 * Math.random());
       }
     }
   }
@@ -1605,7 +1606,7 @@ function Motion()
 {
   this.motionX = 0;
   this.motionY = 0;
-  this.friction = 0.4;
+  this.friction = 0.8;
 
   if (__WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].isRemote())
   {

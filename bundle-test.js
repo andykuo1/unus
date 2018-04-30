@@ -1417,7 +1417,7 @@ function Motion()
 {
   this.motionX = 0;
   this.motionY = 0;
-  this.friction = 0.4;
+  this.friction = 0.8;
 
   if (__WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].isRemote())
   {

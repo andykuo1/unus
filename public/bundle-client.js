@@ -14897,11 +14897,8 @@ class LocalClient
       cameraTransform.position[1] += dy * CAMERA_DAMPING_FACTOR;
     }
 
-    //Send client input
-    this._socket.emit('clientInput', {
-      targetX: this.targetX,
-      targetY: this.targetY
-    });
+    //DEBUG: Send client input... with lag!
+    setTimeout(() => this._socket.emit('clientInput', { targetX: this.targetX, targetY: this.targetY }), 200 + 50 * Math.random());
   }
 
   onMouseDown(mouse, button)
@@ -15839,7 +15836,7 @@ function Motion()
 {
   this.motionX = 0;
   this.motionY = 0;
-  this.friction = 0.4;
+  this.friction = 0.8;
 
   if (__WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].isRemote())
   {

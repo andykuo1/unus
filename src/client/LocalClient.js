@@ -60,11 +60,8 @@ class LocalClient
       cameraTransform.position[1] += dy * CAMERA_DAMPING_FACTOR;
     }
 
-    //Send client input
-    this._socket.emit('clientInput', {
-      targetX: this.targetX,
-      targetY: this.targetY
-    });
+    //DEBUG: Send client input... with lag!
+    setTimeout(() => this._socket.emit('clientInput', { targetX: this.targetX, targetY: this.targetY }), 200 + 50 * Math.random());
   }
 
   onMouseDown(mouse, button)
