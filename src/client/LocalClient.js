@@ -63,14 +63,6 @@ class LocalClient
       cameraTransform.position[1] += dy * CAMERA_DAMPING_FACTOR;
     }
 
-    //Send client input...
-    Application.network.sendTo(this._socket,
-      'clientInput', {
-        targetX: this.targetX,
-        targetY: this.targetY,
-        fireBullet: this.fireBullet
-      });
-
     this.fireBullet = false;
   }
 
@@ -80,6 +72,7 @@ class LocalClient
       Application.client._render._renderer.camera,
       Application.client._render._renderer.viewport,
       mouse.x, mouse.y);
+
     this.targetX = vec[0];
     this.targetY = vec[1];
   }

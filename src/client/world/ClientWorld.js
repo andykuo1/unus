@@ -91,6 +91,14 @@ class ClientWorld
       }
     }
 
+    //Send client input...
+    Application.network.sendTo(this.player._socket,
+      'clientInput', {
+        targetX: this.player.targetX,
+        targetY: this.player.targetY,
+        fireBullet: this.player.fireBullet
+      });
+
     //Continue to extrapolate here...
     this.player.onUpdate(delta);
 

@@ -10003,6 +10003,8 @@ class NetworkHandler
 {
   sendTo(socket, packetID, packetData)
   {
+    if (!socket) throw new Error("Cannot send to unknown socket");
+
     if (ENABLE_SIMULATED_LATENCY)
     {
       setTimeout(() => socket.emit(packetID, packetData),
@@ -14934,14 +14936,6 @@ class LocalClient
       cameraTransform.position[1] += dy * CAMERA_DAMPING_FACTOR;
     }
 
-    //Send client input...
-    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.sendTo(this._socket,
-      'clientInput', {
-        targetX: this.targetX,
-        targetY: this.targetY,
-        fireBullet: this.fireBullet
-      });
-
     this.fireBullet = false;
   }
 
@@ -14951,6 +14945,7 @@ class LocalClient
       __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].client._render._renderer.camera,
       __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].client._render._renderer.viewport,
       mouse.x, mouse.y);
+
     this.targetX = vec[0];
     this.targetY = vec[1];
   }
@@ -15208,6 +15203,14 @@ class ClientWorld
         }
       }
     }
+
+    //Send client input...
+    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.sendTo(this.player._socket,
+      'clientInput', {
+        targetX: this.player.targetX,
+        targetY: this.player.targetY,
+        fireBullet: this.player.fireBullet
+      });
 
     //Continue to extrapolate here...
     this.player.onUpdate(delta);

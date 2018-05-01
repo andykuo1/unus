@@ -6,6 +6,8 @@ class NetworkHandler
 {
   sendTo(socket, packetID, packetData)
   {
+    if (!socket) throw new Error("Cannot send to unknown socket");
+
     if (ENABLE_SIMULATED_LATENCY)
     {
       setTimeout(() => socket.emit(packetID, packetData),
