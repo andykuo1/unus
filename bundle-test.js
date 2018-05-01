@@ -1492,7 +1492,7 @@ Motion.sync = {
 "use strict";
 function DecayOverTime()
 {
-  this.age = 10;
+  this.age = 100;
 }
 
 DecayOverTime.sync = {

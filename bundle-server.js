@@ -824,9 +824,8 @@ class NetworkClient
 
     this.targetX = 0;
     this.targetY = 0;
-    this.speed = 1;
 
-    this.bulletSpeed = 1;
+    this.speed = 0.1;
   }
 
   onPlayerCreate(entityPlayer)
@@ -883,9 +882,9 @@ class NetworkClient
       bullet.Transform.position[1] = this._player.Transform.position[1];
       const dx = this.targetX - this._player.Transform.position[0];
       const dy = this.targetY - this._player.Transform.position[1];
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      bullet.Motion.motionX = dx / dist * this.bulletSpeed;
-      bullet.Motion.motionY = dy / dist * this.bulletSpeed;
+      const angle = Math.atan2(dy, dx);
+      bullet.Motion.motionX = Math.cos(angle);
+      bullet.Motion.motionY = Math.sin(angle);
       bullet.Motion.friction = 0;
     }
   }
@@ -1721,7 +1720,7 @@ Motion.sync = {
 "use strict";
 function DecayOverTime()
 {
-  this.age = 10;
+  this.age = 100;
 }
 
 DecayOverTime.sync = {
