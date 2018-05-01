@@ -1264,7 +1264,7 @@ class Application
     this.network = new __WEBPACK_IMPORTED_MODULE_1_shared_NetworkHandler_js__["a" /* default */]();
   }
 
-  start(framerate)
+  start()
   {
     if (this._startTime !== -1)
     {
@@ -1289,12 +1289,13 @@ class Application
     }
     else
     {
-      if (framerate <= 0)
+      const networkSide = this.server || this.client;
+      if (networkSide.tickRate <= 0)
       {
-        throw new Error("Cannot start application with framerate <= 0");
+        throw new Error("Cannot start application with tick rate <= 0");
       }
 
-      this._update_interval = setInterval(this.update.bind(this), framerate);
+      this._update_interval = setInterval(this.update.bind(this), networkSide.tickRate);
     }
 
     if (DEBUG_PRINT_FPS)
@@ -10044,6 +10045,8 @@ class ClientEngine
     this._world = new __WEBPACK_IMPORTED_MODULE_3_client_world_ClientWorld_js__["a" /* default */]();
 
     this._client = new __WEBPACK_IMPORTED_MODULE_2_client_LocalClient_js__["a" /* default */](socket, canvas, this._world);
+
+    this.tickRate = 60;
   }
 
   async initialize()

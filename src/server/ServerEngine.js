@@ -12,6 +12,8 @@ class ServerEngine
     this._clients = new Map();
 
     this._world = new World();
+
+    this.tickRate = 10;
   }
 
   async initialize()

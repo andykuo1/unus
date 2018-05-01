@@ -1,9 +1,9 @@
+import Application from 'Application.js';
+
 import EntityManager from 'shared/entity/EntityManager.js';
 import EntitySynchronizer from 'shared/entity/EntitySynchronizer.js';
 
-import Application from 'Application.js';
 import * as MathHelper from 'util/MathHelper.js';
-
 import * as Components from 'shared/entity/component/Components.js';
 
 class World

@@ -16,6 +16,8 @@ class ClientEngine
     this._world = new ClientWorld();
 
     this._client = new LocalClient(socket, canvas, this._world);
+
+    this.tickRate = 60;
   }
 
   async initialize()

@@ -129,7 +129,7 @@ class Application
     this.network = new __WEBPACK_IMPORTED_MODULE_1_shared_NetworkHandler_js__["a" /* default */]();
   }
 
-  start(framerate)
+  start()
   {
     if (this._startTime !== -1)
     {
@@ -154,12 +154,13 @@ class Application
     }
     else
     {
-      if (framerate <= 0)
+      const networkSide = this.server || this.client;
+      if (networkSide.tickRate <= 0)
       {
-        throw new Error("Cannot start application with framerate <= 0");
+        throw new Error("Cannot start application with tick rate <= 0");
       }
 
-      this._update_interval = setInterval(this.update.bind(this), framerate);
+      this._update_interval = setInterval(this.update.bind(this), networkSide.tickRate);
     }
 
     if (DEBUG_PRINT_FPS)
@@ -749,6 +750,8 @@ class ServerEngine
     this._clients = new Map();
 
     this._world = new __WEBPACK_IMPORTED_MODULE_2_server_world_World_js__["a" /* default */]();
+
+    this.tickRate = 10;
   }
 
   async initialize()
@@ -894,9 +897,9 @@ class NetworkClient
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_shared_entity_EntityManager_js__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_shared_entity_EntitySynchronizer_js__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_Application_js__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_Application_js__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_shared_entity_EntityManager_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_shared_entity_EntitySynchronizer_js__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_util_MathHelper_js__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_shared_entity_component_Components_js__ = __webpack_require__(9);
 
@@ -911,8 +914,8 @@ class World
 {
   constructor(serverEngine)
   {
-    this.entityManager = new __WEBPACK_IMPORTED_MODULE_0_shared_entity_EntityManager_js__["a" /* default */]();
-    this.synchronizer = new __WEBPACK_IMPORTED_MODULE_1_shared_entity_EntitySynchronizer_js__["a" /* default */](this.entityManager);
+    this.entityManager = new __WEBPACK_IMPORTED_MODULE_1_shared_entity_EntityManager_js__["a" /* default */]();
+    this.synchronizer = new __WEBPACK_IMPORTED_MODULE_2_shared_entity_EntitySynchronizer_js__["a" /* default */](this.entityManager);
     this.entitySyncTimer = 20;
 
     this.forceUpdateRestart = true;
@@ -989,7 +992,7 @@ class World
       const payload = {};
       payload.worldData = this.synchronizer.serialize(true);
 
-      for(const client of __WEBPACK_IMPORTED_MODULE_2_Application_js__["a" /* default */].server._clients.values())
+      for(const client of __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].server._clients.values())
       {
         payload.playerData = {
           entity: client.player.id
@@ -1008,14 +1011,14 @@ class World
       const payload = {};
       payload.worldData = this.synchronizer.serialize(false);
 
-      for(const client of __WEBPACK_IMPORTED_MODULE_2_Application_js__["a" /* default */].server._clients.values())
+      for(const client of __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].server._clients.values())
       {
         payload.playerData = {
           entity: client.player.id
         };
 
         //Send server update
-        __WEBPACK_IMPORTED_MODULE_2_Application_js__["a" /* default */].network.sendTo(client._socket, 'serverUpdate', payload);
+        __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.sendTo(client._socket, 'serverUpdate', payload);
       }
     }
   }
