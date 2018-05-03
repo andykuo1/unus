@@ -1,6 +1,6 @@
 function DecayOverTime()
 {
-  this.age = 100;
+  this.age = 10;
 }
 
 DecayOverTime.sync = {

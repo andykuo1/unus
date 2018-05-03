@@ -6,15 +6,18 @@ import EntitySynchronizer from 'shared/entity/EntitySynchronizer.js';
 import * as MathHelper from 'util/MathHelper.js';
 import * as Components from 'shared/entity/component/Components.js';
 
+const ENTITY_SYNC_TICKS = 20;
+
 class World
 {
   constructor(serverEngine)
   {
     this.entityManager = new EntityManager();
     this.synchronizer = new EntitySynchronizer(this.entityManager);
-    this.entitySyncTimer = 20;
+    this.entitySyncTimer = ENTITY_SYNC_TICKS;
 
-    this.forceUpdateRestart = true;
+    this.forceFullUpdate = true;
+    this.worldTicks = 0;
   }
 
   async initialize()
@@ -40,8 +43,7 @@ class World
     const entity = this.entityManager.spawnEntity('player');
     client.onPlayerCreate(entity);
 
-    this.forceUpdateRestart = true;
-    client._player = entity;
+    this.forceFullUpdate = true;
   }
 
   onClientDisconnect(client)
@@ -56,6 +58,7 @@ class World
   onUpdate(delta)
   {
     //Do regular logic here...
+    ++this.worldTicks;
 
     //Update motion logic
     let entities = this.entityManager.getEntitiesByComponent(Components.Motion);
@@ -80,41 +83,34 @@ class World
       }
     }
 
-    //Send full update every few ticks
-    if (this.forceUpdateRestart || --this.entitySyncTimer <= 0)
+    //Send world state update to clients and full updates every few ticks
+    const payload = {};
+    const fullUpdate = this.forceFullUpdate || --this.entitySyncTimer <= 0;
+    if (fullUpdate)
     {
       console.log("Sending complete world state...");
-
-      const payload = {};
-      payload.worldData = this.synchronizer.serialize(true);
-
-      for(const client of Application.server._clients.values())
-      {
-        payload.playerData = {
-          entity: client.player.id
-        };
-
-        client._socket.emit(this.forceUpdateRestart ? 'serverRestart' : 'serverUpdate', payload);
-      }
-
-      this.entitySyncTimer = 20;
-      this.forceUpdateRestart = false;
+      this.entitySyncTimer = ENTITY_SYNC_TICKS;
+      this.forceFullUpdate = false;
     }
-    else
+    payload.worldData = this.synchronizer.serialize(fullUpdate);
+    payload.worldTicks = this.worldTicks;
+
+    //Send to all clients
+    for(const client of Application.server._clients.values())
     {
-      //console.log("Sending differential world state...");
+      payload.playerData = {
+        entity: client.player.id
+      };
 
-      const payload = {};
-      payload.worldData = this.synchronizer.serialize(false);
-
-      for(const client of Application.server._clients.values())
+      //Send server update
+      if (client._restart)
       {
-        payload.playerData = {
-          entity: client.player.id
-        };
-
-        //Send server update
-        Application.network.sendTo(client._socket, 'serverUpdate', payload);
+        client._socket.emit('serverRestart', payload);
+        client._restart = false;
+      }
+      else
+      {
+        client._socket.emit('serverUpdate', payload);
       }
     }
   }

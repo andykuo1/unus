@@ -3,6 +3,8 @@ import NetworkClient from 'server/NetworkClient.js';
 
 import World from 'server/world/World.js';
 
+const SERVER_TICKRATE = 100;
+
 class ServerEngine
 {
   constructor(app, socket)
@@ -13,7 +15,7 @@ class ServerEngine
 
     this._world = new World();
 
-    this.tickRate = 10;
+    this.tickRate = SERVER_TICKRATE;
   }
 
   async initialize()

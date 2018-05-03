@@ -19,7 +19,6 @@ class LocalClient
 
     this.targetX = 0;
     this.targetY = 0;
-    this.fireBullet = false;
 
     this._input.on('mousedown', this.onMouseDown.bind(this));
     this._input.on('mouseup', this.onMouseUp.bind(this));
@@ -62,8 +61,6 @@ class LocalClient
       cameraTransform.position[0] += dx * CAMERA_DAMPING_FACTOR;
       cameraTransform.position[1] += dy * CAMERA_DAMPING_FACTOR;
     }
-
-    this.fireBullet = false;
   }
 
   onMouseDown(mouse, button)
@@ -79,7 +76,10 @@ class LocalClient
 
   onMouseUp(mouse, button)
   {
-    this.fireBullet = true;
+    const dx = this.targetX - this._player.Transform.position[0];
+    const dy = this.targetY - this._player.Transform.position[1];
+    const angle = Math.atan2(dy, dx);
+    Application.network.sendTo(this._socket, 'fireBullet', angle);
   }
 
   get player()

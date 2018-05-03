@@ -814,13 +814,13 @@ class EntitySynchronizer
   serialize(isComplete=true)
   {
     const payload = {};
-    payload.isComplete = isComplete;
+    payload.isComplete = true;
 
     //Write entities...
     const entitiesPayload = payload.entities = {};
     for(const entity of this._entityManager.entities)
     {
-      this.serializeEntity(entity, entitiesPayload, isComplete);
+      this.serializeEntity(entity, entitiesPayload);
     }
 
     //Cache serialized states...
@@ -846,6 +846,7 @@ class EntitySynchronizer
   deserialize(payload)
   {
     const isComplete = payload.isComplete;
+    const entitiesPayload = payload.entities;
 
     if (!isComplete)
     {
@@ -884,7 +885,6 @@ class EntitySynchronizer
       }
     }
 
-    const entitiesPayload = payload.entities;
     for(const entityID of Object.keys(entitiesPayload))
     {
       this.deserializeEntity(entityID, entitiesPayload, isComplete);
@@ -928,6 +928,9 @@ class EntitySynchronizer
 
   deserializeEntity(entityID, src, isComplete)
   {
+    let forceInit = false;
+    const prevInitial = this.isInitial;
+
     const entityData = src[entityID];
     let entity = this._entityManager.getEntityByID(entityID);
 
@@ -936,8 +939,11 @@ class EntitySynchronizer
       if (!isComplete)
       {
         //Just create it, maybe a packet was skipped
-        console.log("WARNING! - Found unknown entity...");
+        console.log("WARNING! - Found unknown entity with id \'" + entityID + "\'...");
       }
+
+      //Make sure to init the entity to the new values
+      forceInit = true;
 
       //Try to create with default constructor, otherwise use empty entity template
       try
@@ -950,6 +956,9 @@ class EntitySynchronizer
       }
       entity._id = entityID;
     }
+
+    //If did not exist on side, then update like init, even if missing information
+    if (forceInit) this.isInitial = true;
 
     const componentsData = entityData.components;
     for(const componentName of Object.keys(componentsData))
@@ -976,7 +985,7 @@ class EntitySynchronizer
           }
           else
           {
-            //The property could not require any changes if incomplete update...
+            //The property could just not require any changes if incomplete update...
             continue;
           }
         }
@@ -984,6 +993,9 @@ class EntitySynchronizer
         this.decodeProperty(propertyName, componentData[propertyName], componentClass.sync[propertyName], component);
       }
     }
+
+    //Reset init update for next entity
+    if (forceInit) this.isInitial = prevInitial;
   }
 
   encodeProperty(propertyName, propertyData, syncOpts, dst)
@@ -1012,6 +1024,8 @@ class EntitySynchronizer
     if (oldEntities === null || newEntities === null) return true;
 
     const payload = {};
+    payload.isComplete = false;
+
     const eventsPayload = payload.entityEvents = [];
     const entitiesPayload = payload.entities = {};
 
@@ -1492,7 +1506,7 @@ Motion.sync = {
 "use strict";
 function DecayOverTime()
 {
-  this.age = 100;
+  this.age = 10;
 }
 
 DecayOverTime.sync = {

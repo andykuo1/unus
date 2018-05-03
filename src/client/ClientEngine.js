@@ -4,6 +4,8 @@ import LocalClient from 'client/LocalClient.js';
 
 import ClientWorld from 'client/world/ClientWorld.js';
 
+const CLIENT_TICKRATE = 60;
+
 class ClientEngine
 {
   constructor(app, canvas, socket)
@@ -17,7 +19,7 @@ class ClientEngine
 
     this._client = new LocalClient(socket, canvas, this._world);
 
-    this.tickRate = 60;
+    this.tickRate = CLIENT_TICKRATE;
   }
 
   async initialize()

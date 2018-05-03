@@ -10035,6 +10035,8 @@ class NetworkHandler
 
 
 
+const CLIENT_TICKRATE = 60;
+
 class ClientEngine
 {
   constructor(app, canvas, socket)
@@ -10048,7 +10050,7 @@ class ClientEngine
 
     this._client = new __WEBPACK_IMPORTED_MODULE_2_client_LocalClient_js__["a" /* default */](socket, canvas, this._world);
 
-    this.tickRate = 60;
+    this.tickRate = CLIENT_TICKRATE;
   }
 
   async initialize()
@@ -14892,7 +14894,9 @@ class LocalClient
 
     this.targetX = 0;
     this.targetY = 0;
-    this.fireBullet = false;
+
+    this._input.on('mousedown', this.onMouseDown.bind(this));
+    this._input.on('mouseup', this.onMouseUp.bind(this));
   }
 
   onPlayerCreate(entityPlayer)
@@ -14900,9 +14904,6 @@ class LocalClient
     console.log("Creating player...");
 
     this._player = entityPlayer;
-
-    this._input.on('mousedown', this.onMouseDown.bind(this));
-    this._input.on('mouseup', this.onMouseUp.bind(this));
   }
 
   onPlayerDestroy()
@@ -14935,8 +14936,6 @@ class LocalClient
       cameraTransform.position[0] += dx * CAMERA_DAMPING_FACTOR;
       cameraTransform.position[1] += dy * CAMERA_DAMPING_FACTOR;
     }
-
-    this.fireBullet = false;
   }
 
   onMouseDown(mouse, button)
@@ -14952,7 +14951,10 @@ class LocalClient
 
   onMouseUp(mouse, button)
   {
-    this.fireBullet = true;
+    const dx = this.targetX - this._player.Transform.position[0];
+    const dy = this.targetY - this._player.Transform.position[1];
+    const angle = Math.atan2(dy, dx);
+    __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.sendTo(this._socket, 'fireBullet', angle);
   }
 
   get player()
@@ -15129,6 +15131,8 @@ class ClientWorld
     this.entityManager = new __WEBPACK_IMPORTED_MODULE_2_shared_entity_EntityManager_js__["a" /* default */]();
     this.synchronizer = new __WEBPACK_IMPORTED_MODULE_3_shared_entity_EntitySynchronizer_js__["a" /* default */](this.entityManager);
 
+    this.serverWorldTicks = 0;
+    this.worldTicks = 0;
     this.player = null;
   }
 
@@ -15144,8 +15148,14 @@ class ClientWorld
     this.player = client;
 
     client._socket.on('serverRestart', data => {
+      if (this.serverWorldTicks >= data.worldTicks)
+      {
+        console.log("Received outdated world state, skipping...");
+        return;
+      }
+      this.serverWorldTicks = data.worldTicks;
+
       console.log("Getting world start state...");
-      console.log(data);
 
       this.synchronizer.deserialize(data.worldData);
 
@@ -15156,11 +15166,19 @@ class ClientWorld
     });
 
     client._socket.on('serverUpdate', data => {
+      if (this.serverWorldTicks >= data.worldTicks)
+      {
+        console.log("Received outdated world state, skipping...");
+        return;
+      }
+      this.serverWorldTicks = data.worldTicks;
+
       if (data.worldData.isComplete)
       {
         console.log("Receiving complete world state...");
       }
-      else {
+      else
+      {
         console.log("Receiving world state...");
       }
 
@@ -15178,6 +15196,9 @@ class ClientWorld
 
   onUpdate(delta)
   {
+    //TODO: world ticks should match server world ticks, unless extrapolating...
+    this.worldTicks++;
+
     //Interpolate properties...
     for(const [componentClass, entityList] of this.entityManager.components)
     {
@@ -15208,8 +15229,7 @@ class ClientWorld
     __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.sendTo(this.player._socket,
       'clientInput', {
         targetX: this.player.targetX,
-        targetY: this.player.targetY,
-        fireBullet: this.player.fireBullet
+        targetY: this.player.targetY
       });
 
     //Continue to extrapolate here...
@@ -15422,13 +15442,13 @@ class EntitySynchronizer
   serialize(isComplete=true)
   {
     const payload = {};
-    payload.isComplete = isComplete;
+    payload.isComplete = true;
 
     //Write entities...
     const entitiesPayload = payload.entities = {};
     for(const entity of this._entityManager.entities)
     {
-      this.serializeEntity(entity, entitiesPayload, isComplete);
+      this.serializeEntity(entity, entitiesPayload);
     }
 
     //Cache serialized states...
@@ -15454,6 +15474,7 @@ class EntitySynchronizer
   deserialize(payload)
   {
     const isComplete = payload.isComplete;
+    const entitiesPayload = payload.entities;
 
     if (!isComplete)
     {
@@ -15492,7 +15513,6 @@ class EntitySynchronizer
       }
     }
 
-    const entitiesPayload = payload.entities;
     for(const entityID of Object.keys(entitiesPayload))
     {
       this.deserializeEntity(entityID, entitiesPayload, isComplete);
@@ -15536,6 +15556,9 @@ class EntitySynchronizer
 
   deserializeEntity(entityID, src, isComplete)
   {
+    let forceInit = false;
+    const prevInitial = this.isInitial;
+
     const entityData = src[entityID];
     let entity = this._entityManager.getEntityByID(entityID);
 
@@ -15544,8 +15567,11 @@ class EntitySynchronizer
       if (!isComplete)
       {
         //Just create it, maybe a packet was skipped
-        console.log("WARNING! - Found unknown entity...");
+        console.log("WARNING! - Found unknown entity with id \'" + entityID + "\'...");
       }
+
+      //Make sure to init the entity to the new values
+      forceInit = true;
 
       //Try to create with default constructor, otherwise use empty entity template
       try
@@ -15558,6 +15584,9 @@ class EntitySynchronizer
       }
       entity._id = entityID;
     }
+
+    //If did not exist on side, then update like init, even if missing information
+    if (forceInit) this.isInitial = true;
 
     const componentsData = entityData.components;
     for(const componentName of Object.keys(componentsData))
@@ -15584,7 +15613,7 @@ class EntitySynchronizer
           }
           else
           {
-            //The property could not require any changes if incomplete update...
+            //The property could just not require any changes if incomplete update...
             continue;
           }
         }
@@ -15592,6 +15621,9 @@ class EntitySynchronizer
         this.decodeProperty(propertyName, componentData[propertyName], componentClass.sync[propertyName], component);
       }
     }
+
+    //Reset init update for next entity
+    if (forceInit) this.isInitial = prevInitial;
   }
 
   encodeProperty(propertyName, propertyData, syncOpts, dst)
@@ -15620,6 +15652,8 @@ class EntitySynchronizer
     if (oldEntities === null || newEntities === null) return true;
 
     const payload = {};
+    payload.isComplete = false;
+
     const eventsPayload = payload.entityEvents = [];
     const entitiesPayload = payload.entities = {};
 
@@ -15929,7 +15963,7 @@ Motion.sync = {
 "use strict";
 function DecayOverTime()
 {
-  this.age = 100;
+  this.age = 10;
 }
 
 DecayOverTime.sync = {

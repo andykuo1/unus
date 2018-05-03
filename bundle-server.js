@@ -743,6 +743,8 @@ class NetworkHandler
 
 
 
+const SERVER_TICKRATE = 100;
+
 class ServerEngine
 {
   constructor(app, socket)
@@ -753,7 +755,7 @@ class ServerEngine
 
     this._world = new __WEBPACK_IMPORTED_MODULE_2_server_world_World_js__["a" /* default */]();
 
-    this.tickRate = 10;
+    this.tickRate = SERVER_TICKRATE;
   }
 
   async initialize()
@@ -821,11 +823,13 @@ class NetworkClient
     this._world = world;
     this._socket = socket;
     this._player = null;
+    this._restart = true;
 
     this.targetX = 0;
     this.targetY = 0;
 
-    this.speed = 0.1;
+    this.speed = 1.0;
+    this.bulletSpeed = 1.5;
   }
 
   onPlayerCreate(entityPlayer)
@@ -833,6 +837,7 @@ class NetworkClient
     console.log("Creating player...");
 
     this._player = entityPlayer;
+    this._restart = true;
   }
 
   onPlayerDestroy()
@@ -847,6 +852,7 @@ class NetworkClient
     console.log("Connecting client: " + this._socket.id);
 
     this._socket.on('clientInput', this.onClientInput.bind(this));
+    this._socket.on('fireBullet', this.onClientFireBullet.bind(this));
   }
 
   onDisconnect()
@@ -874,19 +880,16 @@ class NetworkClient
   {
     this.targetX = data.targetX;
     this.targetY = data.targetY;
+  }
 
-    if (data.fireBullet)
-    {
-      const bullet = this._world.entityManager.spawnEntity('bullet');
-      bullet.Transform.position[0] = this._player.Transform.position[0];
-      bullet.Transform.position[1] = this._player.Transform.position[1];
-      const dx = this.targetX - this._player.Transform.position[0];
-      const dy = this.targetY - this._player.Transform.position[1];
-      const angle = Math.atan2(dy, dx);
-      bullet.Motion.motionX = Math.cos(angle);
-      bullet.Motion.motionY = Math.sin(angle);
-      bullet.Motion.friction = 0;
-    }
+  onClientFireBullet(angle)
+  {
+    const bullet = this._world.entityManager.spawnEntity('bullet');
+    bullet.Transform.position[0] = this._player.Transform.position[0];
+    bullet.Transform.position[1] = this._player.Transform.position[1];
+    bullet.Motion.motionX = Math.cos(angle) * this.bulletSpeed;
+    bullet.Motion.motionY = Math.sin(angle) * this.bulletSpeed;
+    bullet.Motion.friction = 0;
   }
 
   get player()
@@ -916,15 +919,18 @@ class NetworkClient
 
 
 
+const ENTITY_SYNC_TICKS = 20;
+
 class World
 {
   constructor(serverEngine)
   {
     this.entityManager = new __WEBPACK_IMPORTED_MODULE_1_shared_entity_EntityManager_js__["a" /* default */]();
     this.synchronizer = new __WEBPACK_IMPORTED_MODULE_2_shared_entity_EntitySynchronizer_js__["a" /* default */](this.entityManager);
-    this.entitySyncTimer = 20;
+    this.entitySyncTimer = ENTITY_SYNC_TICKS;
 
-    this.forceUpdateRestart = true;
+    this.forceFullUpdate = true;
+    this.worldTicks = 0;
   }
 
   async initialize()
@@ -950,8 +956,7 @@ class World
     const entity = this.entityManager.spawnEntity('player');
     client.onPlayerCreate(entity);
 
-    this.forceUpdateRestart = true;
-    client._player = entity;
+    this.forceFullUpdate = true;
   }
 
   onClientDisconnect(client)
@@ -966,6 +971,7 @@ class World
   onUpdate(delta)
   {
     //Do regular logic here...
+    ++this.worldTicks;
 
     //Update motion logic
     let entities = this.entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_4_shared_entity_component_Components_js__["Motion"]);
@@ -990,41 +996,34 @@ class World
       }
     }
 
-    //Send full update every few ticks
-    if (this.forceUpdateRestart || --this.entitySyncTimer <= 0)
+    //Send world state update to clients and full updates every few ticks
+    const payload = {};
+    const fullUpdate = this.forceFullUpdate || --this.entitySyncTimer <= 0;
+    if (fullUpdate)
     {
       console.log("Sending complete world state...");
-
-      const payload = {};
-      payload.worldData = this.synchronizer.serialize(true);
-
-      for(const client of __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].server._clients.values())
-      {
-        payload.playerData = {
-          entity: client.player.id
-        };
-
-        client._socket.emit(this.forceUpdateRestart ? 'serverRestart' : 'serverUpdate', payload);
-      }
-
-      this.entitySyncTimer = 20;
-      this.forceUpdateRestart = false;
+      this.entitySyncTimer = ENTITY_SYNC_TICKS;
+      this.forceFullUpdate = false;
     }
-    else
+    payload.worldData = this.synchronizer.serialize(fullUpdate);
+    payload.worldTicks = this.worldTicks;
+
+    //Send to all clients
+    for(const client of __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].server._clients.values())
     {
-      //console.log("Sending differential world state...");
+      payload.playerData = {
+        entity: client.player.id
+      };
 
-      const payload = {};
-      payload.worldData = this.synchronizer.serialize(false);
-
-      for(const client of __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].server._clients.values())
+      //Send server update
+      if (client._restart)
       {
-        payload.playerData = {
-          entity: client.player.id
-        };
-
-        //Send server update
-        __WEBPACK_IMPORTED_MODULE_0_Application_js__["a" /* default */].network.sendTo(client._socket, 'serverUpdate', payload);
+        client._socket.emit('serverRestart', payload);
+        client._restart = false;
+      }
+      else
+      {
+        client._socket.emit('serverUpdate', payload);
       }
     }
   }
@@ -1234,13 +1233,13 @@ class EntitySynchronizer
   serialize(isComplete=true)
   {
     const payload = {};
-    payload.isComplete = isComplete;
+    payload.isComplete = true;
 
     //Write entities...
     const entitiesPayload = payload.entities = {};
     for(const entity of this._entityManager.entities)
     {
-      this.serializeEntity(entity, entitiesPayload, isComplete);
+      this.serializeEntity(entity, entitiesPayload);
     }
 
     //Cache serialized states...
@@ -1266,6 +1265,7 @@ class EntitySynchronizer
   deserialize(payload)
   {
     const isComplete = payload.isComplete;
+    const entitiesPayload = payload.entities;
 
     if (!isComplete)
     {
@@ -1304,7 +1304,6 @@ class EntitySynchronizer
       }
     }
 
-    const entitiesPayload = payload.entities;
     for(const entityID of Object.keys(entitiesPayload))
     {
       this.deserializeEntity(entityID, entitiesPayload, isComplete);
@@ -1348,6 +1347,9 @@ class EntitySynchronizer
 
   deserializeEntity(entityID, src, isComplete)
   {
+    let forceInit = false;
+    const prevInitial = this.isInitial;
+
     const entityData = src[entityID];
     let entity = this._entityManager.getEntityByID(entityID);
 
@@ -1356,8 +1358,11 @@ class EntitySynchronizer
       if (!isComplete)
       {
         //Just create it, maybe a packet was skipped
-        console.log("WARNING! - Found unknown entity...");
+        console.log("WARNING! - Found unknown entity with id \'" + entityID + "\'...");
       }
+
+      //Make sure to init the entity to the new values
+      forceInit = true;
 
       //Try to create with default constructor, otherwise use empty entity template
       try
@@ -1370,6 +1375,9 @@ class EntitySynchronizer
       }
       entity._id = entityID;
     }
+
+    //If did not exist on side, then update like init, even if missing information
+    if (forceInit) this.isInitial = true;
 
     const componentsData = entityData.components;
     for(const componentName of Object.keys(componentsData))
@@ -1396,7 +1404,7 @@ class EntitySynchronizer
           }
           else
           {
-            //The property could not require any changes if incomplete update...
+            //The property could just not require any changes if incomplete update...
             continue;
           }
         }
@@ -1404,6 +1412,9 @@ class EntitySynchronizer
         this.decodeProperty(propertyName, componentData[propertyName], componentClass.sync[propertyName], component);
       }
     }
+
+    //Reset init update for next entity
+    if (forceInit) this.isInitial = prevInitial;
   }
 
   encodeProperty(propertyName, propertyData, syncOpts, dst)
@@ -1432,6 +1443,8 @@ class EntitySynchronizer
     if (oldEntities === null || newEntities === null) return true;
 
     const payload = {};
+    payload.isComplete = false;
+
     const eventsPayload = payload.entityEvents = [];
     const entitiesPayload = payload.entities = {};
 
@@ -1720,7 +1733,7 @@ Motion.sync = {
 "use strict";
 function DecayOverTime()
 {
-  this.age = 100;
+  this.age = 10;
 }
 
 DecayOverTime.sync = {

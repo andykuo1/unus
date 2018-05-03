@@ -7,12 +7,13 @@ class NetworkClient
     this._world = world;
     this._socket = socket;
     this._player = null;
+    this._restart = true;
 
     this.targetX = 0;
     this.targetY = 0;
 
-    this.speed = 0.1;
-    this.bulletSpeed = 0.6;
+    this.speed = 1.0;
+    this.bulletSpeed = 1.5;
   }
 
   onPlayerCreate(entityPlayer)
@@ -20,6 +21,7 @@ class NetworkClient
     console.log("Creating player...");
 
     this._player = entityPlayer;
+    this._restart = true;
   }
 
   onPlayerDestroy()
@@ -34,6 +36,7 @@ class NetworkClient
     console.log("Connecting client: " + this._socket.id);
 
     this._socket.on('clientInput', this.onClientInput.bind(this));
+    this._socket.on('fireBullet', this.onClientFireBullet.bind(this));
   }
 
   onDisconnect()
@@ -61,19 +64,16 @@ class NetworkClient
   {
     this.targetX = data.targetX;
     this.targetY = data.targetY;
+  }
 
-    if (data.fireBullet)
-    {
-      const bullet = this._world.entityManager.spawnEntity('bullet');
-      bullet.Transform.position[0] = this._player.Transform.position[0];
-      bullet.Transform.position[1] = this._player.Transform.position[1];
-      const dx = this.targetX - this._player.Transform.position[0];
-      const dy = this.targetY - this._player.Transform.position[1];
-      const angle = Math.atan2(dy, dx);
-      bullet.Motion.motionX = Math.cos(angle) * this.bulletSpeed;
-      bullet.Motion.motionY = Math.sin(angle) * this.bulletSpeed;
-      bullet.Motion.friction = 0;
-    }
+  onClientFireBullet(angle)
+  {
+    const bullet = this._world.entityManager.spawnEntity('bullet');
+    bullet.Transform.position[0] = this._player.Transform.position[0];
+    bullet.Transform.position[1] = this._player.Transform.position[1];
+    bullet.Motion.motionX = Math.cos(angle) * this.bulletSpeed;
+    bullet.Motion.motionY = Math.sin(angle) * this.bulletSpeed;
+    bullet.Motion.friction = 0;
   }
 
   get player()

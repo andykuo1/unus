@@ -16,6 +16,8 @@ class ClientWorld
     this.entityManager = new EntityManager();
     this.synchronizer = new EntitySynchronizer(this.entityManager);
 
+    this.serverWorldTicks = 0;
+    this.worldTicks = 0;
     this.player = null;
   }
 
@@ -31,8 +33,14 @@ class ClientWorld
     this.player = client;
 
     client._socket.on('serverRestart', data => {
+      if (this.serverWorldTicks >= data.worldTicks)
+      {
+        console.log("Received outdated world state, skipping...");
+        return;
+      }
+      this.serverWorldTicks = data.worldTicks;
+
       console.log("Getting world start state...");
-      console.log(data);
 
       this.synchronizer.deserialize(data.worldData);
 
@@ -43,11 +51,19 @@ class ClientWorld
     });
 
     client._socket.on('serverUpdate', data => {
+      if (this.serverWorldTicks >= data.worldTicks)
+      {
+        console.log("Received outdated world state, skipping...");
+        return;
+      }
+      this.serverWorldTicks = data.worldTicks;
+
       if (data.worldData.isComplete)
       {
         console.log("Receiving complete world state...");
       }
-      else {
+      else
+      {
         console.log("Receiving world state...");
       }
 
@@ -65,6 +81,9 @@ class ClientWorld
 
   onUpdate(delta)
   {
+    //TODO: world ticks should match server world ticks, unless extrapolating...
+    this.worldTicks++;
+
     //Interpolate properties...
     for(const [componentClass, entityList] of this.entityManager.components)
     {
@@ -95,8 +114,7 @@ class ClientWorld
     Application.network.sendTo(this.player._socket,
       'clientInput', {
         targetX: this.player.targetX,
-        targetY: this.player.targetY,
-        fireBullet: this.player.fireBullet
+        targetY: this.player.targetY
       });
 
     //Continue to extrapolate here...
