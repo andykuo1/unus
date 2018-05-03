@@ -20,6 +20,9 @@ class LocalClient
     this.targetX = 0;
     this.targetY = 0;
     this.fireBullet = false;
+
+    this._input.on('mousedown', this.onMouseDown.bind(this));
+    this._input.on('mouseup', this.onMouseUp.bind(this));
   }
 
   onPlayerCreate(entityPlayer)
@@ -27,9 +30,6 @@ class LocalClient
     console.log("Creating player...");
 
     this._player = entityPlayer;
-
-    this._input.on('mousedown', this.onMouseDown.bind(this));
-    this._input.on('mouseup', this.onMouseUp.bind(this));
   }
 
   onPlayerDestroy()
