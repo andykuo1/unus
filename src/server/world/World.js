@@ -1,4 +1,5 @@
 import Application from 'Application.js';
+import { quat } from 'gl-matrix';
 
 import EntityManager from 'shared/entity/EntityManager.js';
 import EntitySynchronizer from 'shared/entity/EntitySynchronizer.js';
@@ -7,6 +8,7 @@ import * as MathHelper from 'util/MathHelper.js';
 import * as Components from 'shared/entity/component/Components.js';
 
 const ENTITY_SYNC_TICKS = 20;
+const WORLD_TICK_FACTOR = 10;
 
 class World
 {
@@ -17,7 +19,8 @@ class World
     this.entitySyncTimer = ENTITY_SYNC_TICKS;
 
     this.forceFullUpdate = true;
-    this.worldTicks = 0;
+    this._prevWorldTicks = 0;
+    this._worldTicks = 0;
   }
 
   async initialize()
@@ -26,6 +29,7 @@ class World
       this.addComponent(Components.Transform);
       this.addComponent(Components.Renderable);
       this.addComponent(Components.Motion);
+      this.Renderable.color = 0xFFFFFF;
     });
 
     this.entityManager.registerEntity('bullet', function() {
@@ -33,7 +37,28 @@ class World
       this.addComponent(Components.Renderable);
       this.addComponent(Components.Motion);
       this.addComponent(Components.DecayOverTime);
+      this.Renderable.color = 0xFF00FF;
     });
+
+    this.entityManager.registerEntity('star', function() {
+      this.addComponent(Components.Transform);
+      this.addComponent(Components.Renderable);
+      this.addComponent(Components.Rotator);
+      this.Renderable.color = 0xF2A900;
+    });
+
+    //populate with random
+    for(let i = 0; i < 100; ++i)
+    {
+      const entity = this.entityManager.spawnEntity('star');
+      entity.Transform.position[0] = Math.random() * 100 - 50;
+      entity.Transform.position[1] = Math.random() * 100 - 50;
+      const scale = 0.2 + 0.1 * Math.random();
+      entity.Transform.scale[0] = scale;
+      entity.Transform.scale[1] = scale;
+      quat.rotateZ(entity.Transform.rotation, entity.Transform.rotation, Math.random() * Math.PI);
+      entity.Rotator.speed = Math.random() + 1;
+    }
   }
 
   onClientConnect(client)
@@ -57,30 +82,19 @@ class World
 
   onUpdate(delta)
   {
-    //Do regular logic here...
-    ++this.worldTicks;
-
-    //Update motion logic
-    let entities = this.entityManager.getEntitiesByComponent(Components.Motion);
-    for(const entity of entities)
+    //Update world
+    this._worldTicks += delta * WORLD_TICK_FACTOR;
+    let elapsedWorldTicks = this._worldTicks - this._prevWorldTicks;
+    if (elapsedWorldTicks > 10)
     {
-      entity.Transform.position[0] += entity.Motion.motionX;
-      entity.Transform.position[1] += entity.Motion.motionY;
-      entity.Motion.motionX *= 1 - entity.Motion.friction;
-      entity.Motion.motionY *= 1 - entity.Motion.friction;
+      --elapsedWorldTicks;
+      console.log("WARNING: Skipping ahead " + elapsedWorldTicks + " ticks for world update...");
+      this._prevWorldTicks += Math.trun(elapsedWorldTicks);
     }
-
-    //Update decay over time logic
-    entities = this.entityManager.getEntitiesByComponent(Components.DecayOverTime);
-    let i = entities.length;
-    while(i--)
+    while (this._worldTicks >= this._prevWorldTicks + 1)
     {
-      const entity = entities[i];
-      if (entity.DecayOverTime.age-- <= 0)
-      {
-        this.entityManager.destroyEntity(entity);
-        continue;
-      }
+      this.onWorldUpdate();
+      ++this._prevWorldTicks;
     }
 
     //Send world state update to clients and full updates every few ticks
@@ -114,6 +128,41 @@ class World
       }
     }
   }
+
+  onWorldUpdate()
+  {
+    //Update motion logic
+    let entities = this.entityManager.getEntitiesByComponent(Components.Motion);
+    for(const entity of entities)
+    {
+      entity.Transform.position[0] += entity.Motion.motionX;
+      entity.Transform.position[1] += entity.Motion.motionY;
+      entity.Motion.motionX *= 1 - entity.Motion.friction;
+      entity.Motion.motionY *= 1 - entity.Motion.friction;
+    }
+
+    //Update rotator logic
+    entities = this.entityManager.getEntitiesByComponent(Components.Rotator);
+    for(const entity of entities)
+    {
+      quat.rotateZ(entity.Transform.rotation, entity.Transform.rotation, entity.Rotator.speed);
+    }
+
+    //Update decay over time logic
+    entities = this.entityManager.getEntitiesByComponent(Components.DecayOverTime);
+    let i = entities.length;
+    while(i--)
+    {
+      const entity = entities[i];
+      if (entity.DecayOverTime.age-- <= 0)
+      {
+        this.entityManager.destroyEntity(entity);
+        continue;
+      }
+    }
+  }
+
+  get worldTicks() { return Math.trunc(this._worldTicks); }
 }
 
 export default World;
