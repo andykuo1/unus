@@ -419,8 +419,33 @@ class Entity
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Reflection_js__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_UID_js__ = __webpack_require__(8);
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Transform_js__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Renderable_js__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Motion_js__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__DecayOverTime_js__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Rotator_js__ = __webpack_require__(26);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Transform", function() { return __WEBPACK_IMPORTED_MODULE_0__Transform_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Renderable", function() { return __WEBPACK_IMPORTED_MODULE_1__Renderable_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Motion", function() { return __WEBPACK_IMPORTED_MODULE_2__Motion_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "DecayOverTime", function() { return __WEBPACK_IMPORTED_MODULE_3__DecayOverTime_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Rotator", function() { return __WEBPACK_IMPORTED_MODULE_4__Rotator_js__["a"]; });
+
+
+
+
+
+
+
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Reflection_js__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_UID_js__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_Eventable_js__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__EntityRegistry_js__ = __webpack_require__(18);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Entity_js__ = __webpack_require__(5);
@@ -578,7 +603,7 @@ Object.assign(EntityManager.prototype, __WEBPACK_IMPORTED_MODULE_2_util_Eventabl
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -594,7 +619,7 @@ class Reflection
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -608,31 +633,6 @@ function generate()
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (generate);
-
-
-/***/ }),
-/* 9 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Transform_js__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Renderable_js__ = __webpack_require__(23);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Motion_js__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__DecayOverTime_js__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Rotator_js__ = __webpack_require__(26);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Transform", function() { return __WEBPACK_IMPORTED_MODULE_0__Transform_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Renderable", function() { return __WEBPACK_IMPORTED_MODULE_1__Renderable_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Motion", function() { return __WEBPACK_IMPORTED_MODULE_2__Motion_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "DecayOverTime", function() { return __WEBPACK_IMPORTED_MODULE_3__DecayOverTime_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Rotator", function() { return __WEBPACK_IMPORTED_MODULE_4__Rotator_js__["a"]; });
-
-
-
-
-
-
-
 
 
 /***/ }),
@@ -709,6 +709,7 @@ module.exports = require("path");
 
 "use strict";
 const ENABLE_SIMULATED_LATENCY = true;
+const ENABLE_SIMULATED_JITTER = true;
 const AVERAGE_SIMULATED_LATENCY = 200;
 const AVERAGE_SIMULATED_JITTER = 50;
 
@@ -721,7 +722,7 @@ class NetworkHandler
     if (ENABLE_SIMULATED_LATENCY)
     {
       setTimeout(() => socket.emit(packetID, packetData),
-        AVERAGE_SIMULATED_LATENCY + AVERAGE_SIMULATED_JITTER * Math.random());
+        AVERAGE_SIMULATED_LATENCY + AVERAGE_SIMULATED_JITTER * (ENABLE_SIMULATED_JITTER ? Math.random() : 1));
     }
     else
     {
@@ -830,6 +831,7 @@ class NetworkClient
 
     this.targetX = 0;
     this.targetY = 0;
+    this.move = false;
 
     this.speed = 1.0;
     this.bulletSpeed = 1.5;
@@ -867,14 +869,17 @@ class NetworkClient
   {
     if (this._player)
     {
-      let dx = this.targetX - this._player.Transform.position[0];
-      let dy = this.targetY - this._player.Transform.position[1];
-      const dist = dx * dx + dy * dy;
-      if (dist > 1)
+      if (this.move)
       {
-        const angle = Math.atan2(dy, dx);
-        this._player.Motion.motionX = Math.cos(angle) * this.speed;
-        this._player.Motion.motionY = Math.sin(angle) * this.speed;
+        let dx = this.targetX - this._player.Transform.position[0];
+        let dy = this.targetY - this._player.Transform.position[1];
+        const dist = dx * dx + dy * dy;
+        if (dist > 1)
+        {
+          const angle = Math.atan2(dy, dx);
+          this._player.Motion.motionX = Math.cos(angle) * this.speed;
+          this._player.Motion.motionY = Math.sin(angle) * this.speed;
+        }
       }
     }
   }
@@ -883,6 +888,7 @@ class NetworkClient
   {
     this.targetX = data.targetX;
     this.targetY = data.targetY;
+    this.move = data.move;
   }
 
   onClientFireBullet(angle)
@@ -912,10 +918,13 @@ class NetworkClient
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_Application_js__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_gl_matrix__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_gl_matrix___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_gl_matrix__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_shared_entity_EntityManager_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_shared_entity_EntityManager_js__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_shared_entity_EntitySynchronizer_js__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_util_MathHelper_js__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_shared_entity_component_Components_js__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_shared_entity_component_Components_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_shared_system_MotionSystem_js__ = __webpack_require__(39);
+
+
 
 
 
@@ -939,6 +948,8 @@ class World
     this.forceFullUpdate = true;
     this._prevWorldTicks = 0;
     this._worldTicks = 0;
+
+    this.motionSystem = new __WEBPACK_IMPORTED_MODULE_6_shared_system_MotionSystem_js__["a" /* default */]();
   }
 
   async initialize()
@@ -1049,15 +1060,10 @@ class World
 
   onWorldUpdate()
   {
+    let entities = null;
+
     //Update motion logic
-    let entities = this.entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_5_shared_entity_component_Components_js__["Motion"]);
-    for(const entity of entities)
-    {
-      entity.Transform.position[0] += entity.Motion.motionX;
-      entity.Transform.position[1] += entity.Motion.motionY;
-      entity.Motion.motionX *= 1 - entity.Motion.friction;
-      entity.Motion.motionY *= 1 - entity.Motion.friction;
-    }
+    this.motionSystem.update(this.entityManager, 1);
 
     //Update rotator logic
     entities = this.entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_5_shared_entity_component_Components_js__["Rotator"]);
@@ -1092,7 +1098,7 @@ class World
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_ObjectPool_js__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_UID_js__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_UID_js__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Entity_js__ = __webpack_require__(5);
 
 
@@ -1233,13 +1239,13 @@ class ObjectPool
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gl_matrix___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_Reflection_js__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_Reflection_js__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_Application_js__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__EntityManager_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__EntityManager_js__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Entity_js__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__SerializerRegistry_js__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializer_js__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_shared_entity_component_Components_js__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_shared_entity_component_Components_js__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_shared_serializable_Serializables_js__ = __webpack_require__(27);
 
 
@@ -1774,7 +1780,8 @@ Motion.sync = {
     mode: 'interpolate',
     next: 'nextMotionY',
     prev: 'prevMotionY'
-  }}
+  }},
+  friction: { type: 'float' }
 };
 
 /* harmony default export */ __webpack_exports__["a"] = (Motion);
@@ -2327,6 +2334,38 @@ class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (EntityReferenceSerializer);
+
+
+/***/ }),
+/* 39 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_shared_entity_component_Components_js__ = __webpack_require__(6);
+
+
+class MotionSystem
+{
+  update(entityManager, delta)
+  {
+    let entities = entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_0_shared_entity_component_Components_js__["Motion"]);
+    for(const entity of entities)
+    {
+      this.updateEntity(entity, delta);
+    }
+  }
+
+  updateEntity(entity, delta)
+  {
+    const fricRatio = 1.0 / (1.0 + (delta * entity.Motion.friction));
+    entity.Motion.motionX *= fricRatio;
+    entity.Motion.motionY *= fricRatio;
+    entity.Transform.position[0] += entity.Motion.motionX * delta;
+    entity.Transform.position[1] += entity.Motion.motionY * delta;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (MotionSystem);
 
 
 /***/ })

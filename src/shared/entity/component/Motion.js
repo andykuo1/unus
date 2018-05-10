@@ -25,7 +25,8 @@ Motion.sync = {
     mode: 'interpolate',
     next: 'nextMotionY',
     prev: 'prevMotionY'
-  }}
+  }},
+  friction: { type: 'float' }
 };
 
 export default Motion;

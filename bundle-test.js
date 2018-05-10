@@ -1179,6 +1179,7 @@ class EntitySynchronizer
 
 "use strict";
 const ENABLE_SIMULATED_LATENCY = true;
+const ENABLE_SIMULATED_JITTER = true;
 const AVERAGE_SIMULATED_LATENCY = 200;
 const AVERAGE_SIMULATED_JITTER = 50;
 
@@ -1191,7 +1192,7 @@ class NetworkHandler
     if (ENABLE_SIMULATED_LATENCY)
     {
       setTimeout(() => socket.emit(packetID, packetData),
-        AVERAGE_SIMULATED_LATENCY + AVERAGE_SIMULATED_JITTER * Math.random());
+        AVERAGE_SIMULATED_LATENCY + AVERAGE_SIMULATED_JITTER * (ENABLE_SIMULATED_JITTER ? Math.random() : 1));
     }
     else
     {
@@ -1496,7 +1497,8 @@ Motion.sync = {
     mode: 'interpolate',
     next: 'nextMotionY',
     prev: 'prevMotionY'
-  }}
+  }},
+  friction: { type: 'float' }
 };
 
 /* harmony default export */ __webpack_exports__["a"] = (Motion);

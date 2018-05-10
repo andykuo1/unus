@@ -1,11 +1,15 @@
 import Application from 'Application.js';
+import { vec3 } from 'gl-matrix';
 import Reflection from 'util/Reflection.js';
 
 import EntityManager from 'shared/entity/EntityManager.js';
 import EntitySynchronizer from 'shared/entity/EntitySynchronizer.js';
 
+import * as Components from 'shared/entity/component/Components.js';
 import * as Serializables from 'shared/serializable/Serializables.js';
 import * as MathHelper from 'util/MathHelper.js';
+
+import MotionSystem from 'shared/system/MotionSystem.js';
 
 const INTERPOLATION_DELTA_FACTOR = 10;
 const WORLD_TICK_FACTOR = 10;
@@ -18,8 +22,15 @@ class ClientWorld
     this.synchronizer = new EntitySynchronizer(this.entityManager);
 
     this._serverWorldTicks = 0;
+    this._prevWorldTicks = 0;
     this._worldTicks = 0;
     this.player = null;
+    this.speed = 1.0;
+
+    this.clientInputDelay = 0;
+    this.clientStates = [];
+
+    this.motionSystem = new MotionSystem();
   }
 
   async initialize()
@@ -49,6 +60,9 @@ class ClientWorld
       if (entityPlayer === null) throw new Error("unable to find player entity");
 
       this.player.onPlayerCreate(entityPlayer);
+
+      //Extrapolate...
+      //this.resetClientStates(this._serverWorldTicks, entityPlayer);
     });
 
     client._socket.on('serverUpdate', data => {
@@ -69,6 +83,9 @@ class ClientWorld
       }
 
       this.synchronizer.deserialize(data.worldData);
+
+      //Extrapolate...
+      //this.resetClientStates(this._serverWorldTicks, this.player._player);
     });
   }
 
@@ -128,15 +145,20 @@ class ClientWorld
       }
     }
 
-    //Send client input...
-    Application.network.sendTo(this.player._socket,
-      'clientInput', {
-        targetX: this.player.targetX,
-        targetY: this.player.targetY
-      });
+    if (this.player._player)
+    {
+      //Send client input...
+      const inputState = this.pollClientInput();
+      if (inputState != null)
+      {
+        Application.network.sendTo(this.player._socket, 'clientInput', inputState);
 
-    //Continue to extrapolate here...
-    this.player.onUpdate(delta);
+        //Continue to extrapolate...
+        //this.applyClientState(this.player._player, inputState);
+      }
+      //Client side logics...
+      this.player.onUpdate(delta);
+    }
 
     Application.client._render.requestRender(this.entityManager);
   }
@@ -144,6 +166,79 @@ class ClientWorld
   onWorldUpdate()
   {
 
+  }
+
+  /*
+  resetClientStates(worldTicks, player)
+  {
+    //Remove all outdated input states...
+    let i = this.clientStates.length;
+    while(this.clientStates.length > 0 && this.clientStates[0].worldTicks < worldTicks)
+    {
+      this.clientStates.shift();
+    }
+    console.log(i + " => " + this.clientStates.length);
+    vec3.copy(player.Transform.position, player.Transform.nextPosition);
+    this.applyClientStates(worldTicks, player);
+  }
+
+  applyClientStates(worldTicks, player)
+  {
+    const len = this.clientStates.length;
+
+    let ticks = worldTicks;
+    for(let i = 0; i < len; ++i)
+    {
+      const clientState = this.clientStates[i];
+      for(let j = clientState.worldTicks - ticks; j > 0; --j)
+      {
+        this.applyClientState(player, clientState);
+        ticks++;
+      }
+    }
+  }
+
+  applyClientState(player, inputState, delta)
+  {
+    //NOTE: from client logic
+    if (inputState.move)
+    {
+      let dx = inputState.targetX - player.Transform.nextPosition[0];
+      let dy = inputState.targetY - player.Transform.nextPosition[1];
+      const dist = dx * dx + dy * dy;
+      if (dist > 1)
+      {
+        const angle = Math.atan2(dy, dx);
+        player.Motion.motionX = Math.cos(angle) * this.speed;
+        player.Motion.motionY = Math.sin(angle) * this.speed;
+      }
+    }
+
+    //NOTE: from world component logic
+    this.motionSystem.updateEntity(player, 1);
+  }
+  */
+
+  pollClientInput()
+  {
+    const inputState = {
+      targetX: this.player.targetX,
+      targetY: this.player.targetY,
+      move: this.player.move,
+      worldTicks: this._worldTicks
+    };
+
+    if (this.clientStates.length > 0)
+    {
+      let prevState = this.clientStates[this.clientStates.length - 1];
+      if (prevState.move == inputState.move)
+      {
+      //  return null;
+      }
+    }
+
+    this.clientStates.push(inputState);
+    return inputState;
   }
 
   get worldTicks() { return Math.trunc(this._worldTicks); }

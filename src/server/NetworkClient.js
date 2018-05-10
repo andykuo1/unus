@@ -11,6 +11,7 @@ class NetworkClient
 
     this.targetX = 0;
     this.targetY = 0;
+    this.move = false;
 
     this.speed = 1.0;
     this.bulletSpeed = 1.5;
@@ -48,14 +49,17 @@ class NetworkClient
   {
     if (this._player)
     {
-      let dx = this.targetX - this._player.Transform.position[0];
-      let dy = this.targetY - this._player.Transform.position[1];
-      const dist = dx * dx + dy * dy;
-      if (dist > 1)
+      if (this.move)
       {
-        const angle = Math.atan2(dy, dx);
-        this._player.Motion.motionX = Math.cos(angle) * this.speed;
-        this._player.Motion.motionY = Math.sin(angle) * this.speed;
+        let dx = this.targetX - this._player.Transform.position[0];
+        let dy = this.targetY - this._player.Transform.position[1];
+        const dist = dx * dx + dy * dy;
+        if (dist > 1)
+        {
+          const angle = Math.atan2(dy, dx);
+          this._player.Motion.motionX = Math.cos(angle) * this.speed;
+          this._player.Motion.motionY = Math.sin(angle) * this.speed;
+        }
       }
     }
   }
@@ -64,6 +68,7 @@ class NetworkClient
   {
     this.targetX = data.targetX;
     this.targetY = data.targetY;
+    this.move = data.move;
   }
 
   onClientFireBullet(angle)

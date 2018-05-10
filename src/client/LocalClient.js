@@ -4,8 +4,8 @@ import { vec3 } from 'gl-matrix';
 import Mouse from 'client/input/Mouse.js';
 import ViewPort from 'client/render/camera/ViewPort.js';
 
-const CAMERA_FOLLOW = false;
-const CAMERA_DAMPING_FACTOR = 0.1;
+const CAMERA_FOLLOW = true;
+const CAMERA_DAMPING_FACTOR = 0.06;
 
 class LocalClient
 {
@@ -19,6 +19,7 @@ class LocalClient
 
     this.targetX = 0;
     this.targetY = 0;
+    this.move = false;
 
     this._input.on('mousedown', this.onMouseDown.bind(this));
     this._input.on('mouseup', this.onMouseUp.bind(this));
@@ -61,17 +62,19 @@ class LocalClient
       cameraTransform.position[0] += dx * CAMERA_DAMPING_FACTOR;
       cameraTransform.position[1] += dy * CAMERA_DAMPING_FACTOR;
     }
+
+    const vec = ViewPort.getPointFromScreen(vec3.create(),
+      Application.client._render._renderer.camera,
+      Application.client._render._renderer.viewport,
+      this._input.x, this._input.y);
+
+    this.targetX = vec[0];
+    this.targetY = vec[1];
   }
 
   onMouseDown(mouse, button)
   {
-    const vec = ViewPort.getPointFromScreen(vec3.create(),
-      Application.client._render._renderer.camera,
-      Application.client._render._renderer.viewport,
-      mouse.x, mouse.y);
-
-    this.targetX = vec[0];
-    this.targetY = vec[1];
+    this.move = true;
   }
 
   onMouseUp(mouse, button)
@@ -80,6 +83,8 @@ class LocalClient
     const dy = this.targetY - this._player.Transform.position[1];
     const angle = Math.atan2(dy, dx);
     Application.network.sendTo(this._socket, 'fireBullet', angle);
+
+    this.move = false;
   }
 
   get player()

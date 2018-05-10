@@ -7,6 +7,8 @@ import EntitySynchronizer from 'shared/entity/EntitySynchronizer.js';
 import * as MathHelper from 'util/MathHelper.js';
 import * as Components from 'shared/entity/component/Components.js';
 
+import MotionSystem from 'shared/system/MotionSystem.js';
+
 const ENTITY_SYNC_TICKS = 20;
 const WORLD_TICK_FACTOR = 10;
 
@@ -21,6 +23,8 @@ class World
     this.forceFullUpdate = true;
     this._prevWorldTicks = 0;
     this._worldTicks = 0;
+
+    this.motionSystem = new MotionSystem();
   }
 
   async initialize()
@@ -131,15 +135,10 @@ class World
 
   onWorldUpdate()
   {
+    let entities = null;
+
     //Update motion logic
-    let entities = this.entityManager.getEntitiesByComponent(Components.Motion);
-    for(const entity of entities)
-    {
-      entity.Transform.position[0] += entity.Motion.motionX;
-      entity.Transform.position[1] += entity.Motion.motionY;
-      entity.Motion.motionX *= 1 - entity.Motion.friction;
-      entity.Motion.motionY *= 1 - entity.Motion.friction;
-    }
+    this.motionSystem.update(this.entityManager, 1);
 
     //Update rotator logic
     entities = this.entityManager.getEntitiesByComponent(Components.Rotator);
