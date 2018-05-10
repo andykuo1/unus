@@ -12,7 +12,7 @@ import * as MathHelper from 'util/MathHelper.js';
 import MotionSystem from 'shared/system/MotionSystem.js';
 import RotatorSystem from 'shared/system/RotatorSystem.js';
 
-const INTERPOLATION_DELTA_FACTOR = 10;
+//const INTERPOLATION_DELTA_FACTOR = 10;
 const WORLD_TICK_FACTOR = 10;
 
 class ClientWorld
@@ -63,9 +63,7 @@ class ClientWorld
 
       this.player.onPlayerCreate(entityPlayer);
 
-      //Extrapolate...
-      this.player.onEntityReset(this._serverWorldTicks);
-      //this.resetClientStates(this._serverWorldTicks, entityPlayer);
+      this.onWorldReset();
     });
 
     client._socket.on('serverUpdate', data => {
@@ -87,9 +85,7 @@ class ClientWorld
 
       this.synchronizer.deserialize(data.worldData);
 
-      //Extrapolate...
-      this.player.onEntityReset(this._serverWorldTicks);
-      //this.resetClientStates(this._serverWorldTicks, this.player._player);
+      this.onWorldReset();
     });
   }
 
@@ -103,38 +99,30 @@ class ClientWorld
 
   onUpdate(delta)
   {
-    //Update world to server time
-    if (this._serverWorldTicks > this._worldTicks)
+    if (this._serverWorldTicks > this._worldTicks + 1)
     {
       let elapsedWorldTicks = this._serverWorldTicks - this._worldTicks;
       if (elapsedWorldTicks > 10)
       {
-        --elapsedWorldTicks;
         console.log("WARNING: Skipping ahead " + elapsedWorldTicks + " ticks for client world update...");
         this._worldTicks += Math.trunc(elapsedWorldTicks);
       }
-      while (this._serverWorldTicks >= this._worldTicks + 1)
+      else
       {
-        this.onWorldUpdate();
-        ++this._worldTicks;
+        this.onWorldUpdate(elapsedWorldTicks);
       }
     }
 
-    //Update world to current time
-    this._worldTicks += delta * WORLD_TICK_FACTOR;
-    let elapsedWorldTicks = this._worldTicks - this._prevWorldTicks;
-    if (elapsedWorldTicks > 10)
-    {
-      --elapsedWorldTicks;
-      console.log("WARNING: Skipping ahead " + elapsedWorldTicks + " ticks for world update...");
-      this._prevWorldTicks += Math.trunc(elapsedWorldTicks);
-    }
+    const worldDelta = delta * WORLD_TICK_FACTOR;
+    this.onWorldUpdate(worldDelta);
 
-    while (this._worldTicks >= this._prevWorldTicks + 1)
-    {
-      this.onWorldUpdate();
-      ++this._prevWorldTicks;
-    }
+    Application.client._render.requestRender(this.entityManager);
+  }
+
+  onWorldUpdate(delta)
+  {
+    //Client side logics...
+    this.player.onWorldUpdate(delta);
 
     //Interpolate properties...
     for(const [componentClass, entityList] of this.entityManager.components)
@@ -156,21 +144,19 @@ class ClientWorld
             {
               throw new Error("serializer \'" + propertyType + "\' does not support interpolation");
             }
-            serializer.interpolate(propertyName, syncOpts, delta * INTERPOLATION_DELTA_FACTOR, component);
+            serializer.interpolate(propertyName, syncOpts, delta, component);
           }
         }
       }
     }
 
-    //Client side logics...
-    this.player.onUpdate(1);
-
-    Application.client._render.requestRender(this.entityManager);
+    this._prevWorldTicks = this._worldTicks;
+    this._worldTicks += delta;
   }
 
-  onWorldUpdate()
+  onWorldReset()
   {
-
+    this.player.onEntityReset(this._serverWorldTicks);
   }
 
   /*

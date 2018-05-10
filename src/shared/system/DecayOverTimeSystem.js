@@ -3,13 +3,24 @@ import { quat } from 'gl-matrix';
 
 class DecayOverTimeSystem
 {
+  constructor()
+  {
+    this.worldTicks = 0;
+  }
+
   update(entityManager, delta)
   {
-    let entities = entityManager.getEntitiesByComponent(DecayOverTime);
-    let i = entities.length;
-    while(i--)
+    this.worldTicks += delta;
+    while (this.worldTicks >= 1)
     {
-      this.updateEntity(entities[i], delta);
+      let entities = entityManager.getEntitiesByComponent(DecayOverTime);
+      let i = entities.length;
+      while(i--)
+      {
+        this.updateEntity(entities[i], delta);
+      }
+
+      --this.worldTicks;
     }
   }
 

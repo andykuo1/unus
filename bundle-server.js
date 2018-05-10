@@ -2402,13 +2402,24 @@ class RotatorSystem
 
 class DecayOverTimeSystem
 {
+  constructor()
+  {
+    this.worldTicks = 0;
+  }
+
   update(entityManager, delta)
   {
-    let entities = entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_0_shared_entity_component_Components_js__["DecayOverTime"]);
-    let i = entities.length;
-    while(i--)
+    this.worldTicks += delta;
+    while (this.worldTicks >= 1)
     {
-      this.updateEntity(entities[i], delta);
+      let entities = entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_0_shared_entity_component_Components_js__["DecayOverTime"]);
+      let i = entities.length;
+      while(i--)
+      {
+        this.updateEntity(entities[i], delta);
+      }
+
+      --this.worldTicks;
     }
   }
 

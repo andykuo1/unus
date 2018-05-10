@@ -50,7 +50,7 @@ class LocalClient
     console.log("Disconnecting client: " + this._socket.id);
   }
 
-  onUpdate(delta)
+  onWorldUpdate(delta)
   {
     //Smoothly follow the player
     if (CAMERA_FOLLOW && this._player)
