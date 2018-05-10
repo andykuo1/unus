@@ -95,7 +95,7 @@ module.exports = require("gl-matrix");
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_shared_NetworkHandler_js__ = __webpack_require__(14);
 
 
@@ -278,6 +278,31 @@ Math.clamp = clamp;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Transform_js__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Renderable_js__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Motion_js__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__DecayOverTime_js__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Rotator_js__ = __webpack_require__(26);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Transform", function() { return __WEBPACK_IMPORTED_MODULE_0__Transform_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Renderable", function() { return __WEBPACK_IMPORTED_MODULE_1__Renderable_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Motion", function() { return __WEBPACK_IMPORTED_MODULE_2__Motion_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "DecayOverTime", function() { return __WEBPACK_IMPORTED_MODULE_3__DecayOverTime_js__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Rotator", function() { return __WEBPACK_IMPORTED_MODULE_4__Rotator_js__["a"]; });
+
+
+
+
+
+
+
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 const Eventable = {
   __events: new Map(),
   addListener(eventName, listener)
@@ -356,7 +381,7 @@ const Eventable = {
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -415,40 +440,15 @@ class Entity
 
 
 /***/ }),
-/* 6 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Transform_js__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Renderable_js__ = __webpack_require__(23);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Motion_js__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__DecayOverTime_js__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Rotator_js__ = __webpack_require__(26);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Transform", function() { return __WEBPACK_IMPORTED_MODULE_0__Transform_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Renderable", function() { return __WEBPACK_IMPORTED_MODULE_1__Renderable_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Motion", function() { return __WEBPACK_IMPORTED_MODULE_2__Motion_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "DecayOverTime", function() { return __WEBPACK_IMPORTED_MODULE_3__DecayOverTime_js__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Rotator", function() { return __WEBPACK_IMPORTED_MODULE_4__Rotator_js__["a"]; });
-
-
-
-
-
-
-
-
-
-/***/ }),
 /* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Reflection_js__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_UID_js__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_Eventable_js__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_util_Eventable_js__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__EntityRegistry_js__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Entity_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Entity_js__ = __webpack_require__(6);
 
 
 
@@ -739,7 +739,7 @@ class NetworkHandler
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_Eventable_js__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_server_NetworkClient_js__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_server_world_World_js__ = __webpack_require__(17);
 
@@ -921,8 +921,12 @@ class NetworkClient
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_shared_entity_EntityManager_js__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_shared_entity_EntitySynchronizer_js__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_util_MathHelper_js__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_shared_entity_component_Components_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_shared_entity_component_Components_js__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_shared_system_MotionSystem_js__ = __webpack_require__(39);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_shared_system_RotatorSystem_js__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_shared_system_DecayOverTimeSystem_js__ = __webpack_require__(41);
+
+
 
 
 
@@ -950,6 +954,8 @@ class World
     this._worldTicks = 0;
 
     this.motionSystem = new __WEBPACK_IMPORTED_MODULE_6_shared_system_MotionSystem_js__["a" /* default */]();
+    this.rotatorSystem = new __WEBPACK_IMPORTED_MODULE_7_shared_system_RotatorSystem_js__["a" /* default */]();
+    this.decayOverTimeSystem = new __WEBPACK_IMPORTED_MODULE_8_shared_system_DecayOverTimeSystem_js__["a" /* default */]();
   }
 
   async initialize()
@@ -1018,7 +1024,7 @@ class World
     {
       --elapsedWorldTicks;
       console.log("WARNING: Skipping ahead " + elapsedWorldTicks + " ticks for world update...");
-      this._prevWorldTicks += Math.trun(elapsedWorldTicks);
+      this._prevWorldTicks += Math.trunc(elapsedWorldTicks);
     }
     while (this._worldTicks >= this._prevWorldTicks + 1)
     {
@@ -1060,30 +1066,14 @@ class World
 
   onWorldUpdate()
   {
-    let entities = null;
-
     //Update motion logic
     this.motionSystem.update(this.entityManager, 1);
 
     //Update rotator logic
-    entities = this.entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_5_shared_entity_component_Components_js__["Rotator"]);
-    for(const entity of entities)
-    {
-      __WEBPACK_IMPORTED_MODULE_1_gl_matrix__["quat"].rotateZ(entity.Transform.rotation, entity.Transform.rotation, entity.Rotator.speed);
-    }
+    this.rotatorSystem.update(this.entityManager, 1);
 
     //Update decay over time logic
-    entities = this.entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_5_shared_entity_component_Components_js__["DecayOverTime"]);
-    let i = entities.length;
-    while(i--)
-    {
-      const entity = entities[i];
-      if (entity.DecayOverTime.age-- <= 0)
-      {
-        this.entityManager.destroyEntity(entity);
-        continue;
-      }
-    }
+    this.decayOverTimeSystem.update(this.entityManager, 1);
   }
 
   get worldTicks() { return Math.trunc(this._worldTicks); }
@@ -1099,7 +1089,7 @@ class World
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_util_ObjectPool_js__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_UID_js__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Entity_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Entity_js__ = __webpack_require__(6);
 
 
 
@@ -1242,10 +1232,10 @@ class ObjectPool
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_util_Reflection_js__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_Application_js__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__EntityManager_js__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Entity_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Entity_js__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__SerializerRegistry_js__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_shared_serializable_Serializer_js__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_shared_entity_component_Components_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_shared_entity_component_Components_js__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_shared_serializable_Serializables_js__ = __webpack_require__(27);
 
 
@@ -2341,7 +2331,7 @@ class EntityReferenceSerializer extends __WEBPACK_IMPORTED_MODULE_0__Serializer_
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_shared_entity_component_Components_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_shared_entity_component_Components_js__ = __webpack_require__(4);
 
 
 class MotionSystem
@@ -2366,6 +2356,72 @@ class MotionSystem
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (MotionSystem);
+
+
+/***/ }),
+/* 40 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_shared_entity_component_Components_js__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_gl_matrix__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_gl_matrix___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_gl_matrix__);
+
+
+
+class RotatorSystem
+{
+  update(entityManager, delta)
+  {
+    let entities = entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_0_shared_entity_component_Components_js__["Rotator"]);
+    for(const entity of entities)
+    {
+      this.updateEntity(entity, delta);
+    }
+  }
+
+  updateEntity(entity, delta)
+  {
+    __WEBPACK_IMPORTED_MODULE_1_gl_matrix__["quat"].rotateZ(entity.Transform.rotation, entity.Transform.rotation, entity.Rotator.speed);
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (RotatorSystem);
+
+
+/***/ }),
+/* 41 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_shared_entity_component_Components_js__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_gl_matrix__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_gl_matrix___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_gl_matrix__);
+
+
+
+class DecayOverTimeSystem
+{
+  update(entityManager, delta)
+  {
+    let entities = entityManager.getEntitiesByComponent(__WEBPACK_IMPORTED_MODULE_0_shared_entity_component_Components_js__["DecayOverTime"]);
+    let i = entities.length;
+    while(i--)
+    {
+      this.updateEntity(entities[i], delta);
+    }
+  }
+
+  updateEntity(entity, delta)
+  {
+    if (entity.DecayOverTime.age-- <= 0)
+    {
+      entity.destroy();
+    }
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (DecayOverTimeSystem);
 
 
 /***/ })

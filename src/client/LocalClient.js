@@ -16,13 +16,14 @@ class LocalClient
     this._player = null;
 
     this._input = new Mouse(canvas, document);
+    this._input.on('mousedown', this.onMouseDown.bind(this));
+    this._input.on('mouseup', this.onMouseUp.bind(this));
 
     this.targetX = 0;
     this.targetY = 0;
     this.move = false;
 
-    this._input.on('mousedown', this.onMouseDown.bind(this));
-    this._input.on('mouseup', this.onMouseUp.bind(this));
+    this.inputStates = [];
   }
 
   onPlayerCreate(entityPlayer)
@@ -70,6 +71,23 @@ class LocalClient
 
     this.targetX = vec[0];
     this.targetY = vec[1];
+
+    //Send client input...
+    const inputState = {
+      targetX: this.targetX,
+      targetY: this.targetY,
+      move: this.move,
+      worldTicks: this._worldTicks
+    };
+
+    Application.network.sendTo(this._socket, 'clientInput', inputState);
+
+    //Continue to extrapolate...
+    //this.applyClientState(this.player._player, inputState);
+  }
+
+  onEntityReset(serverWorldTicks)
+  {
   }
 
   onMouseDown(mouse, button)

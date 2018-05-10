@@ -10,6 +10,7 @@ import * as Serializables from 'shared/serializable/Serializables.js';
 import * as MathHelper from 'util/MathHelper.js';
 
 import MotionSystem from 'shared/system/MotionSystem.js';
+import RotatorSystem from 'shared/system/RotatorSystem.js';
 
 const INTERPOLATION_DELTA_FACTOR = 10;
 const WORLD_TICK_FACTOR = 10;
@@ -31,6 +32,7 @@ class ClientWorld
     this.clientStates = [];
 
     this.motionSystem = new MotionSystem();
+    this.rotatorSystem = new RotatorSystem();
   }
 
   async initialize()
@@ -62,6 +64,7 @@ class ClientWorld
       this.player.onPlayerCreate(entityPlayer);
 
       //Extrapolate...
+      this.player.onEntityReset(this._serverWorldTicks);
       //this.resetClientStates(this._serverWorldTicks, entityPlayer);
     });
 
@@ -85,6 +88,7 @@ class ClientWorld
       this.synchronizer.deserialize(data.worldData);
 
       //Extrapolate...
+      this.player.onEntityReset(this._serverWorldTicks);
       //this.resetClientStates(this._serverWorldTicks, this.player._player);
     });
   }
@@ -99,7 +103,7 @@ class ClientWorld
 
   onUpdate(delta)
   {
-    //Update world
+    //Update world to server time
     if (this._serverWorldTicks > this._worldTicks)
     {
       let elapsedWorldTicks = this._serverWorldTicks - this._worldTicks;
@@ -116,8 +120,21 @@ class ClientWorld
       }
     }
 
+    //Update world to current time
     this._worldTicks += delta * WORLD_TICK_FACTOR;
-    this.onWorldUpdate();
+    let elapsedWorldTicks = this._worldTicks - this._prevWorldTicks;
+    if (elapsedWorldTicks > 10)
+    {
+      --elapsedWorldTicks;
+      console.log("WARNING: Skipping ahead " + elapsedWorldTicks + " ticks for world update...");
+      this._prevWorldTicks += Math.trunc(elapsedWorldTicks);
+    }
+
+    while (this._worldTicks >= this._prevWorldTicks + 1)
+    {
+      this.onWorldUpdate();
+      ++this._prevWorldTicks;
+    }
 
     //Interpolate properties...
     for(const [componentClass, entityList] of this.entityManager.components)
@@ -145,20 +162,8 @@ class ClientWorld
       }
     }
 
-    if (this.player._player)
-    {
-      //Send client input...
-      const inputState = this.pollClientInput();
-      if (inputState != null)
-      {
-        Application.network.sendTo(this.player._socket, 'clientInput', inputState);
-
-        //Continue to extrapolate...
-        //this.applyClientState(this.player._player, inputState);
-      }
-      //Client side logics...
-      this.player.onUpdate(delta);
-    }
+    //Client side logics...
+    this.player.onUpdate(1);
 
     Application.client._render.requestRender(this.entityManager);
   }
@@ -218,28 +223,6 @@ class ClientWorld
     this.motionSystem.updateEntity(player, 1);
   }
   */
-
-  pollClientInput()
-  {
-    const inputState = {
-      targetX: this.player.targetX,
-      targetY: this.player.targetY,
-      move: this.player.move,
-      worldTicks: this._worldTicks
-    };
-
-    if (this.clientStates.length > 0)
-    {
-      let prevState = this.clientStates[this.clientStates.length - 1];
-      if (prevState.move == inputState.move)
-      {
-      //  return null;
-      }
-    }
-
-    this.clientStates.push(inputState);
-    return inputState;
-  }
 
   get worldTicks() { return Math.trunc(this._worldTicks); }
   get serverTicks() { return Math.trunc(this._serverWorldTicks); }

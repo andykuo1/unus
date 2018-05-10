@@ -8,6 +8,8 @@ import * as MathHelper from 'util/MathHelper.js';
 import * as Components from 'shared/entity/component/Components.js';
 
 import MotionSystem from 'shared/system/MotionSystem.js';
+import RotatorSystem from 'shared/system/RotatorSystem.js';
+import DecayOverTimeSystem from 'shared/system/DecayOverTimeSystem.js';
 
 const ENTITY_SYNC_TICKS = 20;
 const WORLD_TICK_FACTOR = 10;
@@ -25,6 +27,8 @@ class World
     this._worldTicks = 0;
 
     this.motionSystem = new MotionSystem();
+    this.rotatorSystem = new RotatorSystem();
+    this.decayOverTimeSystem = new DecayOverTimeSystem();
   }
 
   async initialize()
@@ -93,7 +97,7 @@ class World
     {
       --elapsedWorldTicks;
       console.log("WARNING: Skipping ahead " + elapsedWorldTicks + " ticks for world update...");
-      this._prevWorldTicks += Math.trun(elapsedWorldTicks);
+      this._prevWorldTicks += Math.trunc(elapsedWorldTicks);
     }
     while (this._worldTicks >= this._prevWorldTicks + 1)
     {
@@ -135,30 +139,14 @@ class World
 
   onWorldUpdate()
   {
-    let entities = null;
-
     //Update motion logic
     this.motionSystem.update(this.entityManager, 1);
 
     //Update rotator logic
-    entities = this.entityManager.getEntitiesByComponent(Components.Rotator);
-    for(const entity of entities)
-    {
-      quat.rotateZ(entity.Transform.rotation, entity.Transform.rotation, entity.Rotator.speed);
-    }
+    this.rotatorSystem.update(this.entityManager, 1);
 
     //Update decay over time logic
-    entities = this.entityManager.getEntitiesByComponent(Components.DecayOverTime);
-    let i = entities.length;
-    while(i--)
-    {
-      const entity = entities[i];
-      if (entity.DecayOverTime.age-- <= 0)
-      {
-        this.entityManager.destroyEntity(entity);
-        continue;
-      }
-    }
+    this.decayOverTimeSystem.update(this.entityManager, 1);
   }
 
   get worldTicks() { return Math.trunc(this._worldTicks); }
